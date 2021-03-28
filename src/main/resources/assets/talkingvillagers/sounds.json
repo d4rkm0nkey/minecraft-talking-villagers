@@ -1,0 +1,8 @@
+{
+    "greeting": {
+        "subtitle": "subtitles.talkingvillagers.hello",
+        "sounds": [
+            "talkingvillagers:hello"
+        ]
+    }
+}
