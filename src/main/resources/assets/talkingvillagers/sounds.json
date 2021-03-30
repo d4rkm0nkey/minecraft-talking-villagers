@@ -1,8 +1,25 @@
 {
-    "greeting": {
+    "teajay-hurt": {
+        "sounds": [
+            "talkingvillagers:voices/teajay/good_morning"
+        ]
+    },
+    "teajay-good_morning": {
+        "subtitle": "subtitles.talkingvillagers.good_morning",
+        "sounds": [
+            "talkingvillagers:voices/teajay/good_morning"
+        ]
+    },
+    "teajay-hello": {
         "subtitle": "subtitles.talkingvillagers.hello",
         "sounds": [
-            "talkingvillagers:hello"
+            "talkingvillagers:voices/teajay/hello"
+        ]
+    },
+    "teajay-nice_day": {
+        "subtitle": "subtitles.talkingvillagers.nice_day",
+        "sounds": [
+            "talkingvillagers:voices/teajay/nice_day"
         ]
     }
 }
