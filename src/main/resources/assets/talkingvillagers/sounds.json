@@ -1,25 +1,695 @@
 {
     "teajay-hurt": {
         "sounds": [
-            "talkingvillagers:voices/teajay/good_morning"
+            "talkingvillagers:voices/teajay/hurt/hurt1",
+            "talkingvillagers:voices/teajay/hurt/hurt2",
+            "talkingvillagers:voices/teajay/hurt/hurt3",
+            "talkingvillagers:voices/teajay/hurt/hurt4",
+            "talkingvillagers:voices/teajay/hurt/hurt5",
+            "talkingvillagers:voices/teajay/hurt/hurt6",
+            "talkingvillagers:voices/teajay/hurt/hurt7",
+            "talkingvillagers:voices/teajay/hurt/hurt8",
+            "talkingvillagers:voices/teajay/hurt/hurt9",
+            "talkingvillagers:voices/teajay/hurt/hurt10",
+            "talkingvillagers:voices/teajay/hurt/hurt11",
+            "talkingvillagers:voices/teajay/hurt/hurt12",
+            "talkingvillagers:voices/teajay/hurt/hurt13",
+            "talkingvillagers:voices/teajay/hurt/hurt14"
+
         ]
     },
     "teajay-good_morning": {
         "subtitle": "subtitles.talkingvillagers.good_morning",
         "sounds": [
-            "talkingvillagers:voices/teajay/good_morning"
+            "talkingvillagers:voices/teajay/greeting/good_morning",
+            "talkingvillagers:voices/teajay/greeting/good_morning1",
+            "talkingvillagers:voices/teajay/greeting/good_morning2",
+            "talkingvillagers:voices/teajay/greeting/good_morning3",
+            "talkingvillagers:voices/teajay/greeting/good_morning4",
+            "talkingvillagers:voices/teajay/greeting/good_morning5",
+            "talkingvillagers:voices/teajay/greeting/good_morning6",
+            "talkingvillagers:voices/teajay/greeting/good_morning7",
+            "talkingvillagers:voices/teajay/greeting/good_morning8"
         ]
     },
     "teajay-hello": {
         "subtitle": "subtitles.talkingvillagers.hello",
         "sounds": [
-            "talkingvillagers:voices/teajay/hello"
+            "talkingvillagers:voices/teajay/greeting/hello",
+            "talkingvillagers:voices/teajay/greeting/hello1",
+            "talkingvillagers:voices/teajay/greeting/hello2",
+            "talkingvillagers:voices/teajay/greeting/hello3",
+            "talkingvillagers:voices/teajay/greeting/hello4",
+            "talkingvillagers:voices/teajay/greeting/hello5",
+            "talkingvillagers:voices/teajay/greeting/hello6"
         ]
     },
     "teajay-nice_day": {
         "subtitle": "subtitles.talkingvillagers.nice_day",
         "sounds": [
-            "talkingvillagers:voices/teajay/nice_day"
+            "talkingvillagers:voices/teajay/greeting/nice_day"
+        ]
+    },
+    "teajay-good_to_see_you": {
+        "subtitle": "subtitles.talkingvillagers.good_to_see_you",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/good_to_see_you1",
+            "talkingvillagers:voices/teajay/greeting/good_to_see_you2",
+            "talkingvillagers:voices/teajay/greeting/good_to_see_you3",
+            "talkingvillagers:voices/teajay/greeting/good_to_see_you4",
+            "talkingvillagers:voices/teajay/greeting/good_to_see_you5"
+        ]
+    },
+    "teajay-hey": {
+        "subtitle": "subtitles.talkingvillagers.hey",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/hey1",
+            "talkingvillagers:voices/teajay/greeting/hey2",
+            "talkingvillagers:voices/teajay/greeting/hey3",
+            "talkingvillagers:voices/teajay/greeting/hey4",
+            "talkingvillagers:voices/teajay/greeting/hey5",
+            "talkingvillagers:voices/teajay/greeting/hey6",
+            "talkingvillagers:voices/teajay/greeting/hey7",
+            "talkingvillagers:voices/teajay/greeting/hey8",
+            "talkingvillagers:voices/teajay/greeting/hey9",
+            "talkingvillagers:voices/teajay/greeting/hey10",
+            "talkingvillagers:voices/teajay/greeting/hey11"
+        ]
+    },
+    "teajay-heya": {
+        "subtitle": "subtitles.talkingvillagers.heya",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/heya1",
+            "talkingvillagers:voices/teajay/greeting/heya2",
+            "talkingvillagers:voices/teajay/greeting/heya3"
+        ]
+    },
+    "teajay-how_are_you": {
+        "subtitle": "subtitles.talkingvillagers.how_are_you",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/how_are_you1",
+            "talkingvillagers:voices/teajay/greeting/how_are_you2",
+            "talkingvillagers:voices/teajay/greeting/how_are_you3",
+            "talkingvillagers:voices/teajay/greeting/how_are_you4",
+            "talkingvillagers:voices/teajay/greeting/how_are_you5",
+            "talkingvillagers:voices/teajay/greeting/how_are_you6"
+        ]
+    },
+    "teajay-pleasure": {
+        "subtitle": "subtitles.talkingvillagers.pleasure",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/pleasure1",
+            "talkingvillagers:voices/teajay/greeting/pleasure2",
+            "talkingvillagers:voices/teajay/greeting/pleasure3",
+            "talkingvillagers:voices/teajay/greeting/pleasure4"
+        ]
+    },
+    "teajay-sir": {
+        "subtitle": "subtitles.talkingvillagers.sir",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/sir1",
+            "talkingvillagers:voices/teajay/greeting/sir2",
+            "talkingvillagers:voices/teajay/greeting/sir3",
+            "talkingvillagers:voices/teajay/greeting/sir4",
+            "talkingvillagers:voices/teajay/greeting/sir5",
+            "talkingvillagers:voices/teajay/greeting/sir6",
+            "talkingvillagers:voices/teajay/greeting/sir7",
+            "talkingvillagers:voices/teajay/greeting/sir8",
+            "talkingvillagers:voices/teajay/greeting/sir9"
+        ]
+    },
+    "teajay-things_going": {
+        "subtitle": "subtitles.talkingvillagers.things_going",
+        "sounds": [
+            "talkingvillagers:voices/teajay/greeting/things_going1",
+            "talkingvillagers:voices/teajay/greeting/things_going2",
+            "talkingvillagers:voices/teajay/greeting/things_going3"
+        ]
+    },
+    "teajay-death": {
+        "subtitle": "subtitles.talkingvillagers.death",
+        "sounds": [
+            "talkingvillagers:voices/teajay/death/death1",
+            "talkingvillagers:voices/teajay/death/death2",
+            "talkingvillagers:voices/teajay/death/death3",
+            "talkingvillagers:voices/teajay/death/death4",
+            "talkingvillagers:voices/teajay/death/death5",
+            "talkingvillagers:voices/teajay/death/death6",
+            "talkingvillagers:voices/teajay/death/death7",
+            "talkingvillagers:voices/teajay/death/death8",
+            "talkingvillagers:voices/teajay/death/death9",
+            "talkingvillagers:voices/teajay/death/death10",
+            "talkingvillagers:voices/teajay/death/death11",
+            "talkingvillagers:voices/teajay/death/death12",
+            "talkingvillagers:voices/teajay/death/death13",
+            "talkingvillagers:voices/teajay/death/death14",
+            "talkingvillagers:voices/teajay/death/death15",
+            "talkingvillagers:voices/teajay/death/death16"
+        ]
+    },
+    "teajay-afraid_of_cats": {
+        "subtitle": "subtitles.talkingvillagers.afraid_of_cats",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/afraid_of_cats1",
+            "talkingvillagers:voices/teajay/random/afraid_of_cats2",
+            "talkingvillagers:voices/teajay/random/afraid_of_cats3"
+        ]
+    },
+    "teajay-am_i_crazy": {
+        "subtitle": "subtitles.talkingvillagers.am_i_crazy",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/am_i_crazy1",
+            "talkingvillagers:voices/teajay/random/am_i_crazy2",
+            "talkingvillagers:voices/teajay/random/am_i_crazy3",
+            "talkingvillagers:voices/teajay/random/am_i_crazy4",
+            "talkingvillagers:voices/teajay/random/am_i_crazy5"
+        ]
+    },
+    "teajay-anything_i_want": {
+        "subtitle": "subtitles.talkingvillagers.anything_i_want",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/anything_i_want1",
+            "talkingvillagers:voices/teajay/random/anything_i_want2",
+            "talkingvillagers:voices/teajay/random/anything_i_want3",
+            "talkingvillagers:voices/teajay/random/anything_i_want4",
+            "talkingvillagers:voices/teajay/random/anything_i_want5"
+        ]
+    },
+    "teajay-beach_house": {
+        "subtitle": "subtitles.talkingvillagers.beach_house",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/beach_house1",
+            "talkingvillagers:voices/teajay/random/beach_house2",
+            "talkingvillagers:voices/teajay/random/beach_house3"
+        ]
+    },
+    "teajay-cant_people_be_nice": {
+        "subtitle": "subtitles.talkingvillagers.cant_people_be_nice",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/cant_people_be_nice1",
+            "talkingvillagers:voices/teajay/random/cant_people_be_nice2",
+            "talkingvillagers:voices/teajay/random/cant_people_be_nice3",
+            "talkingvillagers:voices/teajay/random/cant_people_be_nice4",
+            "talkingvillagers:voices/teajay/random/cant_people_be_nice5"
+        ]
+    },
+    "teajay-dont_like_people": {
+        "subtitle": "subtitles.talkingvillagers.dont_like_people",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/dont_like_people1",
+            "talkingvillagers:voices/teajay/random/dont_like_people2",
+            "talkingvillagers:voices/teajay/random/dont_like_people3",
+            "talkingvillagers:voices/teajay/random/dont_like_people4"
+        ]
+    },
+    "teajay-dont_like_trees": {
+        "subtitle": "subtitles.talkingvillagers.dont_like_trees",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/dont_like_trees1",
+            "talkingvillagers:voices/teajay/random/dont_like_trees2",
+            "talkingvillagers:voices/teajay/random/dont_like_trees3",
+            "talkingvillagers:voices/teajay/random/dont_like_trees4"
+        ]
+    },
+    "teajay-eat_today": {
+        "subtitle": "subtitles.talkingvillagers.eat_today",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/eat_today"
+        ]
+    },
+    "teajay-fence": {
+        "subtitle": "subtitles.talkingvillagers.fence",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/fence1",
+            "talkingvillagers:voices/teajay/random/fence2",
+            "talkingvillagers:voices/teajay/random/fence3",
+            "talkingvillagers:voices/teajay/random/fence4"
+        ]
+    },
+    "teajay-i_like_you": {
+        "subtitle": "subtitles.talkingvillagers.i_like_you",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/i_like_you1",
+            "talkingvillagers:voices/teajay/random/i_like_you2",
+            "talkingvillagers:voices/teajay/random/i_like_you3",
+            "talkingvillagers:voices/teajay/random/i_like_you4",
+            "talkingvillagers:voices/teajay/random/i_like_you5"
+        ]
+    },
+    "teajay-less_alone": {
+        "subtitle": "subtitles.talkingvillagers.less_alone",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/less_alone1",
+            "talkingvillagers:voices/teajay/random/less_alone2",
+            "talkingvillagers:voices/teajay/random/less_alone3",
+            "talkingvillagers:voices/teajay/random/less_alone4"
+        ]
+    },
+    "teajay-live_can_be_hard": {
+        "subtitle": "subtitles.talkingvillagers.live_can_be_hard",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/live_can_be_hard1",
+            "talkingvillagers:voices/teajay/random/live_can_be_hard2",
+            "talkingvillagers:voices/teajay/random/live_can_be_hard3",
+            "talkingvillagers:voices/teajay/random/live_can_be_hard4",
+            "talkingvillagers:voices/teajay/random/live_can_be_hard5",
+            "talkingvillagers:voices/teajay/random/live_can_be_hard6"
+        ]
+    },
+    "teajay-nice_person": {
+        "subtitle": "subtitles.talkingvillagers.nice_person",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/nice_person1",
+            "talkingvillagers:voices/teajay/random/nice_person2",
+            "talkingvillagers:voices/teajay/random/nice_person3",
+            "talkingvillagers:voices/teajay/random/nice_guy"
+        ]
+    },
+    "teajay-not_crazy": {
+        "subtitle": "subtitles.talkingvillagers.not_crazy",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/not_crazy1",
+            "talkingvillagers:voices/teajay/random/not_crazy2",
+            "talkingvillagers:voices/teajay/random/not_crazy3",
+            "talkingvillagers:voices/teajay/random/not_crazy4"
+        ]
+    },
+    "teajay-utterly_useless": {
+        "subtitle": "subtitles.talkingvillagers.utterly_useless",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/utterly_useless1",
+            "talkingvillagers:voices/teajay/random/utterly_useless2",
+            "talkingvillagers:voices/teajay/random/utterly_useless3",
+            "talkingvillagers:voices/teajay/random/utterly_useless4",
+            "talkingvillagers:voices/teajay/random/utterly_useless5"
+        ]
+    },
+    "teajay-underwear_itchy": {
+        "subtitle": "subtitles.talkingvillagers.underwear_itchy",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/underwear_itchy1",
+            "talkingvillagers:voices/teajay/random/underwear_itchy2"
+        ]
+    },
+    "teajay-violated": {
+        "subtitle": "subtitles.talkingvillagers.violated",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/violated1",
+            "talkingvillagers:voices/teajay/random/violated2",
+            "talkingvillagers:voices/teajay/random/violated3"
+        ]
+    },
+    "teajay-people_dont_like_me": {
+        "subtitle": "subtitles.talkingvillagers.people_dont_like_me",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/people_dont_like_me1",
+            "talkingvillagers:voices/teajay/random/people_dont_like_me2",
+            "talkingvillagers:voices/teajay/random/people_dont_like_me3",
+            "talkingvillagers:voices/teajay/random/people_dont_like_me4"
+        ]
+    },
+    "teajay-visit_me": {
+        "subtitle": "subtitles.talkingvillagers.visit_me",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/visit_me1",
+            "talkingvillagers:voices/teajay/random/visit_me2",
+            "talkingvillagers:voices/teajay/random/visit_me3",
+            "talkingvillagers:voices/teajay/random/visit_me4",
+            "talkingvillagers:voices/teajay/random/visit_me5",
+            "talkingvillagers:voices/teajay/random/visit_me6",
+            "talkingvillagers:voices/teajay/random/visit_me7"
+        ]
+    },
+    "teajay-what_can_i_do_now": {
+        "subtitle": "subtitles.talkingvillagers.what_can_i_do_now",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/what_can_i_do_now1",
+            "talkingvillagers:voices/teajay/random/what_can_i_do_now2"
+        ]
+    },
+    "teajay-you_awesome": {
+        "subtitle": "subtitles.talkingvillagers.you_awesome",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/you_awesome"
+        ]
+    },
+    "teajay-you_look_funny": {
+        "subtitle": "subtitles.talkingvillagers.you_look_funny",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/you_look_funny1",
+            "talkingvillagers:voices/teajay/random/you_look_funny2",
+            "talkingvillagers:voices/teajay/random/you_look_funny3",
+            "talkingvillagers:voices/teajay/random/you_look_funny4"
+        ]
+    },
+    "teajay-you_look_good": {
+        "subtitle": "subtitles.talkingvillagers.you_look_good",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/you_look_good1",
+            "talkingvillagers:voices/teajay/random/you_look_good2",
+            "talkingvillagers:voices/teajay/random/you_look_good3",
+            "talkingvillagers:voices/teajay/random/you_look_good4"
+        ]
+    },
+    "teajay-cant_do_that": {
+        "subtitle": "subtitles.talkingvillagers.cant_do_that",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/cant_do_that1",
+            "talkingvillagers:voices/teajay/no/cant_do_that2",
+            "talkingvillagers:voices/teajay/no/cant_do_that3",
+            "talkingvillagers:voices/teajay/no/cant_do_that4",
+            "talkingvillagers:voices/teajay/no/cant_do_that5"
+        ]
+    },
+    "teajay-i_am_sorry": {
+        "subtitle": "subtitles.talkingvillagers.i_am_sorry",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/i_am_sorry1",
+            "talkingvillagers:voices/teajay/no/i_am_sorry2",
+            "talkingvillagers:voices/teajay/no/i_am_sorry3",
+            "talkingvillagers:voices/teajay/no/i_am_sorry4",
+            "talkingvillagers:voices/teajay/no/i_am_sorry5"
+        ]
+    },
+    "teajay-no_sorry": {
+        "subtitle": "subtitles.talkingvillagers.no_sorry",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/no_sorry1",
+            "talkingvillagers:voices/teajay/no/no_sorry2",
+            "talkingvillagers:voices/teajay/no/no_sorry3",
+            "talkingvillagers:voices/teajay/no/no_sorry4"
+        ]
+    },
+    "teajay-no": {
+        "subtitle": "subtitles.talkingvillagers.no",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/no1",
+            "talkingvillagers:voices/teajay/no/no2",
+            "talkingvillagers:voices/teajay/no/no3",
+            "talkingvillagers:voices/teajay/no/no4",
+            "talkingvillagers:voices/teajay/no/no5",
+            "talkingvillagers:voices/teajay/no/no6",
+            "talkingvillagers:voices/teajay/no/no7",
+            "talkingvillagers:voices/teajay/no/no8",
+            "talkingvillagers:voices/teajay/no/no9"
+        ]
+    },
+    "teajay-nope": {
+        "subtitle": "subtitles.talkingvillagers.nope",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/nope1"
+        ]
+    },
+    "teajay-not_at_all": {
+        "subtitle": "subtitles.talkingvillagers.not_at_all",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/not_at_all1",
+            "talkingvillagers:voices/teajay/no/not_at_all2",
+            "talkingvillagers:voices/teajay/no/not_at_all3",
+            "talkingvillagers:voices/teajay/no/not_at_all4",
+            "talkingvillagers:voices/teajay/no/not_at_all5"
+        ]
+    },
+    "teajay-oh_no": {
+        "subtitle": "subtitles.talkingvillagers.oh_no",
+        "sounds": [
+            "talkingvillagers:voices/teajay/no/oh_no1",
+            "talkingvillagers:voices/teajay/no/oh_no2",
+            "talkingvillagers:voices/teajay/no/oh_no3"
+        ]
+    },
+    "teajay-ahh": {
+        "subtitle": "subtitles.talkingvillagers.ahh",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/ahh1",
+            "talkingvillagers:voices/teajay/ambient/ahh2"
+        ]
+    },
+    "teajay-know_what_you_thinking": {
+        "subtitle": "subtitles.talkingvillagers.know_what_you_thinking",
+        "sounds": [
+            "talkingvillagers:voices/teajay/random/know_what_you_thinking"
+        ]
+    },
+    "teajay-haah": {
+        "subtitle": "subtitles.talkingvillagers.haah",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/haah1",
+            "talkingvillagers:voices/teajay/ambient/haah2",
+            "talkingvillagers:voices/teajay/ambient/haah3",
+            "talkingvillagers:voices/teajay/ambient/haah4",
+            "talkingvillagers:voices/teajay/ambient/haah5",
+            "talkingvillagers:voices/teajay/ambient/haah6",
+            "talkingvillagers:voices/teajay/ambient/haah7"
+        ]
+    },
+    "teajay-hmmm": {
+        "subtitle": "subtitles.talkingvillagers.hmmm",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/hmmm1",
+            "talkingvillagers:voices/teajay/ambient/hmmm2",
+            "talkingvillagers:voices/teajay/ambient/hmmm3",
+            "talkingvillagers:voices/teajay/ambient/hmmm4",
+            "talkingvillagers:voices/teajay/ambient/hmmm5",
+            "talkingvillagers:voices/teajay/ambient/hmmm6",
+            "talkingvillagers:voices/teajay/ambient/hmmm7",
+            "talkingvillagers:voices/teajay/ambient/hmmm8",
+            "talkingvillagers:voices/teajay/ambient/hmmm9"
+        ]
+    },
+    "teajay-hugh": {
+        "subtitle": "subtitles.talkingvillagers.hugh",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/hugh1",
+            "talkingvillagers:voices/teajay/ambient/hugh2",
+            "talkingvillagers:voices/teajay/ambient/hugh3"
+        ]
+    },
+    "teajay-huh": {
+        "subtitle": "subtitles.talkingvillagers.huh",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/huh1",
+            "talkingvillagers:voices/teajay/ambient/huh2",
+            "talkingvillagers:voices/teajay/ambient/huh3"
+        ]
+    },
+    "teajay-humm": {
+        "subtitle": "subtitles.talkingvillagers.humm",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/humm1",
+            "talkingvillagers:voices/teajay/ambient/humm2",
+            "talkingvillagers:voices/teajay/ambient/humm3",
+            "talkingvillagers:voices/teajay/ambient/humm4",
+            "talkingvillagers:voices/teajay/ambient/humm5"
+        ]
+    },
+    "teajay-uff": {
+        "subtitle": "subtitles.talkingvillagers.uff",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/uff1",
+            "talkingvillagers:voices/teajay/ambient/uff2"
+        ]
+    },
+    "teajay-whistle": {
+        "subtitle": "subtitles.talkingvillagers.whistle",
+        "sounds": [
+            "talkingvillagers:voices/teajay/ambient/whistle1",
+            "talkingvillagers:voices/teajay/ambient/whistle2"
+        ]
+    },
+    "teajay-enlightend": {
+        "subtitle": "subtitles.talkingvillagers.enlightend",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/enlightend1",
+            "talkingvillagers:voices/teajay/level/enlightend2",
+            "talkingvillagers:voices/teajay/level/enlightend3"
+        ]
+    },
+    "teajay-feeling_better": {
+        "subtitle": "subtitles.talkingvillagers.feeling_better",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/feeling_better1",
+            "talkingvillagers:voices/teajay/level/feeling_better2",
+            "talkingvillagers:voices/teajay/level/feeling_better3",
+            "talkingvillagers:voices/teajay/level/feeling_better4",
+            "talkingvillagers:voices/teajay/level/feeling_better5",
+            "talkingvillagers:voices/teajay/level/feeling_better6",
+            "talkingvillagers:voices/teajay/level/feeling_better7",
+            "talkingvillagers:voices/teajay/level/feeling_better8",
+            "talkingvillagers:voices/teajay/level/feeling_better9"
+        ]
+    },
+    "teajay-friends": {
+        "subtitle": "subtitles.talkingvillagers.friends",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/friends1",
+            "talkingvillagers:voices/teajay/level/friends2",
+            "talkingvillagers:voices/teajay/level/friends3"
+        ]
+    },
+    "teajay-more_clever": {
+        "subtitle": "subtitles.talkingvillagers.more_clever",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/more_clever1",
+            "talkingvillagers:voices/teajay/level/more_clever2",
+            "talkingvillagers:voices/teajay/level/more_clever3",
+            "talkingvillagers:voices/teajay/level/more_clever4"
+        ]
+    },
+    "teajay-new_item": {
+        "subtitle": "subtitles.talkingvillagers.new_item",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/new_item1",
+            "talkingvillagers:voices/teajay/level/new_item2",
+            "talkingvillagers:voices/teajay/level/new_item3",
+            "talkingvillagers:voices/teajay/level/new_item4",
+            "talkingvillagers:voices/teajay/level/new_item5"
+        ]
+    },
+    "teajay-special_offer": {
+        "subtitle": "subtitles.talkingvillagers.special_offer",
+        "sounds": [
+            "talkingvillagers:voices/teajay/level/special_offer1",
+            "talkingvillagers:voices/teajay/level/special_offer2",
+            "talkingvillagers:voices/teajay/level/special_offer3"
+        ]
+    },
+    "teajay-hero": {
+        "subtitle": "subtitles.talkingvillagers.hero",
+        "sounds": [
+            "talkingvillagers:voices/teajay/hero/hero1",
+            "talkingvillagers:voices/teajay/hero/hero2",
+            "talkingvillagers:voices/teajay/hero/hero3",
+            "talkingvillagers:voices/teajay/hero/hero4",
+            "talkingvillagers:voices/teajay/hero/hero5"
+        ]
+    },
+    "teajay-saved_us": {
+        "subtitle": "subtitles.talkingvillagers.saved_us",
+        "sounds": [
+            "talkingvillagers:voices/teajay/hero/saved_us1",
+            "talkingvillagers:voices/teajay/hero/saved_us2",
+            "talkingvillagers:voices/teajay/hero/saved_us3",
+            "talkingvillagers:voices/teajay/hero/saved_us4",
+            "talkingvillagers:voices/teajay/hero/saved_us5",
+            "talkingvillagers:voices/teajay/hero/saved_us6",
+            "talkingvillagers:voices/teajay/hero/saved_us7",
+            "talkingvillagers:voices/teajay/hero/saved_us8",
+            "talkingvillagers:voices/teajay/hero/saved_us9",
+            "talkingvillagers:voices/teajay/hero/saved_us10"
+        ]
+    },
+    "teajay-thank_you": {
+        "subtitle": "subtitles.talkingvillagers.thank_you",
+        "sounds": [
+            "talkingvillagers:voices/teajay/hero/thank_you1",
+            "talkingvillagers:voices/teajay/hero/thank_you2",
+            "talkingvillagers:voices/teajay/hero/thank_you3",
+            "talkingvillagers:voices/teajay/hero/thank_you4",
+            "talkingvillagers:voices/teajay/hero/thank_you5"
+        ]
+    },
+    "teajay-you_are_a_hero": {
+        "subtitle": "subtitles.talkingvillagers.you_are_a_hero",
+        "sounds": [
+            "talkingvillagers:voices/teajay/hero/you_are_a_hero1",
+            "talkingvillagers:voices/teajay/hero/you_are_a_hero2"
+        ]
+    },
+    "teajay-deserve_it": {
+        "subtitle": "subtitles.talkingvillagers.deserve_it",
+        "sounds": [
+            "talkingvillagers:voices/teajay/herodrop/deserve_it1",
+            "talkingvillagers:voices/teajay/herodrop/deserve_it2"
+        ]
+    },
+    "teajay-gratitude": {
+        "subtitle": "subtitles.talkingvillagers.gratitude",
+        "sounds": [
+            "talkingvillagers:voices/teajay/herodrop/gratitude1",
+            "talkingvillagers:voices/teajay/herodrop/gratitude2",
+            "talkingvillagers:voices/teajay/herodrop/gratitude3",
+            "talkingvillagers:voices/teajay/herodrop/gratitude4",
+            "talkingvillagers:voices/teajay/herodrop/gratitude5",
+            "talkingvillagers:voices/teajay/herodrop/gratitude6"
+        ]
+    },
+    "teajay-gossip": {
+        "sounds": [
+            "talkingvillagers:voices/teajay/gossip/gossip1",
+            "talkingvillagers:voices/teajay/gossip/gossip2",
+            "talkingvillagers:voices/teajay/gossip/gossip3",
+            "talkingvillagers:voices/teajay/gossip/gossip4",
+            "talkingvillagers:voices/teajay/gossip/gossip5",
+            "talkingvillagers:voices/teajay/gossip/gossip6",
+            "talkingvillagers:voices/teajay/gossip/gossip7",
+            "talkingvillagers:voices/teajay/gossip/gossip8",
+            "talkingvillagers:voices/teajay/gossip/gossip9",
+            "talkingvillagers:voices/teajay/gossip/gossip10",
+            "talkingvillagers:voices/teajay/gossip/gossip11",
+            "talkingvillagers:voices/teajay/gossip/gossip12",
+            "talkingvillagers:voices/teajay/gossip/gossip13",
+            "talkingvillagers:voices/teajay/gossip/gossip14",
+            "talkingvillagers:voices/teajay/gossip/gossip15",
+            "talkingvillagers:voices/teajay/gossip/gossip16",
+            "talkingvillagers:voices/teajay/gossip/gossip17",
+            "talkingvillagers:voices/teajay/gossip/gossip18",
+            "talkingvillagers:voices/teajay/gossip/gossip19",
+            "talkingvillagers:voices/teajay/gossip/gossip20",
+            "talkingvillagers:voices/teajay/gossip/gossip21",
+            "talkingvillagers:voices/teajay/gossip/gossip22",
+            "talkingvillagers:voices/teajay/gossip/gossip23",
+            "talkingvillagers:voices/teajay/gossip/gossip24",
+            "talkingvillagers:voices/teajay/gossip/gossip25",
+            "talkingvillagers:voices/teajay/gossip/gossip26",
+            "talkingvillagers:voices/teajay/gossip/gossip27",
+            "talkingvillagers:voices/teajay/gossip/gossip28",
+            "talkingvillagers:voices/teajay/gossip/gossip29",
+            "talkingvillagers:voices/teajay/gossip/gossip30",
+            "talkingvillagers:voices/teajay/gossip/gossip31",
+            "talkingvillagers:voices/teajay/gossip/gossip32",
+            "talkingvillagers:voices/teajay/gossip/gossip33",
+            "talkingvillagers:voices/teajay/gossip/gossip34"
+        ]
+    },
+    "teajay-know_to_find_me": {
+        "subtitle": "subtitles.talkingvillagers.know_to_find_me",
+        "sounds": [
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me1",
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me2",
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me3",
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me4",
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me5",
+            "talkingvillagers:voices/teajay/trade-success/know_to_find_me6"
+        ]
+    },
+    "teajay-trade_nice_day": {
+        "subtitle": "subtitles.talkingvillagers.nice_day",
+        "sounds": [
+            "talkingvillagers:voices/teajay/trade-success/nice_day1",
+            "talkingvillagers:voices/teajay/trade-success/nice_day2",
+            "talkingvillagers:voices/teajay/trade-success/nice_day3",
+            "talkingvillagers:voices/teajay/trade-success/nice_day4",
+            "talkingvillagers:voices/teajay/trade-success/nice_day5"
+        ]
+    },
+    "teajay-nice_trading": {
+        "subtitle": "subtitles.talkingvillagers.nice_trading",
+        "sounds": [
+            "talkingvillagers:voices/teajay/trade-success/nice_trading1",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading2",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading3",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading4",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading5",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading6",
+            "talkingvillagers:voices/teajay/trade-success/nice_trading7"
+        ]
+    },
+    "teajay-see_you": {
+        "subtitle": "subtitles.talkingvillagers.see_you",
+        "sounds": [
+            "talkingvillagers:voices/teajay/trade-success/see_you1",
+            "talkingvillagers:voices/teajay/trade-success/see_you2"
         ]
     }
 }

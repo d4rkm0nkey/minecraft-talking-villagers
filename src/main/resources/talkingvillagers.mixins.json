@@ -4,6 +4,7 @@
   "package": "me.teajay.talking.villagers.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "GiveGiftsToHeroTaskMixin",
     "VillagerEntityMixin"
   ],
   "client": [

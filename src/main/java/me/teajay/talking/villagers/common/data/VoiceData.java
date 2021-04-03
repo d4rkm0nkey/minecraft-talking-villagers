@@ -5,6 +5,7 @@ import me.teajay.talking.villagers.common.sound.VillagerVoiceManager;
 import java.util.ArrayList;
 
 public class VoiceData {
+    private String name;
     private final ArrayList<String> gossip;
     private final ArrayList<String> death;
     private final ArrayList<String> random;
@@ -14,6 +15,10 @@ public class VoiceData {
     private final ArrayList<String> hero;
     private final ArrayList<String> nope;
     private final ArrayList<String> level;
+    private final ArrayList<String> ambient;
+    private final ArrayList<String> greeting;
+    private final ArrayList<String> herodrop;
+    private final ArrayList<String> yes;
 
 
     public VoiceData() {
@@ -26,6 +31,14 @@ public class VoiceData {
         eat = new ArrayList<>();
         hero = new ArrayList<>();
         level = new ArrayList<>();
+        ambient = new ArrayList<>();
+        greeting = new ArrayList<>();
+        herodrop = new ArrayList<>();
+        yes = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
     }
 
     public ArrayList<String> getVoiceLines(VillagerVoiceManager.Reason reason) {
@@ -48,6 +61,14 @@ public class VoiceData {
                 return level;
             case TRADE:
                 return trade;
+            case AMBIENT:
+                return ambient;
+            case GREETING:
+                return greeting;
+            case HERODROP:
+                return herodrop;
+            case YES:
+                return yes;
         }
         return null;
     }
