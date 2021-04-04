@@ -20,6 +20,7 @@ public class VillagerVoiceManager {
         DEATH,
         RANDOM,
         TRADE,
+        TRADE_SUCCESS,
         GOSSIP,
         HURT,
         EAT,

@@ -7,6 +7,7 @@ public class VoiceData {
     protected final ArrayList<String> death;
     protected final ArrayList<String> random;
     protected final ArrayList<String> trade;
+    protected final ArrayList<String> tradesuccess;
     protected final ArrayList<String> hurt;
     protected final ArrayList<String> eat;
     protected final ArrayList<String> hero;
@@ -22,6 +23,7 @@ public class VoiceData {
         death = new ArrayList<>();
         random = new ArrayList<>();
         trade = new ArrayList<>();
+        tradesuccess = new ArrayList<>();
         hurt = new ArrayList<>();
         nope = new ArrayList<>();
         eat = new ArrayList<>();

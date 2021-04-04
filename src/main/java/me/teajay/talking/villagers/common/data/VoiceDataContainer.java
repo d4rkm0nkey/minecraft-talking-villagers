@@ -93,6 +93,8 @@ public class VoiceDataContainer {
                 return all.level;
             case TRADE:
                 return all.trade;
+            case TRADE_SUCCESS:
+                return all.tradesuccess;
             case AMBIENT:
                 return all.ambient;
             case GREETING:
@@ -174,6 +176,8 @@ public class VoiceDataContainer {
                 return professionData.level;
             case TRADE:
                 return professionData.trade;
+            case TRADE_SUCCESS:
+                return professionData.tradesuccess;
             case AMBIENT:
                 return professionData.ambient;
             case GREETING:

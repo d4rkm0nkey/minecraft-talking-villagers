@@ -13,6 +13,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.village.TradeOffer;
 import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerGossips;
 import net.minecraft.village.VillagerProfession;
@@ -232,5 +233,15 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 
 	public long getGossipStartTime() {
 		return gossipStartTime;
+	}
+
+	@Inject(at = @At("TAIL"), method = "beginTradeWith(Lnet/minecraft/entity/player/PlayerEntity;)V")
+	private void beginTradeWith(PlayerEntity customer, CallbackInfo ci) {
+		voiceManager.speak(world, VillagerVoiceManager.Reason.TRADE, this.getSoundVolume());
+	}
+
+	@Inject(at = @At("TAIL"), method = "afterUsing(Lnet/minecraft/village/TradeOffer;)V")
+	protected void afterUsing(TradeOffer offer, CallbackInfo ci) {
+		voiceManager.speak(world, VillagerVoiceManager.Reason.TRADE_SUCCESS, this.getSoundVolume());
 	}
 }
