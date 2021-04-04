@@ -1,4 +1,4 @@
-# Talking Villagers
+![Talking Villagers](https://raw.githubusercontent.com/d4rkm0nkey/minecraft-talking-villagers/master/docs/banner.png)
 ## Description
 Villagers are talking different voice lines, like greetings, small-talk and similar.
 The mod lets you easily add different voices with resource packs. Every villager gets a random voice from the installed voices.
