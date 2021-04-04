@@ -13,6 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class GiveGiftsToHeroTaskMixin {
     @Inject(at = @At("HEAD"), method = "giveGifts(Lnet/minecraft/entity/passive/VillagerEntity;Lnet/minecraft/entity/LivingEntity;)V")
     private void giveGifts(VillagerEntity villager, LivingEntity recipient, CallbackInfo ci) {
-        ((IVillagerEntity)villager).sayHero();
+        ((IVillagerEntity)villager).sayHeroDrop();
     }
 }

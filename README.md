@@ -11,3 +11,36 @@ Add [voicename].json file into ../talkingvillagers/voices/ in the config folder 
 ## Add your own voice lines
 **[ToDo]** *Add YouTube tutorial here!*
 
+## Voice Events
+- **death:** Sounds played when the villager dies.
+- **hurt:** Sounds played when the villager is hurt.
+- **random:** Voice lines a villager occasinaly says.
+- **gossip:** Sounds played when a villager gossips with another villager.
+- **eat:** Voice lines played when a villager eats.
+- **yes:** Voice lines for affirmation.
+- **no:** Voice lines for refusal.
+- **celebrate** Voice lines if Villager is happy.
+- **level:** Voice lines played when a villager levels up.
+- **hero:** Voice lines played when a villager passes a player with the "Hero of the village" effect.
+- **herodrop:** Voice lines played when a villager drops a gift for a player with the "Hero of the village" effect.
+- **ambient:** Ambient sounds villagers produce.
+- **greeting:** Voice lines played when a villager is close to a player and hasn't seen the player for a while.
+
+## Professions
+Adding a profession field to the `config/voices/[voicename].json` file will replace change the specified voicelines, if the villager has the profession.
+
+Possible professions with `.json` tag:
+- Nitwit (nitwit)
+- Armorer (armorer)
+- Butcher (butcher)
+- Cartographer (cartographer)
+- Cleric (cleric)
+- Farmer (farmer)
+- Fisherman (fischerman)
+- Fletcher (fletcher)
+- Leatherworker (leatherworker)
+- Librarian (librarian)
+- Mason (mason)
+- Shepherd (shepard)
+- Toolsmith (toolsmith)
+- Weaponsmith (weaponsmith)

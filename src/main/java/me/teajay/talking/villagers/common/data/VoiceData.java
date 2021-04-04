@@ -1,26 +1,22 @@
 package me.teajay.talking.villagers.common.data;
 
-import me.teajay.talking.villagers.common.sound.VillagerVoiceManager;
-
 import java.util.ArrayList;
 
 public class VoiceData {
-    private String name;
-    private final ArrayList<String> gossip;
-    private final ArrayList<String> death;
-    private final ArrayList<String> random;
-    private final ArrayList<String> trade;
-    private final ArrayList<String> hurt;
-    private final ArrayList<String> eat;
-    private final ArrayList<String> hero;
-    private final ArrayList<String> nope;
-    private final ArrayList<String> level;
-    private final ArrayList<String> ambient;
-    private final ArrayList<String> greeting;
-    private final ArrayList<String> herodrop;
-    private final ArrayList<String> yes;
-
-
+    protected final ArrayList<String> gossip;
+    protected final ArrayList<String> death;
+    protected final ArrayList<String> random;
+    protected final ArrayList<String> trade;
+    protected final ArrayList<String> hurt;
+    protected final ArrayList<String> eat;
+    protected final ArrayList<String> hero;
+    protected final ArrayList<String> nope;
+    protected final ArrayList<String> level;
+    protected final ArrayList<String> ambient;
+    protected final ArrayList<String> greeting;
+    protected final ArrayList<String> herodrop;
+    protected final ArrayList<String> yes;
+    protected final ArrayList<String> celebrate;
     public VoiceData() {
         gossip = new ArrayList<>();
         death = new ArrayList<>();
@@ -35,41 +31,6 @@ public class VoiceData {
         greeting = new ArrayList<>();
         herodrop = new ArrayList<>();
         yes = new ArrayList<>();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public ArrayList<String> getVoiceLines(VillagerVoiceManager.Reason reason) {
-        switch (reason) {
-            case RANDOM:
-                return random;
-            case GOSSIP:
-                return gossip;
-            case NO:
-                return nope;
-            case EAT:
-                return eat;
-            case HERO:
-                return hero;
-            case HURT:
-                return hurt;
-            case DEATH:
-                return death;
-            case LEVEL:
-                return level;
-            case TRADE:
-                return trade;
-            case AMBIENT:
-                return ambient;
-            case GREETING:
-                return greeting;
-            case HERODROP:
-                return herodrop;
-            case YES:
-                return yes;
-        }
-        return null;
+        celebrate = new ArrayList<>();
     }
 }
