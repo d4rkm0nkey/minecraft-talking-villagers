@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.Random;
 
 import me.teajay.talking.villagers.common.util.IVillagerEntity;
-import net.minecraft.client.sound.Sound;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,9 +13,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.village.TradeOffer;
-import net.minecraft.village.VillagerData;
-import net.minecraft.village.VillagerGossips;
-import net.minecraft.village.VillagerProfession;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,8 +28,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(VillagerEntity.class)
 public abstract class VillagerEntityMixin extends MerchantEntity implements IVillagerEntity {
-	@Shadow public abstract VillagerGossips getGossip();
-
 	private static final int MIN_RANDOM_COOLDOWN = 300;
 	private static final int MAX_RANDOM_COOLDOWN = 5000;
 	private static final int MIN_GREETING_COOLDOWN = 6000;
@@ -47,10 +41,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	private int heroCoolDown = 0;
 	@Shadow
 	private long gossipStartTime;
-	@Shadow
-	public VillagerData getVillagerData() {
-		throw new AssertionError();
-	}
 
 	public VillagerEntityMixin(EntityType<? extends MerchantEntity> entityType, World world) {
 		super(entityType, world);
@@ -213,6 +203,9 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	@Inject(at = @At("TAIL"), method = "readCustomDataFromTag(Lnet/minecraft/nbt/CompoundTag;)V")
 	public void readCustomDataFromTag(CompoundTag tag, CallbackInfo ci) {
 		this.voicePitch = tag.getFloat("VoicePitch");
+		if(this.voicePitch < 0.1f) {
+			this.voicePitch = generateVoicePitch();
+		}
 		if(tag.contains("VoiceName")) {
 			String voiceName = tag.getString("VoiceName");
 			if(VillagerVoiceManager.containsVoice(voiceName)) {
@@ -245,3 +238,4 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		voiceManager.speak(world, VillagerVoiceManager.Reason.TRADE_SUCCESS, this.getSoundVolume());
 	}
 }
+
