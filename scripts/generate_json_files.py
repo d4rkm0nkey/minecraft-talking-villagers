@@ -6,23 +6,11 @@ import os
 import json
 import re
 
-
 def main(argv) :
-    inputfolder = ''
-    outputfolder = ''
-    try:
-        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile="])
-    except getopt.GetoptError:
-        print('test.py -i <inputfolder> -o <outputfolder>')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('test.py -i <inputfolder> -o <outputfolder>')
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            inputfolder = os.path.abspath(arg)
-        elif opt in ("-o", "--ofile"):
-            outputfolder = arg
+    if(len(sys.argv) < 2):
+        print("usage: python3 create_folder_structure.py [path]")
+        raise AttributeError('No path specified')
+    inputfolder = os.path.abspath(sys.argv[1])
 
     professions = [f.path for f in os.scandir(inputfolder) if f.is_dir()]
     sound_file = {}
@@ -53,13 +41,15 @@ def main(argv) :
                 sound_file[sound_id]["subtitle"] = subtitle_id
                 sound_file[sound_id]["sounds"] = file_dict[sound]
 
-    with open(os.path.join(outputfolder,'sounds.json'), 'w') as fp:
+    with open(os.path.join(inputfolder,'assets', 'talkingvillagers' ,'sounds.json'), 'w') as fp:
         json.dump(sound_file, fp, indent=4)
 
-    with open(os.path.join(outputfolder, voicename + '.json'), 'w') as fp:
+    with open(os.path.join(inputfolder, voicename + '.json'), 'w') as fp:
         json.dump(config_file, fp, indent=4)
 
-    with open(os.path.join(outputfolder, 'en_us.json'), 'w') as fp:
+    lang_folder = os.path.join(inputfolder,'assets', 'talkingvillagers', 'lang')
+    os.mkdir(lang_folder)
+    with open(os.path.join(lang_folder, 'en_us.json'), 'w') as fp:
         json.dump(lang_file, fp, indent=4)
 
 
