@@ -6,8 +6,8 @@ The mod lets you easily add different voices with resource packs. Every villager
 ## Install voices
 ### Step 1: Client
 Add resource pack for the voice into the "resourcepack"-folder in .minecraft.
-### Step 2: Client or Server
-Add [voicename].json file into `../talkingvillagers/voices/` in the config folder of your server (or client, if you want to play SinglePlayer).
+### Step 2: Client and Server
+Add [voicename].json file into `../talkingvillagers/voices/` in the config folder of your server and client.
 ## Add your own voice lines
 Download the python scripts [create_folder_structure.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/create_folder_structure.py) 
 and [generate_json_files.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/generate_json_files.py).
