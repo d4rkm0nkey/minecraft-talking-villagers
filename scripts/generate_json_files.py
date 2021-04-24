@@ -6,18 +6,23 @@ import os
 import json
 import re
 
+pre_path = "assets/talkingvillagers/sounds/voices"
+
 def main(argv) :
     if(len(sys.argv) < 2):
         print("usage: python3 create_folder_structure.py [path]")
         raise AttributeError('No path specified')
     inputfolder = os.path.abspath(sys.argv[1])
 
-    professions = [f.path for f in os.scandir(inputfolder) if f.is_dir()]
     sound_file = {}
     lang_file = {}
     config_file = {}
-    print("Type in the identifier for your voice (name of the voice). This should be different from other voicepacks.")
-    voicename = str(input())
+
+    path = os.path.join(inputfolder, pre_path)
+    folders = [f.name for f in os.scandir(path) if f.is_dir()]
+    voicename = folders[0]
+    voice_path = os.path.join(path, voicename)
+    professions = [f.path for f in os.scandir(voice_path) if f.is_dir()]
     print("\n")
     print("Found categories:")
     config_file["name"] = voicename
