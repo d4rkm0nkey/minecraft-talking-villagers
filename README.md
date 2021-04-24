@@ -26,7 +26,9 @@ Add [voicename].json file into `../talkingvillagers/voices/` in the config folde
 - **ambient:** Ambient sounds villagers produce.
 - **greeting:** Voice lines played when a villager is close to a player and hasn't seen the player for a while.
 - **trade** Voice lines played when starting to trade with a villager.
-- **tradesuccess** Voice lines played after trading with a villager.
+- **trade_success** Voice lines played after trading with a villager.
+- **good_weather** Voice lines played occasionally instead of random voiceline, when the weather is sunny.
+- **bad_weather** Voice lines played occasionally instead of random voiceline, when the weather is rainy.
 
 ## Professions
 The _all_ voice lines in `config/voices/[voicename].json` can be overwritten if a villager has a specific profession.
