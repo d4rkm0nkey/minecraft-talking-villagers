@@ -22,7 +22,7 @@ categories = [
 
 professions = [
     "all",
-    "nitwit"
+    "nitwit",
     "farmer",
     "librarian",
     "cartographer",
