@@ -9,7 +9,18 @@ Add resource pack for the voice into the "resourcepack"-folder in .minecraft.
 ### Step 2: Client or Server
 Add [voicename].json file into `../talkingvillagers/voices/` in the config folder of your server (or client, if you want to play SinglePlayer).
 ## Add your own voice lines
-**[ToDo]** *Add YouTube tutorial here!*
+Download the python scripts [create_folder_structure.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/create_folder_structure.py) 
+and [generate_json_files.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/generate_json_files.py).
+Execute `python3 create_folder_structure.py [directory]` to create a resourcepack folder structure in directory and type in the name you want to give to your voice. This name is an identifier and should be without spaces and lowercase.
+In the `assets/talkingvillagers/sounds/voices/[voicename]` directory that was created, there should be a folder for every profession. To add sounds to all villagers go into the `all` directory.
+Inside should be directories for each voice event. Put your sound files into those directories. The sound files need to be in the OGG Vorbis format (.ogg). 
+
+When you have all your sound files in the folders, execute `python3 generate_json_files.py [directory]`. Now there should be automatically three files created. 
+`assets/talkingvillagers/sounds.json`, `assets/talkingvillagers/lang/en_us.json` and `[voicename].json`.
+Add the transcript of your voice files into the `en_us.json` file and save it. Now compress the `assets`directory together with `pack.mcmeta` into a zip file.
+
+To test the pack put the zip file into your `resourcepacks` folder and the `[voicename].json` file into your `config/talkingvillagers/voices` directory.
+Start Minecraft and select the  Resource Pack in the options.
 
 ## Voice Events
 - **death:** Sounds played when the villager dies.
