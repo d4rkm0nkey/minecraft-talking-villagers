@@ -1,0 +1,280 @@
+{
+  "name": "teajay",
+  "farmer": {
+    "bad_weather": [
+      "bad_weather_good",
+      "rain_grow",
+      "rain_happy"
+    ],
+    "good_weather": [
+      "sunny_day",
+      "needed_rain",
+      "plants_water",
+      "sun_crops"
+    ],
+    "random": [
+      "good_season",
+      "rain_enough",
+      "look_for_field"
+    ]
+  },
+  "cleric": {
+    "random": [
+      "truthful",
+      "redstone",
+      "faith_protects",
+      "trust_faith",
+      "sinner",
+      "good_heart",
+      "pray_for_you",
+      "deceiving_desires",
+      "greed"
+    ]
+  },
+  "armorer": {
+    "random": [
+      "proud",
+      "rusty",
+      "want_smth",
+      "work_hard",
+      "best_armor",
+      "sweaty"
+    ]
+  },
+  "all": {
+    "trade": [
+      "reasonable_prices",
+      "want_to_buy_smth",
+      "buy_what_you_want",
+      "good_stuff",
+      "something_you_want_to_buy"
+    ],
+    "trade_success": [
+      "see_you",
+      "nice_day",
+      "nice_trading",
+      "know_to_find_me"
+    ],
+    "yes": [
+      "yes",
+      "very_good",
+      "ok",
+      "lets_do_it",
+      "we_can_do_that",
+      "sure"
+    ],
+    "hero": [
+      "thank_you",
+      "saved_us",
+      "you_are_a_hero",
+      "hero"
+    ],
+    "greeting": [
+      "hello",
+      "sir",
+      "hey",
+      "good_morning",
+      "good_to_see_you",
+      "nice_day",
+      "heya",
+      "how_are_you",
+      "pleasure",
+      "things_going"
+    ],
+    "ambient": [
+      "ahh",
+      "haah",
+      "breath",
+      "humm",
+      "whistle",
+      "hmmm",
+      "uff",
+      "huh",
+      "hugh",
+      "head_scratching",
+      "hmm_low_volume",
+      "ahhh_low_volume"
+    ],
+    "level": [
+      "more_clever",
+      "feeling_better",
+      "new_item",
+      "friends",
+      "special_offer",
+      "enlightend"
+    ],
+    "celebrate": [
+      "wooh",
+      "woohooo",
+      "oh_yeah",
+      "celeb-yes",
+      "nice",
+      "lets_go"
+    ],
+    "herodrop": [
+      "gratitude",
+      "deserve_it"
+    ],
+    "no": [
+      "i_am_sorry",
+      "not_at_all",
+      "nope",
+      "cant_do_that",
+      "no_sorry",
+      "no",
+      "oh_no"
+    ],
+    "gossip": [
+      "gossip"
+    ],
+    "random": [
+      "am_i_crazy",
+      "not_crazy",
+      "beach_house",
+      "live_can_be_hard",
+      "you_look_good",
+      "eat_today",
+      "i_like_you",
+      "anything_i_want",
+      "visit_me",
+      "less_alone",
+      "cant_people_be_nice",
+      "utterly_useless",
+      "dont_like_people",
+      "underwear_itchy",
+      "nice_guy",
+      "violated",
+      "nice_person",
+      "dont_like_trees",
+      "people_dont_like_me",
+      "fence",
+      "know_what_you_thinking",
+      "you_look_funny",
+      "you_awesome",
+      "afraid_of_cats",
+      "what_can_i_do_now"
+    ],
+    "death": [
+      "death"
+    ],
+    "hurt": [
+      "hurt"
+    ],
+    "good_weather": [
+      "wonderful_day",
+      "beautiful_day",
+      "sun_shining",
+    ],
+    "bad_weather": [
+      "raining",
+      "dry_standpoint",
+      "cant_be_good",
+      "much_rain"
+    ],
+    "eat": [
+      "delicious",
+      "worth_it",
+      "eat_again",
+      "wasnt_even_hungry",
+      "taste_good"
+    ]
+  },
+  "toolsmith": {
+    "random": [
+      "tools_are_weapons",
+      "sword",
+      "lock_chest",
+      "tools",
+      "garden_project"
+    ]
+  },
+  "cartograph": {
+    "random": [
+      "directions",
+      "dont_get_lost",
+      "compass"
+    ]
+  },
+  "weaponsmith": {
+    "random": [
+      "dangerous_world",
+      "quarrel",
+      "throw_axe",
+      "sharp_sword",
+      "right_weapon"
+    ]
+  },
+  "butcher": {
+    "random": [
+      "solution",
+      "do_it_for_you",
+      "sharp",
+      "fresh_meat"
+    ]
+  },
+  "librarian": {
+    "random": [
+      "read_book",
+      "reading_refreshing",
+      "journey",
+      "story"
+    ]
+  },
+  "fisherman": {
+    "random": [
+      "fish_net",
+      "boat",
+      "fresh_fish",
+      "straight_out_sea",
+      "relaxing",
+      "trash",
+      "nutrition"
+    ]
+  },
+  "leatherworker": {
+    "random": [
+      "need_leather",
+      "nice_clothes",
+      "spend_leather_on_books",
+      "love_job",
+      "smell_bad",
+      "animals_leather"
+    ]
+  },
+  "mason": {
+    "random": [
+      "need_build_wall",
+      "hammering_stones",
+      "value_stones",
+      "work_exhausting",
+      "stones_for_building",
+      "i_got_bricks"
+    ]
+  },
+  "fletcher": {
+    "random": [
+      "buy_arrows",
+      "flint",
+      "need_arrows",
+      "long_bow"
+    ]
+  },
+  "nitwit": {
+    "random": [
+      "important",
+      "bored",
+      "will_i_do",
+      "everybody_job",
+      "life_is_wonderful"
+    ]
+  },
+  "shepherd": {
+    "random": [
+      "funny_sheep",
+      "wolves",
+      "need_to_shear",
+      "wool",
+      "banner"
+    ]
+  }
+}
