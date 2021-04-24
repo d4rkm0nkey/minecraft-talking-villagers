@@ -2,7 +2,6 @@ package me.teajay.talking.villagers.common.data;
 
 import me.teajay.talking.villagers.common.sound.VillagerVoiceManager;
 import net.minecraft.village.VillagerProfession;
-import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 
@@ -16,10 +15,10 @@ public class VoiceDataContainer {
     private final VoiceData cartographer;
     private final VoiceData toolsmith;
     private final VoiceData fletcher;
-    private final VoiceData sheperd;
+    private final VoiceData shepherd;
     private final VoiceData leatherworker;
     private final VoiceData mason;
-    private final VoiceData fischerman;
+    private final VoiceData fisherman;
     private final VoiceData cleric;
     private final VoiceData armorer;
     private final VoiceData butcher;
@@ -43,8 +42,8 @@ public class VoiceDataContainer {
         public VillagerProfession getProfession() {
             return profession;
         }
-        private VillagerProfession profession;
-        private Profession(VillagerProfession prof) {
+        private final VillagerProfession profession;
+        Profession(VillagerProfession prof) {
             this.profession = prof;
         }
     }
@@ -59,10 +58,10 @@ public class VoiceDataContainer {
         cartographer = new VoiceData();
         toolsmith = new VoiceData();
         fletcher = new VoiceData();
-        sheperd = new VoiceData();
+        shepherd = new VoiceData();
         leatherworker = new VoiceData();
         mason = new VoiceData();
-        fischerman = new VoiceData();
+        fisherman = new VoiceData();
         cleric = new VoiceData();
         armorer = new VoiceData();
         butcher = new VoiceData();
@@ -105,6 +104,10 @@ public class VoiceDataContainer {
                 return all.yes;
             case CELEBRATE:
                 return all.celebrate;
+            case GOOD_WEATHER:
+                return all.good_weather;
+            case BAD_WEATHER:
+                return all.bad_weather;
         }
         return new ArrayList<>();
     }
@@ -131,7 +134,7 @@ public class VoiceDataContainer {
                 professionData = fletcher;
                 break;
             case SHEPHERD:
-                professionData = sheperd;
+                professionData = shepherd;
                 break;
             case LEATHERWORKER:
                 professionData = leatherworker;
@@ -140,7 +143,7 @@ public class VoiceDataContainer {
                 professionData = mason;
                 break;
             case FISHERMAN:
-                professionData = fischerman;
+                professionData = fisherman;
                 break;
             case CLERIC:
                 professionData = cleric;
@@ -188,6 +191,10 @@ public class VoiceDataContainer {
                 return professionData.yes;
             case CELEBRATE:
                 return professionData.celebrate;
+            case GOOD_WEATHER:
+                return professionData.good_weather;
+            case BAD_WEATHER:
+                return professionData.bad_weather;
         }
         return new ArrayList<>();
     }

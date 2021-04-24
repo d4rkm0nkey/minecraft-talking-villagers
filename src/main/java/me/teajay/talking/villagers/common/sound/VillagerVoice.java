@@ -70,10 +70,12 @@ public class VillagerVoice {
 
     public SoundEvent getVoiceLine(VillagerVoiceManager.Reason reason, VillagerProfession profession) {
         Map<Identifier, SoundEvent> events = new HashMap<>();
-        for(VoiceDataContainer.Profession prof : VoiceDataContainer.Profession.values()) {
-            if(prof.getProfession() == profession) {
-                events = professionVoiceLines.get(prof).get(reason);
-                break;
+        if(random.nextInt(2) == 0) {
+            for(VoiceDataContainer.Profession prof : VoiceDataContainer.Profession.values()) {
+                if(prof.getProfession() == profession) {
+                    events = professionVoiceLines.get(prof).get(reason);
+                    break;
+                }
             }
         }
         if(events.size() < 1) {

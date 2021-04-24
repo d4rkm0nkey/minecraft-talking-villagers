@@ -11,6 +11,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.village.TradeOffer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,6 +34,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	private static final int MAX_RANDOM_COOLDOWN = 5000;
 	private static final int MIN_GREETING_COOLDOWN = 6000;
 	private static final int MIN_HERO_COOLDOWN = 2000;
+	private static final int MIN_EAT_COOLDOWN = 1000;
 
 	private VillagerVoiceManager voiceManager;
 	protected Random random = new Random();
@@ -39,6 +42,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	private int nextRandomTalking = MIN_RANDOM_COOLDOWN + random.nextInt(MAX_RANDOM_COOLDOWN - MIN_RANDOM_COOLDOWN);
 	private int greetingCoolDown = 0;
 	private int heroCoolDown = 0;
+	private int eatCooldown = 0;
 	@Shadow
 	private long gossipStartTime;
 
@@ -53,9 +57,20 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		random = new Random();
 	}
 
+	@Inject(at = @At("TAIL"), method = "consumeAvailableFood()V")
+	private void consumeAvailableFood(CallbackInfo ci) {
+		if(eatCooldown <= 0) {
+			voiceManager.speak(world, VillagerVoiceManager.Reason.EAT, this.getSoundVolume());
+			eatCooldown = MIN_EAT_COOLDOWN;
+		}
+	}
+
 	@Inject(at = @At("TAIL"), method = "tick()V")
 	public void tick(CallbackInfo info) {
 		boolean newVoiceEvent = false;
+		if(heroCoolDown > 0) {
+			eatCooldown--;
+		}
 		if(heroCoolDown < 0) {
 			Optional<PlayerEntity> heroOpt = this.getBrain().getOptionalMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER).filter(
 					playerEntity -> playerEntity.hasStatusEffect(StatusEffects.HERO_OF_THE_VILLAGE)
@@ -81,7 +96,17 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		}
 		if (nextRandomTalking <= 0 && !voiceManager.isTalking() && !newVoiceEvent) {
 			if(random.nextInt(150) == 0) {
-				voiceManager.speak(world, VillagerVoiceManager.Reason.RANDOM, this.getSoundVolume());
+				boolean randomTalked = false;
+				if(random.nextInt(10) == 0) {
+					if (world.isRaining()) {
+						randomTalked = voiceManager.speak(world, VillagerVoiceManager.Reason.BAD_WEATHER, this.getSoundVolume());
+					} else if (!world.isRaining() && !world.isThundering() && world.isDay()) {
+						randomTalked = voiceManager.speak(world, VillagerVoiceManager.Reason.GOOD_WEATHER, this.getSoundVolume());
+					}
+				}
+				if(!randomTalked) {
+					voiceManager.speak(world, VillagerVoiceManager.Reason.RANDOM, this.getSoundVolume());
+				}
 				nextRandomTalking = MIN_RANDOM_COOLDOWN + random.nextInt(MAX_RANDOM_COOLDOWN - MIN_RANDOM_COOLDOWN);
 			}
 		}

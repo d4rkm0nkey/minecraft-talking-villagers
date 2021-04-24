@@ -31,7 +31,9 @@ public class VillagerVoiceManager {
         HERODROP,
         AMBIENT,
         GREETING,
-        CELEBRATE
+        CELEBRATE,
+        GOOD_WEATHER,
+        BAD_WEATHER
     }
     private static final Random random = new Random();
     private static final HashMap<String, VillagerVoice> voices = new HashMap<>();

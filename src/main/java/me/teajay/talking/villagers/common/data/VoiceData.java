@@ -18,6 +18,9 @@ public class VoiceData {
     protected final ArrayList<String> herodrop;
     protected final ArrayList<String> yes;
     protected final ArrayList<String> celebrate;
+    protected final ArrayList<String> good_weather;
+    protected final ArrayList<String> bad_weather;
+
     public VoiceData() {
         gossip = new ArrayList<>();
         death = new ArrayList<>();
@@ -34,5 +37,7 @@ public class VoiceData {
         herodrop = new ArrayList<>();
         yes = new ArrayList<>();
         celebrate = new ArrayList<>();
+        good_weather = new ArrayList<>();
+        bad_weather = new ArrayList<>();
     }
 }
