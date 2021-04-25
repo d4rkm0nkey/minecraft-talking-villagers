@@ -9,6 +9,7 @@ Add resource pack for the voice into the "resourcepack"-folder in .minecraft.
 ### Step 2: Client and Server
 Add [voicename].json file into `../talkingvillagers/voices/` in the config folder of your server and client.
 ## Add your own voice lines
+### Making a voicepack
 Download the python scripts [create_folder_structure.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/create_folder_structure.py) 
 and [generate_json_files.py](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/scripts/generate_json_files.py).
 Execute `python3 create_folder_structure.py [directory]` to create a resourcepack folder structure in directory and type in the name you want to give to your voice. This name is an identifier and should be without spaces and lowercase.
@@ -21,7 +22,18 @@ Add the transcript of your voice files into the `en_us.json` file and save it. N
 
 To test the pack put the zip file into your `resourcepacks` folder and the `[voicename].json` file into your `config/talkingvillagers/voices` directory.
 Start Minecraft and select the  Resource Pack in the options.
-
+### Voicepack guidelines
+Here are some guidelines for making a good voicepack. 
+- Make 3-5 variants of each voice lines
+- Voice lines that are used very often e.g. death or hurt should have more variants
+- Be creative with the random voice lines
+- Give your voice a personality with certain attributes that influence all your voice recordings (e.g. happy, positive, depressed, funny, naughty, cheeky, self-confident, selfish, insecure, friendly, shy, overworked, eager, ...)
+- Record the voice lines with best possible quality (no reverb, no clipping)
+- Use a noise reduction to remove background noise
+- Keep the recordings natural and don't add any sound effects like compressor, pitch
+### Send in voicepacks
+If you made a voicepack you can upload it as a resourcepack and send me the link with this [google form](https://forms.gle/jvBomR4Y7BXMYSiL8).
+Good voicepacks will be featured on the CurseForge mod page and I might make a big voicepack with all the voices I like the most.
 ## Voice Events
 - **death:** Sounds played when the villager dies.
 - **hurt:** Sounds played when the villager is hurt.

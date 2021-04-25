@@ -35,6 +35,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	private static final int MIN_GREETING_COOLDOWN = 6000;
 	private static final int MIN_HERO_COOLDOWN = 2000;
 	private static final int MIN_EAT_COOLDOWN = 1000;
+	private static final int MIN_GOSSIP_COOLDOWN = 50;
 
 	private VillagerVoiceManager voiceManager;
 	protected Random random = new Random();
@@ -43,6 +44,7 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	private int greetingCoolDown = 0;
 	private int heroCoolDown = 0;
 	private int eatCooldown = 0;
+	private int gossipCooldown = 0;
 	@Shadow
 	private long gossipStartTime;
 
@@ -55,14 +57,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		voicePitch = generateVoicePitch();
 		voiceManager = new VillagerVoiceManager( ((VillagerEntity) (Object) this));
 		random = new Random();
-	}
-
-	@Inject(at = @At("TAIL"), method = "consumeAvailableFood()V")
-	private void consumeAvailableFood(CallbackInfo ci) {
-		if(eatCooldown <= 0) {
-			voiceManager.speak(world, VillagerVoiceManager.Reason.EAT, this.getSoundVolume());
-			eatCooldown = MIN_EAT_COOLDOWN;
-		}
 	}
 
 	@Inject(at = @At("TAIL"), method = "tick()V")
@@ -186,11 +180,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		}
 	}
 
-	@Inject(at = @At("TAIL"), method = "eatForBreeding()V")
-	public void eatForBreeding(CallbackInfo info) {
-		voiceManager.speak(world, VillagerVoiceManager.Reason.EAT, this.getSoundVolume());
-	}
-
 	@Inject(at = @At("TAIL"), method = "onGrowUp()V")
 	public void onGrowUp(CallbackInfo info) {
 		voicePitch = generateVoicePitch();
@@ -199,9 +188,9 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 	@Inject(at = @At("TAIL"), method = "talkWithVillager(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/passive/VillagerEntity;J)V")
 	public void talkWithVillager(ServerWorld world, VillagerEntity villager, long time, CallbackInfo ci) {
 		long startTime2 = ((IVillagerEntity)villager).getGossipStartTime();
-		if ((time < this.gossipStartTime || time >= this.gossipStartTime + 1200L) && (time < startTime2 || time >= startTime2 + 1200L)) {
+		//if ((time < this.gossipStartTime || time >= this.gossipStartTime + 1200L) && (time < startTime2 || time >= startTime2 + 1200L)) {
 			voiceManager.speak(world, VillagerVoiceManager.Reason.GOSSIP, this.getSoundVolume());
-		}
+		//}
 	}
 
 	@Override // increase default ambient sound delay
