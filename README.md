@@ -40,7 +40,7 @@ Good voicepacks will be featured on the CurseForge mod page and I might make a b
 - **random:** Voice lines a villager occasinaly says.
 - **gossip:** Sounds played when a villager gossips with another villager.
 - **yes:** Voice lines for affirmation.
-- **no:** Voice lines for refusal.
+- **nope:** Voice lines for refusal.
 - **celebrate** Voice lines if Villager is happy.
 - **level:** Voice lines played when a villager levels up.
 - **hero:** Voice lines played when a villager passes a player with the "Hero of the village" effect.

@@ -163,14 +163,15 @@
     "good_weather": [
       "wonderful_day",
       "beautiful_day",
-      "sun_shining",
+      "sun_shining"
     ],
     "bad_weather": [
       "raining",
       "dry_standpoint",
       "cant_be_good",
       "much_rain"
-    ],
+    ]
+  },
   "toolsmith": {
     "random": [
       "tools_are_weapons",
