@@ -61,7 +61,11 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 
 	@Inject(at = @At("TAIL"), method = "tick()V")
 	public void tick(CallbackInfo info) {
+		heroCoolDown--;
+		nextRandomTalking--;
+		greetingCoolDown--;
 		boolean newVoiceEvent = false;
+		if(isSleeping()) return;
 		if(heroCoolDown > 0) {
 			eatCooldown--;
 		}
@@ -104,9 +108,6 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 				nextRandomTalking = MIN_RANDOM_COOLDOWN + random.nextInt(MAX_RANDOM_COOLDOWN - MIN_RANDOM_COOLDOWN);
 			}
 		}
-		heroCoolDown--;
-		nextRandomTalking--;
-		greetingCoolDown--;
 	}
 
 	@Inject(at = @At("TAIL"), method = "getAmbientSound()Lnet/minecraft/sound/SoundEvent;", cancellable = true)
