@@ -80,8 +80,6 @@ public class VoiceDataContainer {
                 return all.gossip;
             case NO:
                 return all.nope;
-            case EAT:
-                return all.eat;
             case HERO:
                 return all.hero;
             case HURT:
@@ -167,8 +165,6 @@ public class VoiceDataContainer {
                 return professionData.gossip;
             case NO:
                 return professionData.nope;
-            case EAT:
-                return professionData.eat;
             case HERO:
                 return professionData.hero;
             case HURT:

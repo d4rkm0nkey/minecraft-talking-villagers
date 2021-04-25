@@ -23,7 +23,6 @@ public class VillagerVoiceManager {
         TRADE_SUCCESS,
         GOSSIP,
         HURT,
-        EAT,
         YES,
         NO,
         LEVEL,

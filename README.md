@@ -27,7 +27,6 @@ Start Minecraft and select the  Resource Pack in the options.
 - **hurt:** Sounds played when the villager is hurt.
 - **random:** Voice lines a villager occasinaly says.
 - **gossip:** Sounds played when a villager gossips with another villager.
-- **eat:** Voice lines played when a villager eats.
 - **yes:** Voice lines for affirmation.
 - **no:** Voice lines for refusal.
 - **celebrate** Voice lines if Villager is happy.

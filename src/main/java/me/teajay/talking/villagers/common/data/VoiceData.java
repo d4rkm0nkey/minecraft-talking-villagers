@@ -9,7 +9,6 @@ public class VoiceData {
     protected final ArrayList<String> trade;
     protected final ArrayList<String> tradesuccess;
     protected final ArrayList<String> hurt;
-    protected final ArrayList<String> eat;
     protected final ArrayList<String> hero;
     protected final ArrayList<String> nope;
     protected final ArrayList<String> level;
@@ -29,7 +28,6 @@ public class VoiceData {
         tradesuccess = new ArrayList<>();
         hurt = new ArrayList<>();
         nope = new ArrayList<>();
-        eat = new ArrayList<>();
         hero = new ArrayList<>();
         level = new ArrayList<>();
         ambient = new ArrayList<>();

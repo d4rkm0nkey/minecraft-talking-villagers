@@ -171,14 +171,6 @@
       "cant_be_good",
       "much_rain"
     ],
-    "eat": [
-      "delicious",
-      "worth_it",
-      "eat_again",
-      "wasnt_even_hungry",
-      "taste_good"
-    ]
-  },
   "toolsmith": {
     "random": [
       "tools_are_weapons",
