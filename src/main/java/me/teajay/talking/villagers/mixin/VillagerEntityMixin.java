@@ -112,6 +112,10 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 
 	@Inject(at = @At("TAIL"), method = "getAmbientSound()Lnet/minecraft/sound/SoundEvent;", cancellable = true)
 	protected void getAmbientSound(CallbackInfoReturnable<SoundEvent> ret) {
+		if(isSleeping()) {
+			ret.setReturnValue(null);
+			return;
+		}
 		SoundEvent ambient = voiceManager.getVoiceLine(VillagerVoiceManager.Reason.AMBIENT);
 		if(ambient != null) {
 			ret.setReturnValue(ambient);

@@ -1091,44 +1091,6 @@
             "talkingvillagers:voices/teajay/all/bad_weather/much_rain3"
         ]
     },
-    "teajay-delicious": {
-        "subtitle": "subtitles.talkingvillagers.teajay_delicious",
-        "sounds": [
-            "talkingvillagers:voices/teajay/all/eat/delicious4",
-            "talkingvillagers:voices/teajay/all/eat/delicious6",
-            "talkingvillagers:voices/teajay/all/eat/delicious2",
-            "talkingvillagers:voices/teajay/all/eat/delicious3",
-            "talkingvillagers:voices/teajay/all/eat/delicious1",
-            "talkingvillagers:voices/teajay/all/eat/delicious5"
-        ]
-    },
-    "teajay-worth_it": {
-        "subtitle": "subtitles.talkingvillagers.teajay_worth_it",
-        "sounds": [
-            "talkingvillagers:voices/teajay/all/eat/worth_it2",
-            "talkingvillagers:voices/teajay/all/eat/worth_it1"
-        ]
-    },
-    "teajay-eat_again": {
-        "subtitle": "subtitles.talkingvillagers.teajay_eat_again",
-        "sounds": [
-            "talkingvillagers:voices/teajay/all/eat/eat_again2",
-            "talkingvillagers:voices/teajay/all/eat/eat_again3",
-            "talkingvillagers:voices/teajay/all/eat/eat_again1"
-        ]
-    },
-    "teajay-wasnt_even_hungry": {
-        "subtitle": "subtitles.talkingvillagers.teajay_wasnt_even_hungry",
-        "sounds": [
-            "talkingvillagers:voices/teajay/all/eat/wasnt_even_hungry1"
-        ]
-    },
-    "teajay-taste_good": {
-        "subtitle": "subtitles.talkingvillagers.teajay_taste_good",
-        "sounds": [
-            "talkingvillagers:voices/teajay/all/eat/taste_good1"
-        ]
-    },
     "teajay-tools_are_weapons": {
         "subtitle": "subtitles.talkingvillagers.teajay_tools_are_weapons",
         "sounds": [

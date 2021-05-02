@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.village.VillagerProfession;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -46,7 +47,7 @@ public class VillagerVoice {
             for(VillagerVoiceManager.Reason reason : VillagerVoiceManager.Reason.values()) {
                 for (String voiceLine : data.getProfessionVoiceLines(reason, profession)) {
                     Identifier sound_id = new Identifier(TalkingVillagers.MODID, this.identifier + "-" + voiceLine);
-                    if(Registry.SOUND_EVENT.containsId(sound_id)) {
+                    if(Registry.SOUND_EVENT.getIds().contains(sound_id)) {
                         professionVoiceLines.get(profession).get(reason).put(sound_id, Registry.SOUND_EVENT.get(sound_id));
                     } else {
                         SoundEvent sound_event = new SoundEvent(sound_id);
