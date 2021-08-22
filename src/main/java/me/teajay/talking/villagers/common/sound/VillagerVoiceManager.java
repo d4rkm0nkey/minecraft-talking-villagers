@@ -1,6 +1,8 @@
 package me.teajay.talking.villagers.common.sound;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -44,11 +46,6 @@ public class VillagerVoiceManager {
 
     public static void initialiseVoices() {
         File voiceDir = new File(FabricLoader.getInstance().getConfigDir()+ "/" + TalkingVillagers.MODID + "/voices");
-        if (!voiceDir.exists()) {
-            if(!voiceDir.mkdirs()) {
-                System.err.println("Couldn't create voice folder.");
-            }
-        }
         for(File voiceConfig : voiceDir.listFiles(path -> path.getPath().endsWith(".json"))) {
             VoiceDataContainer data = JsonLoader.parseFromFile(voiceConfig);
             if (data != null) {

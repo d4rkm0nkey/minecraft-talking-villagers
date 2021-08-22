@@ -236,7 +236,7 @@
     "teajay-see_you": {
         "subtitle": "subtitles.talkingvillagers.teajay_see_you",
         "sounds": [
-            "talkingvillagers:voices/teajay/all/trade-success/see_you2",
+            "talkingvillagers:voices/teajay/all/trade_success/see_you2",
             "talkingvillagers:voices/teajay/all/trade_success/see_you1"
         ]
     },
@@ -312,6 +312,14 @@
             "talkingvillagers:voices/teajay/all/yes/sure2",
             "talkingvillagers:voices/teajay/all/yes/sure3",
             "talkingvillagers:voices/teajay/all/yes/sure1"
+        ]
+    },
+    "teajay-yes": {
+        "subtitle": "subtitles.talkingvillagers.teajay_yes",
+        "sounds": [
+            "talkingvillagers:voices/teajay/all/yes/yes1",
+            "talkingvillagers:voices/teajay/all/yes/yes2",
+            "talkingvillagers:voices/teajay/all/yes/yes3"
         ]
     },
     "teajay-thank_you": {

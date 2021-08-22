@@ -7,7 +7,7 @@ import me.teajay.talking.villagers.common.util.IVillagerEntity;
 import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -211,16 +211,16 @@ public abstract class VillagerEntityMixin extends MerchantEntity implements IVil
 		return this.isBaby() ? (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.5F : (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F;
 	}
 
-	@Inject(at = @At("TAIL"), method = "writeCustomDataToTag(Lnet/minecraft/nbt/CompoundTag;)V")
-	public void writeCustomDataToTag(CompoundTag tag, CallbackInfo ci) {
+	@Inject(at = @At("TAIL"), method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+	public void writeCustomDataToNbt(NbtCompound tag, CallbackInfo ci) {
 		tag.putFloat("VoicePitch", this.voicePitch);
 		if(this.voiceManager != null && this.voiceManager.getVoice() != null) {
 			tag.putString("VoiceName", this.voiceManager.getVoice().getName());
 		}
 	}
 
-	@Inject(at = @At("TAIL"), method = "readCustomDataFromTag(Lnet/minecraft/nbt/CompoundTag;)V")
-	public void readCustomDataFromTag(CompoundTag tag, CallbackInfo ci) {
+	@Inject(at = @At("TAIL"), method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V")
+	public void readCustomDataFromNbt(NbtCompound tag, CallbackInfo ci) {
 		this.voicePitch = tag.getFloat("VoicePitch");
 		if(this.voicePitch < 0.1f) {
 			this.voicePitch = generateVoicePitch();
