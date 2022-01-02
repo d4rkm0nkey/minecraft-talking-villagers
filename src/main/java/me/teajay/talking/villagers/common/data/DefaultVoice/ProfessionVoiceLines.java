@@ -1,8 +1,5 @@
 package me.teajay.talking.villagers.common.data.DefaultVoice;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ProfessionVoiceLines {
     String[] trade;
     String[] trade_success;
