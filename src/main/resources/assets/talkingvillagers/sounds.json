@@ -1,6 +1,46 @@
 {
+    "invalid_voicepack": {
+        "subtitle": "subtitles.talkingvillagers.invalid_voicepack",
+        "sounds": [
+            "talkingvillagers:ui/error_invalid_voicepack"
+        ]
+    },
+    "uninstall_error": {
+        "subtitle": "subtitles.talkingvillagers.uninstall_error",
+        "sounds": [
+            "talkingvillagers:ui/error_uninstalling"
+        ]
+    },
+    "voicepack_installed": {
+        "subtitle": "subtitles.talkingvillagers.voicepack_installed",
+        "sounds": [
+            "talkingvillagers:ui/voicepack_installed"
+        ]
+    },
+    "voicepack_uninstalled": {
+        "subtitle": "subtitles.talkingvillagers.voicepack_uninstalled",
+        "sounds": [
+            "talkingvillagers:ui/voicepack_uninstalled"
+        ]
+    },
+    "voice_installed": {
+        "subtitle": "subtitles.talkingvillagers.voice_installed",
+        "sounds": [
+            "talkingvillagers:ui/voice_installed"
+        ]
+    },
+    "voice_uninstalled": {
+        "subtitle": "subtitles.talkingvillagers.voice_uninstalled",
+        "sounds": [
+            "talkingvillagers:ui/voice_uninstalled"
+        ]
+    },
     "teajay-bad_weather_good": {
         "subtitle": "subtitles.talkingvillagers.teajay_bad_weather_good",
+        "voice_id": "teajay",
+        "type": "villager",
+        "event": "bad_weather",
+        "professions": "all",
         "sounds": [
             "talkingvillagers:voices/teajay/farmer/bad_weather/bad_weather_good3",
             "talkingvillagers:voices/teajay/farmer/bad_weather/bad_weather_good2",

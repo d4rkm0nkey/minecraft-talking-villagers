@@ -1,13 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "me.teajay.talking.villagers.mixin",
+  "package": "me.teajay.talkingvillagers.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "GiveGiftsToHeroTaskMixin",
     "VillagerEntityMixin"
   ],
   "client": [
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

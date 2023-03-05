@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "talking-villagers",
-  "version": "${version}",
+  "id": "talkingvillagers",
+  "version": "2.0.0",
 
   "name": "Talking Villagers",
   "description": "Lets villagers talk.",
@@ -17,13 +17,10 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "me.teajay.talking.villagers.TalkingVillagers"
-    ]
+    "main": [ "me.teajay.talkingvillagers.TalkingVillagers" ],
+    "modmenu": [ "me.teajay.talkingvillagers.gui.ModMenuSettingsScreen" ]
   },
-  "mixins": [
-    "talkingvillagers.mixins.json"
-  ],
+  "mixins": [ "talkingvillagers.mixins.json" ],
 
   "depends": {
     "fabricloader": ">=0.11.3",

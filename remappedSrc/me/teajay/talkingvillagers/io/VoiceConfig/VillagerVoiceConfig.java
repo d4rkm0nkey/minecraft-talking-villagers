@@ -1,0 +1,11 @@
+package me.teajay.talkingvillagers.io.VoiceConfig;
+
+import me.teajay.talkingvillagers.io.SoundEntry;
+import me.teajay.talkingvillagers.io.VoiceInfo;
+
+public class VillagerVoiceConfig extends ProfessionVoiceConfig {
+    public VillagerVoiceConfig(SoundEntry sound, String voicepackId) {
+        super(sound, voicepackId);
+        type = VoiceInfo.VoiceType.VILLAGER;
+    }
+}
