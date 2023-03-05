@@ -3,9 +3,8 @@ package me.teajay.talking.villagers.common.sound;
 import me.teajay.talking.villagers.TalkingVillagers;
 import me.teajay.talking.villagers.common.data.VoiceDataContainer;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.village.VillagerProfession;
 
 import java.lang.reflect.Method;
@@ -39,21 +38,21 @@ public class VillagerVoice {
         for(VillagerVoiceManager.Reason reason : VillagerVoiceManager.Reason.values()) {
             for (String voiceLine : data.getDefaultVoiceLines(reason)) {
                 Identifier sound_id = new Identifier(TalkingVillagers.MODID, this.identifier + "-" + voiceLine);
-                SoundEvent sound_event = SoundEvent.of(sound_id);
+                SoundEvent sound_event = new SoundEvent(sound_id);
                 voiceLines.get(reason).put(sound_id, sound_event);
-                Registry.register(Registries.SOUND_EVENT, sound_id, sound_event);
+                Registry.register(Registry.SOUND_EVENT, sound_id, sound_event);
             }
         }
         for (VoiceDataContainer.Profession profession : VoiceDataContainer.Profession.values()) {
             for(VillagerVoiceManager.Reason reason : VillagerVoiceManager.Reason.values()) {
                 for (String voiceLine : data.getProfessionVoiceLines(reason, profession)) {
                     Identifier sound_id = new Identifier(TalkingVillagers.MODID, this.identifier + "-" + voiceLine);
-                    if(Registries.SOUND_EVENT.getIds().contains(sound_id)) {
-                        professionVoiceLines.get(profession).get(reason).put(sound_id, Registries.SOUND_EVENT.get(sound_id));
+                    if(Registry.SOUND_EVENT.getIds().contains(sound_id)) {
+                        professionVoiceLines.get(profession).get(reason).put(sound_id, Registry.SOUND_EVENT.get(sound_id));
                     } else {
-                        SoundEvent sound_event = SoundEvent.of(sound_id);
+                        SoundEvent sound_event = new SoundEvent(sound_id);
                         professionVoiceLines.get(profession).get(reason).put(sound_id, sound_event);
-                        Registry.register(Registries.SOUND_EVENT, sound_id, sound_event);
+                        Registry.register(Registry.SOUND_EVENT, sound_id, sound_event);
                     }
                 }
             }
