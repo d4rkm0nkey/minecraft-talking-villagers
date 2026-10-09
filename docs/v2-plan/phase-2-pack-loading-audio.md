@@ -1,5 +1,17 @@
 # Phase 2 – Pack-Loading, Audio-Pipeline und Networking
 
+## Status: erledigt
+
+Umgesetzt auf Branch `v2/phase-2`. Getestet: Dedicated Server mit Fabric und NeoForge über RCON (Pack laden, `/tv`-Commands, Zeile auswählen und senden). Für den Client gibt es einen automatisierten Fabric-Client-GameTest (`./gradlew :fabric:runClientGameTest`), der eine Welt anlegt, einen Villager sprechen lässt und prüft, dass die Zeile wirklich läuft. **Offen:** Der Test lief bisher nicht bis zum Ende durch; der Prozess wurde jedes Mal von außen per SIGTERM beendet.
+
+Abweichungen vom Plan:
+- **Kein virtuelles Resourcepack.** Ein Mixin auf `SoundBufferLibrary.getCompleteBuffer` liefert die Ogg-Daten für `talkingvillagers:sounds/voice/<sha256>/…` direkt aus der `.voicepack`-Datei. `VoiceSoundInstance` baut ihren `Sound` selbst, eine `sounds.json` entfällt. Vorteile: Ein neues Pack wird ohne Ressourcen-Neuladen sofort hörbar, Packs tauchen nicht in der Resourcepack-Liste auf, und die Lösung ist für Fabric und NeoForge identisch.
+- **Pack-Identität über den Hash.** `SpeakPayload` enthält statt der Pack-ID den SHA-256 der Datei. Der Client spielt damit garantiert aus derselben Datei wie der Server, auch bei unterschiedlichen Pack-Versionen.
+- **Vanilla-Fallback auf dem Server.** Spieler ohne Mod oder ohne das Pack bekommen vom Server direkt den Vanilla-Sound (`ClientboundSoundEntityPacket`). Der Server kennt dafür über `client_packs` die Packs jedes Clients.
+- **`PackRepository`, `PackIndex` und der Versionsvergleich** liegen in `core` und sind dort getestet.
+- **Fabric ohne getrennte Client-/Server-Source-Sets:** `common` enthält Client-Code, das verträgt sich nicht mit `splitEnvironmentSourceSets`. Client-Klassen werden nur über Client-Einstiegspunkte und Netzwerk-Handler erreicht.
+- **Debug-Command:** `/tv debug say <entities> <pack:voice> <event>`, dazu `/tv packs list` und `/tv packs reload`.
+
 ## Ziel
 `.voicepack`-Dateien aus `.minecraft/voicepacks/` werden geladen. Ihre Audio-Dateien sind ohne manuelles Resourcepack hörbar, und der Server kann einem Client sagen: „Entity X spricht Zeile Y“. Ein Neuladen funktioniert ohne Neustart.
 

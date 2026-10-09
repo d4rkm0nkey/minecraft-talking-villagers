@@ -2,6 +2,7 @@ package me.teajay.talkingvillagers.platform;
 
 import me.teajay.talkingvillagers.TalkingVillagers;
 import me.teajay.talkingvillagers.platform.services.PlatformHelper;
+import me.teajay.talkingvillagers.platform.services.PlatformNetworking;
 
 import java.util.ServiceLoader;
 
@@ -11,6 +12,7 @@ import java.util.ServiceLoader;
  */
 public final class Services {
     public static final PlatformHelper PLATFORM = load(PlatformHelper.class);
+    public static final PlatformNetworking NETWORK = load(PlatformNetworking.class);
 
     private Services() {
     }

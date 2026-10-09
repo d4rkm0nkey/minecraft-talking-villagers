@@ -1,0 +1,13 @@
+{
+  "commands.talkingvillagers.packs.none": "No voicepacks found. Put .voicepack files into %s",
+  "commands.talkingvillagers.packs.header": "%s active voicepack(s), %s file(s):",
+  "commands.talkingvillagers.packs.entry": "✔ %s %s – %s voice(s), language %s (%s)",
+  "commands.talkingvillagers.packs.inactive": "– %s %s – %s voice(s), language %s (%s, inactive)",
+  "commands.talkingvillagers.packs.broken": "✖ %s – %s error(s): %s",
+  "commands.talkingvillagers.packs.reloaded": "Voicepacks reloaded: %s active, %s voice(s), %s broken",
+  "commands.talkingvillagers.say.unknown_voice": "Unknown voice %s",
+  "commands.talkingvillagers.say.unknown_event": "Unknown event %s",
+  "commands.talkingvillagers.say.nothing": "%s has no line for %s",
+  "commands.talkingvillagers.say.success": "%s of %s entities said a line",
+  "subtitles.talkingvillagers.speaks": "%s speaks"
+}

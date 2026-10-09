@@ -4,7 +4,9 @@
   "package": "me.teajay.talkingvillagers.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [],
-  "client": [],
+  "client": [
+    "client.SoundBufferLibraryMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1

@@ -8,16 +8,18 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
 }
 
-loom {
-    // Client-only code lives in src/client, so the dedicated server can never load client classes by accident
-    splitEnvironmentSourceSets()
-    mods {
-        "${mod_id}" {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.client
-        }
+fabricApi {
+    // client game tests start a real client, create a world and check that voice lines play (./gradlew :fabric:runClientGameTest)
+    configureTests {
+        createSourceSet = true
+        modId = "${mod_id}-test"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
     }
+}
 
+loom {
     def aw = project(':common').file("src/main/resources/${mod_id}.accesswidener")
     if (aw.exists()) {
         accessWidenerPath.set(aw)

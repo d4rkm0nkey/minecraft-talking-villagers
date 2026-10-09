@@ -13,6 +13,8 @@ neoForge {
 }
 
 dependencies {
+    // core is compiled into the loader jars together with common (see multiloader-loader.gradle)
+    compileOnly(project(':core'))
     // Fabric and NeoForge both bundle Fabric Mixin, so it is safe to use it in common
     // If you need to update, check what version they are using to see what is compatible
     // https://github.com/neoforged/NeoForge/blob/26.3.x/gradle.properties#L37

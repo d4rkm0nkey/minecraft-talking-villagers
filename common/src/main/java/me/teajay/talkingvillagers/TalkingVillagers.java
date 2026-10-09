@@ -1,6 +1,10 @@
 package me.teajay.talkingvillagers;
 
+import me.teajay.talkingvillagers.client.ClientVoices;
+import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
+import me.teajay.talkingvillagers.server.ServerVoices;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +19,20 @@ public final class TalkingVillagers {
     private TalkingVillagers() {
     }
 
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
+    }
+
     public static void init() {
         LOG.info("{} loaded on {} ({})", MOD_NAME, Services.PLATFORM.getPlatformName(), Services.PLATFORM.getEnvironmentName());
+        Voicepacks.onReload(ServerVoices::onPacksReloaded);
+        Voicepacks.reload();
+    }
+
+    /**
+     * Client side setup, called after {@link #init()}.
+     */
+    public static void initClient() {
+        Voicepacks.onReload(ClientVoices::onLocalPacksReloaded);
     }
 }
