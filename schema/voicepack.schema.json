@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/d4rkm0nkey/minecraft-talking-villagers/schema/voicepack.schema.json",
+  "title": "Talking Villagers voicepack manifest",
+  "description": "The voicepack.json at the root of a .voicepack file (a ZIP archive). Format version 2.",
+  "type": "object",
+  "required": ["format", "id", "name", "version", "language", "voices"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": {
+      "description": "Version of this file format.",
+      "const": 2
+    },
+    "id": {
+      "description": "Globally unique pack id.",
+      "$ref": "#/$defs/id"
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "description": { "type": "string", "maxLength": 1024 },
+    "authors": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "language": {
+      "description": "Language spoken by the voices of this pack.",
+      "$ref": "#/$defs/language"
+    },
+    "voices": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/voice" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,64}$"
+    },
+    "language": {
+      "description": "BCP 47 language tag, e.g. \"de\", \"en\" or \"en-GB\".",
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+    },
+    "entity": {
+      "description": "Entity type a voice can be used for. \"illager\" is shorthand for pillager, vindicator, evoker and illusioner.",
+      "enum": [
+        "villager",
+        "wandering_trader",
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner",
+        "illager"
+      ]
+    },
+    "event": {
+      "description": "Situation in which a line is spoken.",
+      "enum": [
+        "ambient",
+        "hurt",
+        "death",
+        "celebrate",
+        "greeting",
+        "random",
+        "gossip",
+        "yes",
+        "no",
+        "trade",
+        "trade_success",
+        "level_up",
+        "hero",
+        "hero_gift",
+        "good_weather",
+        "bad_weather",
+        "sleep",
+        "wake_up",
+        "panic",
+        "grow_up",
+        "drink_potion",
+        "throw_potion",
+        "laugh",
+        "disappear",
+        "spot_player",
+        "attack",
+        "charge",
+        "raid_horn",
+        "cast_spell",
+        "summon_vex",
+        "fangs",
+        "mirror"
+      ]
+    },
+    "profession": {
+      "description": "Vanilla profession id, or a namespaced id for professions added by other mods.",
+      "anyOf": [
+        { "type": "string", "pattern": "^[a-z0-9_.-]+:[a-z0-9_/.-]+$" },
+        { "enum": [
+        "armorer",
+        "butcher",
+        "cartographer",
+        "cleric",
+        "farmer",
+        "fisherman",
+        "fletcher",
+        "leatherworker",
+        "librarian",
+        "mason",
+        "nitwit",
+        "shepherd",
+        "toolsmith",
+        "weaponsmith",
+        "none"
+        ] }
+      ]
+    },
+    "voice": {
+      "type": "object",
+      "required": ["id", "name", "entities", "gender", "lines"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Unique within the pack.",
+          "$ref": "#/$defs/id"
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/entity" }
+        },
+        "gender": { "enum": ["male", "female", "neutral"] },
+        "child": {
+          "description": "Child voices are only given to baby villagers.",
+          "type": "boolean",
+          "default": false
+        },
+        "language": {
+          "description": "Overrides the pack language for this voice.",
+          "oneOf": [{ "$ref": "#/$defs/language" }, { "type": "null" }]
+        },
+        "pitch": {
+          "type": "object",
+          "required": ["min", "max"],
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "number", "minimum": 0.5, "maximum": 2.0 },
+            "max": { "type": "number", "minimum": 0.5, "maximum": 2.0 }
+          }
+        },
+        "weight": {
+          "description": "Relative chance of being picked compared to other matching voices.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 1
+        },
+        "lines": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/event" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/line" }
+          }
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "required": ["file"],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "description": "Path of an Ogg Vorbis file inside the archive.",
+          "type": "string",
+          "pattern": "^sounds/([a-z0-9_-][a-z0-9_.-]*/)*[a-z0-9_-][a-z0-9_.-]*\\.ogg$"
+        },
+        "text": {
+          "description": "Transcript, shown as subtitle.",
+          "type": "string",
+          "maxLength": 256
+        },
+        "duration": {
+          "description": "Length in seconds.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 60
+        },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "professions": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/profession" }
+            },
+            "weather": { "enum": ["clear", "rain", "thunder"] }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+package me.teajay.talkingvillagers.core.catalog;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import static me.teajay.talkingvillagers.core.catalog.EntityKind.*;
+
+/**
+ * All events known to the mod. The JSON schema lists the same ids, which a test keeps in sync.
+ */
+public final class EventCatalog {
+    private static final Map<String, VoiceEvent> EVENTS = new LinkedHashMap<>();
+
+    private static final Set<EntityKind> ALL = EnumSet.allOf(EntityKind.class);
+    private static final Set<EntityKind> MERCHANTS = EnumSet.of(VILLAGER, WANDERING_TRADER);
+    private static final Set<EntityKind> SPELLCASTERS = EnumSet.of(EVOKER, ILLUSIONER);
+
+    public static final VoiceEvent AMBIENT = register("ambient", ALL);
+    public static final VoiceEvent HURT = register("hurt", ALL);
+    public static final VoiceEvent DEATH = register("death", ALL);
+    public static final VoiceEvent CELEBRATE = register("celebrate", EnumSet.of(VILLAGER, WITCH, PILLAGER, VINDICATOR, EVOKER, ILLUSIONER));
+
+    public static final VoiceEvent GREETING = register("greeting", MERCHANTS);
+    public static final VoiceEvent RANDOM = register("random", EnumSet.of(VILLAGER));
+    public static final VoiceEvent GOSSIP = register("gossip", EnumSet.of(VILLAGER));
+    public static final VoiceEvent YES = register("yes", MERCHANTS);
+    public static final VoiceEvent NO = register("no", MERCHANTS);
+    public static final VoiceEvent TRADE = register("trade", MERCHANTS);
+    public static final VoiceEvent TRADE_SUCCESS = register("trade_success", MERCHANTS);
+    public static final VoiceEvent LEVEL_UP = register("level_up", EnumSet.of(VILLAGER));
+    public static final VoiceEvent HERO = register("hero", EnumSet.of(VILLAGER));
+    public static final VoiceEvent HERO_GIFT = register("hero_gift", EnumSet.of(VILLAGER));
+    public static final VoiceEvent GOOD_WEATHER = register("good_weather", EnumSet.of(VILLAGER));
+    public static final VoiceEvent BAD_WEATHER = register("bad_weather", EnumSet.of(VILLAGER));
+    public static final VoiceEvent SLEEP = register("sleep", EnumSet.of(VILLAGER));
+    public static final VoiceEvent WAKE_UP = register("wake_up", EnumSet.of(VILLAGER));
+    public static final VoiceEvent PANIC = register("panic", EnumSet.of(VILLAGER));
+    public static final VoiceEvent GROW_UP = register("grow_up", EnumSet.of(VILLAGER));
+
+    public static final VoiceEvent DRINK_POTION = register("drink_potion", EnumSet.of(WITCH, WANDERING_TRADER));
+    public static final VoiceEvent THROW_POTION = register("throw_potion", EnumSet.of(WITCH));
+    public static final VoiceEvent LAUGH = register("laugh", EnumSet.of(WITCH));
+    public static final VoiceEvent DISAPPEAR = register("disappear", EnumSet.of(WANDERING_TRADER));
+
+    public static final VoiceEvent SPOT_PLAYER = register("spot_player", ILLAGERS);
+    public static final VoiceEvent ATTACK = register("attack", ILLAGERS);
+    public static final VoiceEvent CHARGE = register("charge", EnumSet.of(PILLAGER));
+    public static final VoiceEvent RAID_HORN = register("raid_horn", ILLAGERS);
+    public static final VoiceEvent CAST_SPELL = register("cast_spell", SPELLCASTERS);
+    public static final VoiceEvent SUMMON_VEX = register("summon_vex", EnumSet.of(EVOKER), CAST_SPELL);
+    public static final VoiceEvent FANGS = register("fangs", EnumSet.of(EVOKER), CAST_SPELL);
+    public static final VoiceEvent MIRROR = register("mirror", EnumSet.of(ILLUSIONER), CAST_SPELL);
+
+    private EventCatalog() {
+    }
+
+    private static VoiceEvent register(String id, Set<EntityKind> kinds) {
+        return register(id, kinds, null);
+    }
+
+    private static VoiceEvent register(String id, Set<EntityKind> kinds, VoiceEvent parent) {
+        VoiceEvent event = new VoiceEvent(id, kinds, Optional.ofNullable(parent));
+        EVENTS.put(id, event);
+        return event;
+    }
+
+    public static Optional<VoiceEvent> byId(String id) {
+        return Optional.ofNullable(EVENTS.get(id));
+    }
+
+    public static Collection<VoiceEvent> all() {
+        return Collections.unmodifiableCollection(EVENTS.values());
+    }
+
+    public static List<VoiceEvent> forKind(EntityKind kind) {
+        return EVENTS.values().stream().filter(event -> event.appliesTo(kind)).toList();
+    }
+}

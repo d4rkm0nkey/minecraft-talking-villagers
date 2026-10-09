@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'jacoco'
 }
 
 // Plain Java: no Minecraft and no loader classes may be used here.
@@ -22,12 +23,22 @@ dependencies {
     testImplementation('org.junit.jupiter:junit-jupiter')
     testRuntimeOnly('org.junit.platform:junit-platform-launcher')
     testImplementation("org.assertj:assertj-core:${assertj_version}")
+    // checks that the shared JSON schema and the Java parser agree
+    testImplementation('com.networknt:json-schema-validator:1.5.9')
 }
 
 test {
     useJUnitPlatform()
+    finalizedBy(jacocoTestReport)
     // the JSON schema lives at the repository root and is shared with the web editor
     systemProperty('talkingvillagers.schemaDir', rootProject.file('schema').absolutePath)
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 configurations {

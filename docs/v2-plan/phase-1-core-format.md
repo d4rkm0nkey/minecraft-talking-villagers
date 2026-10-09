@@ -1,5 +1,17 @@
 # Phase 1 – Voicepack-Format v2 und Kern-Domain
 
+## Status: erledigt
+
+Umgesetzt im Modul `core` (Paket `me.teajay.talkingvillagers.core`), 53 Tests, 92 % Zeilenabdeckung. Schema: `schema/voicepack.schema.json`, Beispiel: `schema/examples/voicepack.json`.
+
+Abweichungen und Ergänzungen:
+- **`duration` ist optional.** `OggInfo` liest Kanalzahl, Abtastrate und Länge aus den Ogg-Headern, ohne zu dekodieren, und `PackReader` ergänzt fehlende Längen. Die Warnung „fehlende `duration`“ entfällt.
+- **Problem-Codes statt `lint-rules.json`:** Jedes Problem hat einen stabilen Code (`ProblemCode`, z. B. `missing_file`), der in GUI und Web-Editor als Übersetzungsschlüssel dient.
+- **Berufe:** Neben den Vanilla-IDs (inkl. `none`) sind Berufe anderer Mods als Namespace-ID erlaubt (`mymod:baker`). `minecraft:farmer` wird zu `farmer` normalisiert.
+- **Dateipfade** müssen klein geschrieben unter `sounds/` liegen und auf `.ogg` enden (Vorgabe der Minecraft-Ressourcenpfade). `..`-Segmente sind ausgeschlossen.
+- **Reihenfolge der Fallback-Kaskade:** zuerst Sprache lockern, dann Geschlecht (wie geplant), wobei beim Lockern des Geschlechts die Sprache noch einmal bevorzugt wird.
+- Ein Test (`SchemaTest`) hält Schema und Java-Parser synchron: gleiche Events, Entities, Berufe und Formatversion, und beide lehnen dieselben fehlerhaften Manifeste ab.
+
 ## Ziel
 Ein einziges, selbstbeschreibendes Dateiformat für Voicepacks und ein Minecraft-unabhängiger Kern, der dieses Format liest, validiert und daraus Stimmen auswählt. Alle Regeln (Kind/Erwachsen, Geschlecht, Sprache, Entity-Typ, Beruf) stecken hier und sind vollständig unit-getestet.
 
@@ -43,7 +55,7 @@ my-pack.voicepack
           {
             "file": "sounds/anna/greeting/hello_1.ogg",
             "text": "Hallo, Reisender!",            // Transkript, für Untertitel
-            "duration": 1.42,                       // Sekunden, vom Editor berechnet
+            "duration": 1.42,                       // optional, Sekunden; fehlt sie, wird sie aus der Datei gelesen
             "conditions": { "professions": ["farmer"], "weather": "clear" } // optional
           }
         ],
@@ -57,7 +69,7 @@ my-pack.voicepack
 **Designentscheidungen**
 - **Ein Manifest statt mehrerer Dateien:** Es gibt keine eigene `sounds.json`, keine `lang`-Datei und keine Config-Datei mehr. Die Mod erzeugt die Resourcepack-Struktur zur Laufzeit selbst (Phase 2).
 - **Bedingungen statt Beruf-Ordner:** V1 hatte pro Beruf einen eigenen Datenblock. In V2 hängt der Beruf als optionale `conditions` an der Zeile. Das gilt genauso für Wetter, Tageszeit und später weitere Bedingungen.
-- **`duration` im Manifest:** Der Server muss wissen, wie lange eine Zeile dauert, damit sich Stimmen nicht überlappen. Er hat keinen Zugriff auf einen Audio-Decoder.
+- **`duration`:** Der Server muss wissen, wie lange eine Zeile dauert, damit sich Stimmen nicht überlappen. Die Länge steht in den Ogg-Headern und wird beim Laden gelesen, ein Audio-Decoder ist dafür nicht nötig.
 - **`format`-Feld:** Erlaubt spätere Formatänderungen mit Migrationspfad.
 - **`entities` als Liste:** Eine Illager-Stimme kann z. B. für Pillager, Vindicator und Evoker gleichzeitig gelten.
 
@@ -104,7 +116,7 @@ Fallback-Kaskade, falls kein Treffer:
 ### Validierung
 `PackValidator` liefert eine Liste von `Problem(severity, path, message)`:
 - Fehler: Manifest fehlt oder ist ungültig, `format` wird nicht unterstützt, doppelte Voice-IDs, referenzierte Datei fehlt, Datei ist kein Ogg Vorbis (Magic Bytes `OggS` + Vorbis-Header), unbekannte Entity.
-- Warnungen: unbekanntes Event (wird ignoriert), Voice ohne `hurt`/`death`, Datei > 1 MB, Stereo-Datei (in Minecraft nicht positionsabhängig!), fehlende `duration`.
+- Warnungen: unbekanntes Event (wird ignoriert), Voice ohne `hurt`/`death`, Datei > 1 MB, Stereo-Datei (in Minecraft nicht positionsabhängig!), unbenutzte Dateien, Events, die keine der Entities der Voice auslöst, Kinderstimme für Nicht-Villager.
 
 ## Aufgaben
 - [ ] Schema schreiben

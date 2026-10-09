@@ -1,5 +1,15 @@
 # Phase 0 – Projekt-Setup für Minecraft 26.x
 
+## Status: erledigt
+
+Umgesetzt auf Branch `v2/phase-0-1`. Verwendete Versionen: Minecraft 26.3, Java 25, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3, Loom 1.18.3, NeoForge 26.3.0.58-beta, ModDevGradle 2.0.148, Gradle 9.7.1. Basis ist das MultiLoader-Template.
+
+Abweichungen vom Plan:
+- **Mod Menu** wird erst in Phase 7 eingebunden (Version 21.0.0 für 26.3 ist verfügbar). Ohne Config-Screen hätte der Einstiegspunkt keine Funktion.
+- **GameTests** werden erst in Phase 3 eingerichtet, wenn es etwas zu testen gibt.
+- Die V1-Metadaten (`sounds.json`, `en_us.json` mit Transkripten, `teajay.json`) liegen neben den Audio-Dateien in `packs-src/teajay-default/` (Dateien mit Präfix `v1-`), für die Konvertierung in Phase 9. Die UI-Sounds liegen in `packs-src/ui/` (für Phase 7).
+- `core` wird wie `common` als Quellcode in die Loader-JARs kompiliert (Konfiguration `coreJava`), nicht als Jar-in-Jar.
+
 ## Ziel
 Ein sauberes, kompilierendes Fabric-Projekt für die aktuelle Minecraft-Version mit CI und Testinfrastruktur. Fachlogik kommt erst ab Phase 1.
 
