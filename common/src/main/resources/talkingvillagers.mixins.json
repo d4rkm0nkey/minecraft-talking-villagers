@@ -4,10 +4,17 @@
   "package": "me.teajay.talkingvillagers.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "AbstractVillagerMixin",
+    "EntityMixin",
     "GiveGiftToHeroMixin",
     "LivingEntityMixin",
     "MobMixin",
-    "VillagerMixin"
+    "PillagerMixin",
+    "RaidMixin",
+    "RangedIllagerMixin",
+    "VillagerMixin",
+    "WanderingTraderMixin",
+    "WitchMixin"
   ],
   "client": [
     "client.LivingEntityClientMixin",

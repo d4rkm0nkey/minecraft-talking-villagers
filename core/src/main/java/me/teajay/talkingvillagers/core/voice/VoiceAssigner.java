@@ -48,7 +48,7 @@ public final class VoiceAssigner {
      */
     public static VoiceIdentity assign(Optional<VoiceIdentity> current, EntityKind kind, boolean child, Collection<ResolvedVoice> pool,
                                        Map<VoiceRef, Integer> usage, AssignmentSettings settings, RandomGenerator random) {
-        Gender gender = current.map(VoiceIdentity::gender).orElseGet(() -> rollGender(settings, random));
+        Gender gender = current.map(VoiceIdentity::gender).orElseGet(() -> rollGender(settings, kind, random));
         Optional<String> language = current.flatMap(VoiceIdentity::language);
 
         VoiceCriteria criteria = VoiceCriteria.of(kind, child)
@@ -70,7 +70,7 @@ public final class VoiceAssigner {
         return new VoiceIdentity(gender, Optional.of(voice.ref()), selection.get().samplePitch(random), child, keptLanguage, false);
     }
 
-    public static Gender rollGender(AssignmentSettings settings, RandomGenerator random) {
-        return random.nextDouble() < settings.femaleChance() ? Gender.FEMALE : Gender.MALE;
+    public static Gender rollGender(AssignmentSettings settings, EntityKind kind, RandomGenerator random) {
+        return random.nextDouble() < settings.femaleChance(kind) ? Gender.FEMALE : Gender.MALE;
     }
 }

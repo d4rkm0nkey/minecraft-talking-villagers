@@ -11,7 +11,7 @@ import me.teajay.talkingvillagers.core.select.LineContext;
 import me.teajay.talkingvillagers.core.voice.AssignmentSettings;
 import me.teajay.talkingvillagers.core.voice.EventPolicies;
 import me.teajay.talkingvillagers.core.voice.SpeakerState;
-import me.teajay.talkingvillagers.core.voice.VillagerChatter;
+import me.teajay.talkingvillagers.core.voice.Chatter;
 import me.teajay.talkingvillagers.core.voice.VoiceAssigner;
 import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.pack.Voicepacks;
@@ -25,7 +25,11 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.raid.Raid;
+import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import org.jspecify.annotations.Nullable;
@@ -51,10 +55,7 @@ public final class EntityVoices {
     }
 
     public static Optional<EntityKind> kindOf(Entity entity) {
-        if (entity instanceof Villager) {
-            return Optional.of(EntityKind.VILLAGER);
-        }
-        return Optional.empty();
+        return EntityKinds.of(entity);
     }
 
     public static SpeakerState state(Entity entity) {
@@ -149,6 +150,9 @@ public final class EntityVoices {
      * cooldown keeps the entity quiet this time
      */
     public static boolean onEvent(LivingEntity entity, VoiceEvent event, @Nullable SoundEvent vanillaSound) {
+        if (kindOf(entity).filter(event::appliesTo).isEmpty()) {
+            return false;
+        }
         Optional<ResolvedVoice> voice = voice(entity);
         if (voice.isEmpty() || !hasLines(voice.get(), event)) {
             return false;
@@ -175,9 +179,28 @@ public final class EntityVoices {
     }
 
     private static boolean speak(LivingEntity entity, ResolvedVoice voice, VoiceEvent event, @Nullable SoundEvent vanillaSound) {
+        boolean interrupts = EventPolicies.of(event).interrupts();
+        if (!interrupts && crowded(entity)) {
+            // e.g. a raid: only a few entities talk at once, the rest stay quiet
+            return false;
+        }
         Holder<SoundEvent> fallback = vanillaSound == null ? null : BuiltInRegistries.SOUND_EVENT.wrapAsHolder(vanillaSound);
         float pitch = Services.ATTACHMENTS.getIdentity(entity).map(VoiceIdentity::pitch).orElse(1.0f);
-        return SpeechService.speak(entity, state(entity), voice, event, context(entity), pitch, 1.0f, EventPolicies.of(event).interrupts(), fallback);
+        return SpeechService.speak(entity, state(entity), voice, event, context(entity), pitch, 1.0f, interrupts, fallback);
+    }
+
+    private static boolean crowded(LivingEntity entity) {
+        long now = entity.level().getGameTime();
+        double radiusSqr = EventPolicies.CROWD_RADIUS * EventPolicies.CROWD_RADIUS;
+        int speaking = 0;
+        for (Map.Entry<Entity, SpeakerState> entry : STATES.entrySet()) {
+            Entity other = entry.getKey();
+            if (other != entity && other.level() == entity.level() && entry.getValue().isSpeaking(now)
+                    && other.distanceToSqr(entity) <= radiusSqr && ++speaking >= EventPolicies.MAX_CONCURRENT_SPEAKERS) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -197,33 +220,67 @@ public final class EntityVoices {
     }
 
     /**
-     * Called every server tick of a villager; does real work once per {@link VillagerChatter#INTERVAL} ticks.
+     * Called every server tick of villagers and wandering traders; does real work once per {@link Chatter#INTERVAL} ticks.
      */
-    public static void tickVillager(Villager villager, ServerLevel level) {
-        if ((level.getGameTime() + villager.getId()) % VillagerChatter.INTERVAL != 0 || !villager.isAlive()) {
+    public static void tickChatter(LivingEntity entity, ServerLevel level) {
+        if ((level.getGameTime() + entity.getId()) % Chatter.INTERVAL != 0 || !entity.isAlive()) {
             return;
         }
-        Optional<ResolvedVoice> voice = voice(villager);
-        if (voice.isEmpty() || villager.isSleeping()) {
+        Optional<ResolvedVoice> voice = voice(entity);
+        if (voice.isEmpty() || entity.isSleeping()) {
             return;
         }
-        SpeakerState state = state(villager);
-        if (state.updatePanic(villager.getBrain().isActive(Activity.PANIC))) {
-            onEvent(villager, EventCatalog.PANIC);
-            return;
-        }
-        if (villager.isTrading()) {
-            return;
+        SpeakerState state = state(entity);
+        Optional<Player> player;
+        boolean smallTalk;
+        if (entity instanceof Villager villager) {
+            if (state.updatePanic(villager.getBrain().isActive(Activity.PANIC))) {
+                onEvent(villager, EventCatalog.PANIC);
+                return;
+            }
+            if (villager.isTrading()) {
+                return;
+            }
+            player = villager.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER);
+            smallTalk = true;
+        } else {
+            if (entity instanceof AbstractVillager merchant && merchant.isTrading()) {
+                return;
+            }
+            player = Optional.ofNullable(level.getNearestPlayer(entity, EventPolicies.GREETING_DISTANCE)).filter(entity::hasLineOfSight);
+            smallTalk = false;
         }
 
-        Optional<Player> player = villager.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER);
-        VillagerChatter.Situation situation = new VillagerChatter.Situation(
+        Chatter.Situation situation = new Chatter.Situation(
                 level.getGameTime(),
-                player.map(p -> OptionalDouble.of(p.distanceTo(villager))).orElse(OptionalDouble.empty()),
-                player.filter(p -> p.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)).isPresent(),
+                player.map(p -> OptionalDouble.of(p.distanceTo(entity))).orElse(OptionalDouble.empty()),
+                player.filter(p -> p.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)).isPresent() && entity instanceof Villager,
                 weather(level),
-                level.isBrightOutside());
-        VillagerChatter.decide(state, situation, RANDOM).ifPresent(event -> speak(villager, voice.get(), event, null));
+                level.isBrightOutside(),
+                smallTalk);
+        Chatter.decide(state, situation, RANDOM).ifPresent(event -> speak(entity, voice.get(), event, null));
+    }
+
+    /**
+     * A new raid wave sounds the horn; the wave's captain (or another raider) shouts.
+     */
+    public static void onRaidHorn(Raid raid) {
+        Raider speaker = raid.getLeader(raid.getGroupsSpawned());
+        if (speaker == null || !speaker.isAlive()) {
+            speaker = raid.getAllRaiders().stream().filter(Raider::isAlive).filter(EntityVoices::hasVoice).findFirst().orElse(null);
+        }
+        if (speaker != null) {
+            onEvent(speaker, EventCatalog.RAID_HORN);
+        }
+    }
+
+    /**
+     * Witches laugh when they kill something.
+     */
+    public static void onKill(LivingEntity victim, DamageSource source) {
+        if (source.getEntity() instanceof LivingEntity killer && killer != victim && !killer.level().isClientSide()) {
+            onEvent(killer, EventCatalog.LAUGH);
+        }
     }
 
     // --- context -----------------------------------------------------------------------------------------------------

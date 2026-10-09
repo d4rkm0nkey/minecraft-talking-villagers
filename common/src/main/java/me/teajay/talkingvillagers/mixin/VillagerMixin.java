@@ -5,8 +5,6 @@ import me.teajay.talkingvillagers.voice.EntityVoices;
 import me.teajay.talkingvillagers.voice.LegacyVoices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.storage.ValueInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,17 +23,7 @@ public abstract class VillagerMixin {
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
     private void talkingvillagers$tick(ServerLevel level, CallbackInfo ci) {
-        EntityVoices.tickVillager(talkingvillagers$self(), level);
-    }
-
-    @Inject(method = "startTrading", at = @At("TAIL"))
-    private void talkingvillagers$trade(Player player, CallbackInfo ci) {
-        EntityVoices.onEvent(talkingvillagers$self(), EventCatalog.TRADE);
-    }
-
-    @Inject(method = "rewardTradeXp", at = @At("HEAD"))
-    private void talkingvillagers$tradeSuccess(MerchantOffer offer, CallbackInfo ci) {
-        EntityVoices.onEvent(talkingvillagers$self(), EventCatalog.TRADE_SUCCESS);
+        EntityVoices.tickChatter(talkingvillagers$self(), level);
     }
 
     @Inject(method = "increaseMerchantCareer", at = @At("TAIL"))

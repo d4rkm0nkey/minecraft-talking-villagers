@@ -9,25 +9,27 @@ import java.util.OptionalDouble;
 import java.util.random.RandomGenerator;
 
 /**
- * Decides when a villager says something on its own: greeting players, talking to the hero of the village and
+ * Decides when an entity says something on its own: greeting players, talking to the hero of the village and
  * random small talk. Evaluated once per {@link #INTERVAL} ticks.
  */
-public final class VillagerChatter {
+public final class Chatter {
     public static final int INTERVAL = 20;
     /** Chance per check to start random small talk once the delay is over (V1: 1/150 per tick). */
     public static final double RANDOM_CHAT_CHANCE = 0.13;
     /** Share of random small talk that is about the weather. */
     public static final double WEATHER_CHAT_CHANCE = 0.1;
 
-    private VillagerChatter() {
+    private Chatter() {
     }
 
     /**
      * @param nearestPlayerDistance distance to the nearest visible player, if any
      * @param heroNearby            a visible player has the hero of the village effect
      * @param daytime               whether it is day; small talk about good weather only happens by day
+     * @param smallTalk             whether the entity makes small talk on its own (villagers do, traders only greet)
      */
-    public record Situation(long gameTime, OptionalDouble nearestPlayerDistance, boolean heroNearby, Weather weather, boolean daytime) {
+    public record Situation(long gameTime, OptionalDouble nearestPlayerDistance, boolean heroNearby, Weather weather, boolean daytime,
+                            boolean smallTalk) {
     }
 
     public static Optional<VoiceEvent> decide(SpeakerState state, Situation situation, RandomGenerator random) {
@@ -43,6 +45,9 @@ public final class VillagerChatter {
             return Optional.of(EventCatalog.GREETING);
         }
 
+        if (!situation.smallTalk()) {
+            return Optional.empty();
+        }
         if (state.nextRandomChat() < 0) {
             scheduleRandomChat(state, now, random);
             return Optional.empty();

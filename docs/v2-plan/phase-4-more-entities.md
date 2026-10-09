@@ -1,5 +1,23 @@
 # Phase 4 – Witch, Wandering Trader und Illager
 
+## Status: erledigt (Server getestet, Client offen)
+
+Umgesetzt auf Branch `v2/phase-4`. Getestet auf Dedicated Servern mit Fabric und NeoForge über RCON:
+- Witch, Wandering Trader, Pillager, Vindicator, Evoker und Illusioner bekommen Stimmen aus einem Test-Pack (die Illager-Stimme nutzt `entities: ["illager"]`). Andere Mobs bekommen keine.
+- Witches sind standardmäßig weiblich.
+- `summon_vex` ohne eigene Zeilen fällt auf `cast_spell` zurück.
+
+**Offen:** Ereignisse, die nur mit KI und echtem Spieler auftreten (Spieler entdecken, Angriff, Armbrust spannen, Raid-Horn, Trank trinken und werfen, Lachen, Handel mit dem Trader), und das Hören im Client.
+
+Umsetzung und Abweichungen:
+- **Ein Sound-Hook für alles:** Der zentrale Mixin sitzt jetzt auf `Entity.playSound(SoundEvent, float, float)` statt auf `makeSound`. Damit sind auch die Zauber-Sounds der Spellcaster abgedeckt. Die Tabelle `VanillaSounds` ordnet jedem Vanilla-Sound pro Entity-Art ein Event zu. Das „Wololo“ des Evokers bleibt bewusst Vanilla.
+- **Gezielte Hooks** gibt es nur, wo Vanilla am Entity vorbei abspielt oder kein Sound existiert: Witch-Trank (`Level.playSound`), Spieler entdecken (`Mob.setTarget`), Nahkampf (`Mob.doHurtTarget`), Fernkampf (Pillager, Illusioner), Armbrust spannen, Raid-Horn (`Raid.playSound`), Lachen beim Töten (`LivingEntity.die`).
+- **Handel** hängt jetzt an `AbstractVillager` (`setTradingPlayer`, `notifyTrade`) und gilt damit für Villager und Trader gleichermaßen.
+- **`disappear`** ist der Moment, in dem der Trader seinen Unsichtbarkeitstrank getrunken hat (Vanilla-Sound `wandering_trader.disappeared`). Beim echten Despawn verschwindet die Entity samt Ton sofort, eine Zeile dort wäre nie zu hören.
+- **`Chatter`** (vorher `VillagerChatter`) gilt auch für den Trader, der aber nur grüßt und keinen Smalltalk macht.
+- **Sprecher-Limit:** Höchstens 3 Entities sprechen gleichzeitig im Umkreis von 32 Blöcken. Hurt, Death und andere unterbrechende Events zählen nicht mit.
+- **Events prüfen ihre Entity-Art:** Ein Event wird nur ausgelöst, wenn es laut Katalog zur Entity-Art passt.
+
 ## Ziel
 Stimmen für Witch, Wandering Trader, Pillager, Vindicator, Evoker und Illusioner, gebaut auf derselben Infrastruktur wie in Phase 3. Ein neuer Entity-Typ bedeutet nur noch: ein `EntityKind`, eine `EventPolicy`-Tabelle und ein paar Hook-Mixins.
 

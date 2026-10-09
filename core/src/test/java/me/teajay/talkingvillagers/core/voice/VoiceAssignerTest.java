@@ -1,5 +1,6 @@
 package me.teajay.talkingvillagers.core.voice;
 
+import me.teajay.talkingvillagers.core.catalog.EntityKind;
 import me.teajay.talkingvillagers.core.model.Gender;
 import me.teajay.talkingvillagers.core.model.PitchRange;
 import me.teajay.talkingvillagers.core.model.ResolvedVoice;
@@ -57,10 +58,14 @@ class VoiceAssignerTest {
     void rollsBothGenders() {
         Set<Gender> genders = new HashSet<>();
         for (int i = 0; i < 50; i++) {
-            genders.add(VoiceAssigner.rollGender(AssignmentSettings.DEFAULT, random));
+            genders.add(VoiceAssigner.rollGender(AssignmentSettings.DEFAULT, VILLAGER, random));
         }
         assertThat(genders).containsExactlyInAnyOrder(Gender.MALE, Gender.FEMALE);
-        assertThat(VoiceAssigner.rollGender(new AssignmentSettings(1.0, VoiceCriteria.ChildFallback.VANILLA, false), random)).isEqualTo(Gender.FEMALE);
+        assertThat(VoiceAssigner.rollGender(new AssignmentSettings(1.0, 0.0, VoiceCriteria.ChildFallback.VANILLA, false), VILLAGER, random)).isEqualTo(Gender.FEMALE);
+        // witches are female by default
+        for (int i = 0; i < 20; i++) {
+            assertThat(VoiceAssigner.rollGender(AssignmentSettings.DEFAULT, EntityKind.WITCH, random)).isEqualTo(Gender.FEMALE);
+        }
     }
 
     @Test
@@ -121,7 +126,7 @@ class VoiceAssignerTest {
 
     @Test
     void childFallbackPitchesAdultVoiceUp() {
-        AssignmentSettings settings = new AssignmentSettings(0.0, VoiceCriteria.ChildFallback.PITCH_UP_ADULT, false);
+        AssignmentSettings settings = new AssignmentSettings(0.0, 0.0, VoiceCriteria.ChildFallback.PITCH_UP_ADULT, false);
 
         VoiceIdentity identity = VoiceAssigner.assign(Optional.empty(), VILLAGER, true, List.of(MAN), Map.of(), settings, random);
 

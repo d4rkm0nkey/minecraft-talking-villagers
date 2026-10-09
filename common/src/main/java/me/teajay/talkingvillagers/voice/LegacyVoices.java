@@ -1,5 +1,6 @@
 package me.teajay.talkingvillagers.voice;
 
+import me.teajay.talkingvillagers.core.catalog.EntityKind;
 import me.teajay.talkingvillagers.core.model.Gender;
 import me.teajay.talkingvillagers.core.model.ResolvedVoice;
 import me.teajay.talkingvillagers.core.voice.AssignmentSettings;
@@ -38,7 +39,7 @@ public final class LegacyVoices {
         }
         float pitch = input.getFloatOr(VOICE_PITCH, 1.0f);
         Gender gender = voice.get().voice().gender() == Gender.NEUTRAL
-                ? VoiceAssigner.rollGender(AssignmentSettings.DEFAULT, RANDOM)
+                ? VoiceAssigner.rollGender(AssignmentSettings.DEFAULT, EntityKind.VILLAGER, RANDOM)
                 : voice.get().voice().gender();
         Services.ATTACHMENTS.setIdentity(entity, new VoiceIdentity(gender, Optional.of(voice.get().ref()),
                 pitch < 0.1f ? 1.0f : pitch, entity.isBaby(), Optional.of(voice.get().language()), false));

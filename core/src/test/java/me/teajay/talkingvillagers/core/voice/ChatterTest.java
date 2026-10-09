@@ -14,13 +14,13 @@ import java.util.random.RandomGenerator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class VillagerChatterTest {
+class ChatterTest {
     private final RandomGenerator random = new SplittableRandom(11);
 
     private Map<VoiceEvent, Integer> simulate(SpeakerState state, long ticks, OptionalDouble player, boolean hero, Weather weather, boolean day) {
         Map<VoiceEvent, Integer> counts = new HashMap<>();
-        for (long time = 0; time < ticks; time += VillagerChatter.INTERVAL) {
-            Optional<VoiceEvent> event = VillagerChatter.decide(state, new VillagerChatter.Situation(time, player, hero, weather, day), random);
+        for (long time = 0; time < ticks; time += Chatter.INTERVAL) {
+            Optional<VoiceEvent> event = Chatter.decide(state, new Chatter.Situation(time, player, hero, weather, day, true), random);
             if (event.isPresent()) {
                 counts.merge(event.get(), 1, Integer::sum);
                 state.spoke(event.get(), event.get().id(), 0, time, 40);
@@ -63,12 +63,27 @@ class VillagerChatterTest {
     }
 
     @Test
+    void entitiesWithoutSmallTalkOnlyGreet() {
+        SpeakerState state = new SpeakerState();
+        Map<VoiceEvent, Integer> counts = new HashMap<>();
+        for (long time = 0; time < 48_000; time += Chatter.INTERVAL) {
+            Chatter.decide(state, new Chatter.Situation(time, OptionalDouble.of(2), false, Weather.RAIN, true, false), random)
+                    .ifPresent(event -> {
+                        counts.merge(event, 1, Integer::sum);
+                        state.spoke(event, event.id(), 0, 0, 0);
+                    });
+        }
+
+        assertThat(counts).containsOnlyKeys(EventCatalog.GREETING);
+    }
+
+    @Test
     void staysQuietWhileSpeaking() {
         SpeakerState state = new SpeakerState();
         state.spoke(EventCatalog.RANDOM, "random", 0, 0, 1000);
 
-        for (long time = 0; time < 1000; time += VillagerChatter.INTERVAL) {
-            assertThat(VillagerChatter.decide(state, new VillagerChatter.Situation(time, OptionalDouble.of(1), true, Weather.CLEAR, true), random)).isEmpty();
+        for (long time = 0; time < 1000; time += Chatter.INTERVAL) {
+            assertThat(Chatter.decide(state, new Chatter.Situation(time, OptionalDouble.of(1), true, Weather.CLEAR, true, true), random)).isEmpty();
         }
     }
 
