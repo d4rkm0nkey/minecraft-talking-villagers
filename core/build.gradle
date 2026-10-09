@@ -1,0 +1,42 @@
+plugins {
+    id 'java-library'
+}
+
+// Plain Java: no Minecraft and no loader classes may be used here.
+// The sources are compiled into the fabric and neoforge jars (see multiloader-loader.gradle).
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Gson ships with Minecraft, so it is only needed at compile time
+    compileOnly("com.google.code.gson:gson:${gson_version}")
+
+    testImplementation("com.google.code.gson:gson:${gson_version}")
+    testImplementation(platform("org.junit:junit-bom:${junit_version}"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+    testImplementation("org.assertj:assertj-core:${assertj_version}")
+}
+
+test {
+    useJUnitPlatform()
+    // the JSON schema lives at the repository root and is shared with the web editor
+    systemProperty('talkingvillagers.schemaDir', rootProject.file('schema').absolutePath)
+}
+
+configurations {
+    coreJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    coreJava sourceSets.main.java.sourceDirectories.singleFile
+}
