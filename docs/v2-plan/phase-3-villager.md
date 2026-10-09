@@ -1,5 +1,24 @@
 # Phase 3 – Villager neu (Attachments, Controller, Kind/Erwachsen, Geschlecht)
 
+## Status: erledigt (Server getestet, Client offen)
+
+Umgesetzt auf Branch `v2/phase-3`. Getestet auf Dedicated Servern mit Fabric und NeoForge über RCON mit einem Test-Pack (Mann, Frau, Junge, Mädchen):
+- Erwachsene und Kinder bekommen passende Stimmen.
+- Beim Erwachsenwerden wird aus dem Mädchen eine Frau bzw. aus dem Jungen ein Mann; Geschlecht und Sprache bleiben.
+- Stimme, Geschlecht und Pitch überstehen einen Neustart.
+- Ein Villager im V1-Format (`VoiceName`, `VoicePitch`) behält seine Stimme.
+
+**Offen:** Hören im Client (Begrüßung, Smalltalk, Handel, Verletzung) und der Client-Mixin, der den lokalen Vanilla-Hurt-/Death-Sound unterdrückt. Beides lässt sich nur mit einem echten Client prüfen.
+
+Umsetzung und Abweichungen:
+- **Regeln in `core`** (`me.teajay.talkingvillagers.core.voice`): `VoiceIdentity`, `VoiceAssigner` (wann und welche Stimme), `EventPolicies` (Cooldown, Chance, Unterbrechen), `SpeakerState` und `VillagerChatter` (Begrüßen, Held, Smalltalk, Wetter). Alles unit-getestet statt per GameTest.
+- **`EntityVoices`** in `common` ist die einzige Stelle mit Logik auf Minecraft-Seite. Die Mixins melden nur Ereignisse.
+- **Ein Einhängepunkt für Vanilla-Sounds:** In 26.3 laufen Ambient, Hurt, Death, Ja, Nein und Feiern über `LivingEntity.makeSound`. Ein Mixin dort ersetzt sie anhand einer Tabelle (`VanillaSounds`). Das funktioniert in Phase 4 genauso für Witch, Trader und Illager.
+- **Hat die Stimme Zeilen für ein Event**, ersetzt sie den Vanilla-Sound immer, auch wenn ein Cooldown sie gerade schweigen lässt. Hat sie keine, bleibt der Vanilla-Sound.
+- **Client-Seite:** Der Client spielt Hurt- und Death-Sounds beim Schadens-Event selbst ab. Die Identity wird deshalb an die Clients synchronisiert, und ein Client-Mixin überspringt den lokalen Sound, wenn der Client das Pack der Stimme hat.
+- **Fehlschläge werden gemerkt:** Findet sich keine passende Stimme, wird erst nach einem Pack-Reload erneut gesucht.
+- **`/tv debug info <entity>`** zeigt Stimme, Geschlecht, Alter, Pitch und Sprache an (und weist bei Bedarf eine Stimme zu).
+
 ## Ziel
 Villager haben wieder alle V1-Funktionen, jetzt mit sauberer Architektur. Zusätzlich gibt es Kinderstimmen (mit Stimmwechsel beim Erwachsenwerden) und Geschlecht.
 

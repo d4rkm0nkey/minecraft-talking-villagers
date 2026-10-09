@@ -6,6 +6,7 @@ import me.teajay.talkingvillagers.core.model.ResolvedVoice;
 import me.teajay.talkingvillagers.core.select.LineContext;
 import me.teajay.talkingvillagers.core.select.LineSelector;
 import me.teajay.talkingvillagers.core.select.PickedLine;
+import me.teajay.talkingvillagers.core.voice.SpeakerState;
 import me.teajay.talkingvillagers.network.SpeakPayload;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
@@ -32,7 +33,6 @@ public final class SpeechService {
     /** Extra pause after a line before the entity speaks again. */
     private static final int PAUSE_TICKS = 10;
 
-    private static final SpeechTracker TRACKER = new SpeechTracker();
     private static final SplittableRandom RANDOM = new SplittableRandom();
 
     private SpeechService() {
@@ -43,27 +43,27 @@ public final class SpeechService {
      * @param fallback  vanilla sound for players without the pack, or null to stay silent for them
      * @return whether a line was said; if false the caller should play its vanilla sound as usual
      */
-    public static boolean speak(Entity entity, ResolvedVoice voice, VoiceEvent event, LineContext context,
+    public static boolean speak(Entity entity, SpeakerState state, ResolvedVoice voice, VoiceEvent event, LineContext context,
                                 float pitch, float volume, boolean interrupt, @Nullable Holder<SoundEvent> fallback) {
         if (!(entity.level() instanceof ServerLevel level) || entity.isSilent()) {
             return false;
         }
         long gameTime = level.getGameTime();
-        if (!interrupt && TRACKER.isSpeaking(entity, gameTime)) {
+        if (!interrupt && state.isSpeaking(gameTime)) {
             return false;
         }
         Optional<LoadedPack> pack = Voicepacks.index().packOf(voice.ref());
         if (pack.isEmpty()) {
             return false;
         }
-        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, TRACKER.lastLine(entity, event.id()), RANDOM);
+        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, state.lastLine(event.id()), RANDOM);
         if (picked.isEmpty()) {
             return false;
         }
 
         PickedLine line = picked.get();
         int durationTicks = Math.round(line.line().duration().orElse(2.0f) / pitch * 20) + PAUSE_TICKS;
-        TRACKER.spoke(entity, event.id(), line.index(), gameTime, durationTicks);
+        state.spoke(event, line.event().id(), line.index(), gameTime, durationTicks);
 
         String packHash = pack.get().sha256();
         SpeakPayload payload = new SpeakPayload(entity.getId(), packHash, voice.ref().voiceId(), line.event().id(), line.index(), pitch, volume);

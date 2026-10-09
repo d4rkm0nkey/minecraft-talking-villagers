@@ -6,6 +6,8 @@ import me.teajay.talkingvillagers.core.catalog.VoiceEvent;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.model.Voice;
 import me.teajay.talkingvillagers.core.model.VoiceLine;
+import me.teajay.talkingvillagers.core.model.VoiceRef;
+import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.network.ClientPacksPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.network.SpeakPayload;
@@ -76,6 +78,25 @@ public final class ClientVoices {
                     missing.stream().map(pack -> pack.name() + " " + pack.version()).collect(Collectors.joining(", ")));
         }
         Services.NETWORK.sendToServer(new ClientPacksPayload(available));
+    }
+
+    /**
+     * Whether the server sends voice lines for this entity to this client, so vanilla sounds the client plays on its
+     * own must be skipped.
+     */
+    public static boolean isVoiced(Entity entity) {
+        return Services.ATTACHMENTS.getIdentity(entity).flatMap(VoiceIdentity::voice).filter(ClientVoices::canPlay).isPresent();
+    }
+
+    /**
+     * Whether this client has exactly the pack file the server uses for the voice.
+     */
+    public static boolean canPlay(VoiceRef voice) {
+        if (serverPacks == null) {
+            return false;
+        }
+        return serverPacks.packs().stream()
+                .anyMatch(pack -> pack.id().equals(voice.packId()) && Voicepacks.index().byHash(pack.sha256()).isPresent());
     }
 
     /**

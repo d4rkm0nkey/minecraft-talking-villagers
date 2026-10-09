@@ -5,6 +5,7 @@ import me.teajay.talkingvillagers.command.TalkingVillagersCommand;
 import me.teajay.talkingvillagers.network.ClientPacksPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.network.SpeakPayload;
+import me.teajay.talkingvillagers.platform.NeoForgePlatformAttachments;
 import me.teajay.talkingvillagers.server.ServerVoices;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
@@ -23,6 +24,7 @@ public class TalkingVillagersNeoForge {
 
     public TalkingVillagersNeoForge(IEventBus modBus) {
         TalkingVillagers.init();
+        NeoForgePlatformAttachments.TYPES.register(modBus);
         modBus.addListener(TalkingVillagersNeoForge::registerPayloads);
 
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> TalkingVillagersCommand.register(event.getDispatcher()));

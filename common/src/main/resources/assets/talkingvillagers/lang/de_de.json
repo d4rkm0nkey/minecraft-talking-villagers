@@ -9,5 +9,7 @@
   "commands.talkingvillagers.say.unknown_event": "Unbekanntes Event %s",
   "commands.talkingvillagers.say.nothing": "%s hat keine Zeile für %s",
   "commands.talkingvillagers.say.success": "%s von %s Entities haben etwas gesagt",
-  "subtitles.talkingvillagers.speaks": "%s spricht"
+  "subtitles.talkingvillagers.speaks": "%s spricht",
+  "commands.talkingvillagers.info": "%s: Stimme %s, %s, %s, Pitch %s, Sprache %s (%s)",
+  "commands.talkingvillagers.info.none": "%s hat keine Stimme"
 }

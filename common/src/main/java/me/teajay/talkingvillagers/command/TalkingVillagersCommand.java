@@ -12,9 +12,11 @@ import me.teajay.talkingvillagers.core.model.ResolvedVoice;
 import me.teajay.talkingvillagers.core.model.VoicePack;
 import me.teajay.talkingvillagers.core.model.VoiceRef;
 import me.teajay.talkingvillagers.core.pack.PackIndex;
-import me.teajay.talkingvillagers.core.select.LineContext;
+import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.pack.Voicepacks;
+import me.teajay.talkingvillagers.platform.Services;
 import me.teajay.talkingvillagers.server.SpeechService;
+import me.teajay.talkingvillagers.voice.EntityVoices;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -24,8 +26,10 @@ import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.SplittableRandom;
 
@@ -47,6 +51,9 @@ public final class TalkingVillagersCommand {
                                 .executes(TalkingVillagersCommand::reloadPacks)))
                 .then(Commands.literal("debug")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("info")
+                                .then(Commands.argument("target", EntityArgument.entity())
+                                        .executes(TalkingVillagersCommand::info)))
                         .then(Commands.literal("say")
                                 .then(Commands.argument("targets", EntityArgument.entities())
                                         .then(Commands.argument("voice", IdentifierArgument.id())
@@ -96,6 +103,26 @@ public final class TalkingVillagersCommand {
         return index.active().size();
     }
 
+    private static int info(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Entity entity = EntityArgument.getEntity(context, "target");
+        CommandSourceStack source = context.getSource();
+        if (entity instanceof LivingEntity living) {
+            // assigns a voice first if the entity has none yet
+            EntityVoices.voice(living);
+        }
+        Optional<VoiceIdentity> identity = Services.ATTACHMENTS.getIdentity(entity);
+        if (identity.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.talkingvillagers.info.none", entity.getDisplayName()));
+            return 0;
+        }
+        VoiceIdentity id = identity.get();
+        String voice = id.voice().map(VoiceRef::toString).orElse("-");
+        source.sendSuccess(() -> Component.translatable("commands.talkingvillagers.info", entity.getDisplayName(), voice,
+                id.gender().id(), id.child() ? "child" : "adult", String.format(Locale.ROOT, "%.2f", id.pitch()),
+                id.language().orElse("-"), id.manual() ? "manual" : "auto"), false);
+        return 1;
+    }
+
     private static int say(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(context, "targets");
         Identifier voiceId = IdentifierArgument.getId(context, "voice");
@@ -116,7 +143,7 @@ public final class TalkingVillagersCommand {
         int spoken = 0;
         for (Entity entity : targets) {
             float pitch = voice.get().voice().pitch().sample(RANDOM);
-            if (SpeechService.speak(entity, voice.get(), event.get(), LineContext.NONE, pitch, 1.0f, true, null)) {
+            if (SpeechService.speak(entity, EntityVoices.state(entity), voice.get(), event.get(), EntityVoices.context(entity), pitch, 1.0f, true, null)) {
                 spoken++;
             }
         }
