@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount, untrack } from "svelte";
   import type { Project, Voice } from "../lib/model/types";
   import { newId } from "../lib/model/types";
   import type { Audio } from "../lib/audio/process";
@@ -25,20 +25,24 @@
   const END_SILENCE = 0.7;
 
   let microphoneList = $state<MediaDeviceInfo[]>([]);
-  let microphone = $state("");
+  /** Studio options and the chosen microphone are remembered in this browser. */
+  const STORAGE_KEY = "studio";
+  const stored = readStored();
+  let microphone = $state(stored.microphone ?? "");
   let micReady = $state(false);
   let micError = $state("");
   let script = $state("");
-  let queue = $state<Item[]>([]);
+  // a single line for the event the studio was opened for; a script for several lines is optional
+  let queue = $state<Item[]>([{ event: untrack(() => initialEvent), text: "" }]);
   let index = $state(0);
-  let phase = $state<Phase>("setup");
+  let phase = $state<Phase>("idle");
   let take = $state<Audio | undefined>();
   let countdown = $state(0);
   let peakDb = $state(-90);
   let clipping = $state(false);
   let recorded = $state(0);
   let message = $state("");
-  let options = $state({ countdown: true, autoStop: true, autoNext: true, longTake: false });
+  let options = $state({ countdown: true, autoStop: true, autoNext: true, longTake: false, ...stored.options });
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const current = $derived(queue[index]);
@@ -48,6 +52,33 @@
     peakDb = level.peakDb;
     if (phase === "recording" && level.peakDb > -1) clipping = true;
   };
+
+  function readStored(): { microphone?: string; options?: Partial<{ countdown: boolean; autoStop: boolean; autoNext: boolean; longTake: boolean }> } {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  $effect(() => {
+    const value = JSON.stringify({ microphone, options: $state.snapshot(options) });
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // private mode: the options are simply not remembered
+    }
+  });
+
+  // the browser remembers the permission, so the microphone only has to be enabled by hand the first time
+  onMount(async () => {
+    try {
+      const permission = await navigator.permissions.query({ name: "microphone" as PermissionName });
+      if (permission.state === "granted") await enableMicrophone();
+    } catch {
+      // permission query not supported: wait for the button
+    }
+  });
 
   onDestroy(() => {
     clearInterval(timer);
@@ -157,7 +188,7 @@
     if (!variant) index++;
     if (index >= queue.length) {
       index = queue.length - 1;
-      message = t("studio.done");
+      message = queue.length === 1 ? t("studio.saved") : t("studio.done");
       phase = "idle";
       if (!variant) return;
     }
@@ -185,7 +216,7 @@
     project.noiseProfileAudioId = id;
     touch(project);
     message = t("studio.room_tone.done");
-    phase = queue.length ? "idle" : "setup";
+    phase = "idle";
   }
 
   function keydown(event: KeyboardEvent) {
@@ -235,9 +266,12 @@
     </label>
     {#if !micReady}<button class="primary" onclick={enableMicrophone}>🎙 {t("studio.enable")}</button>{/if}
     <button disabled={!micReady || phase === "recording" || phase === "roomtone"} onclick={roomTone}>
-      {phase === "roomtone" ? t("studio.room_tone.recording") : t("studio.room_tone")}
+      {phase === "roomtone" ? t("studio.room_tone.recording") : project.noiseProfileAudioId ? t("studio.room_tone.again") : t("studio.room_tone")}
     </button>
   </div>
+  <p class="muted small" style="margin-bottom: 0">
+    {project.noiseProfileAudioId ? `✓ ${t("studio.room_tone.have")}` : t("studio.room_tone.missing")}
+  </p>
   {#if micReady}<div style="margin-top: 8px"><LevelMeter {peakDb} clipping={clipping && phase === "recording"} /></div>{/if}
   {#if micError}<p class="error">{micError}</p>{/if}
   <div class="row small" style="margin-top: 8px">
@@ -269,7 +303,13 @@
 {:else}
   <section class="panel prompter" class:recording={phase === "recording"}>
     <div class="row spread small">
-      <span class="chip">{current?.event}</span>
+      {#if current && (phase === "idle" || phase === "review")}
+        <select class="event" bind:value={current.event} aria-label="Event" onchange={(e) => e.currentTarget.blur()}>
+          {#each allowed as event}<option value={event}>{event}</option>{/each}
+        </select>
+      {:else}
+        <span class="chip">{current?.event}</span>
+      {/if}
       <span class="muted">{t("studio.current", { index: index + 1, total: queue.length })}</span>
     </div>
     <div class="text">
@@ -290,7 +330,7 @@
       {#if phase === "recording"}
         <button class="primary" onclick={stopRecording}>■ {t("common.stop")}</button>
       {:else}
-        <button class="primary" disabled={phase === "countdown"} onclick={startRecording}>● {t("voice.record")}</button>
+        <button class="primary" disabled={phase === "countdown" || !micReady} onclick={startRecording}>● {t("voice.record")}</button>
       {/if}
       <button disabled={phase !== "review"} onclick={() => accept()}>✔ {t("studio.accept")}</button>
       <button disabled={phase !== "review"} onclick={() => accept(true)}>＋ {t("studio.variant")}</button>
@@ -298,6 +338,7 @@
       <button disabled={!take} onclick={playProcessed}>✨▶ {t("studio.play_processed")}</button>
       <button onclick={() => { phase = "setup"; take = undefined; }}>{t("studio.edit_script")}</button>
     </div>
+    {#if !micReady}<p class="muted small">{t("studio.enable_first")}</p>{/if}
     <p class="muted small">{t("studio.keys")}</p>
     {#if message}<p><strong>{message}</strong></p>{/if}
   </section>
@@ -309,6 +350,7 @@
   .prompter .row.spread { justify-content: space-between; }
   .prompter.recording { border-color: var(--record); box-shadow: 0 0 0 2px var(--record) inset; }
   .text { font-size: 2rem; line-height: 1.3; margin: 24px 0 12px; min-height: 2.6em; }
+  .event { width: auto; }
   .countdown { font-size: 3rem; font-weight: bold; }
   .status { margin: 12px 0; min-height: 1.5em; }
   .rec { color: var(--record); font-weight: bold; }
