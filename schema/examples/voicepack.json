@@ -15,6 +15,7 @@
       "gender": "female",
       "pitch": { "min": 0.9, "max": 1.1 },
       "weight": 2,
+      "legacyIds": ["anna_v1"],
       "lines": {
         "hurt": [{ "file": "sounds/anna/hurt/au.ogg", "duration": 0.5 }],
         "death": [{ "file": "sounds/anna/death/oh_no.ogg" }],

@@ -1,5 +1,37 @@
 # Phase 9 – Multiplayer-Feinschliff, Migration von V1, Default-Pack und Release
 
+## Status: technisch erledigt, Release offen
+
+Umgesetzt auf Branch `v2/phase-9` (abgeleitet von `v2/phase-8`).
+
+**Multiplayer**
+- Pack-Download wie geplant: Der Server schickt in `server_packs` pro Pack zusätzlich `downloadable` und eine optionale `url`. Der Client fragt mit einem Dialog (*Herunterladen*, *Jetzt nicht*, *Von diesem Server immer herunterladen*). Vertraute Server stehen in der Client-Config unter `trustedServers`.
+- Übertragung über neue Payloads `request_pack` (C2S) und `pack_chunk` (S2C), 64 KB pro Paket. `PackTransfers` sendet pro Tick nur so viel, wie `packDownload.kbpsPerPlayer` erlaubt (Default 2048 KB/s).
+- Abweichung: Es gibt kein Gesamtlimit `maxConcurrent`. Pro Spieler läuft immer nur ein Pack gleichzeitig, die übrigen warten in einer Warteschlange.
+- Der Client schreibt nach `.server-cache/<sha256>.part`. Nach dem Download prüft `PackReader` den Inhalt: sha256, Manifest und Validierung. Erst dann wird die Datei in `<sha256>.voicepack` umbenannt, der Cache auf 500 MB gekürzt (älteste Dateien zuerst) und neu geladen. Bei einem Verbindungsabbruch werden `.part`-Dateien gelöscht.
+- Packs aus dem Cache landen im `PackIndex` nur in `byHash`, werden also nie aktiv. Im Voicepack-Screen stehen sie im Abschnitt „Von Servern“ mit dem Knopf „Dauerhaft installieren“. Fehlende Server-Packs haben einen Knopf „Herunterladen“ und zeigen den Fortschritt.
+- `packDownload.url`: Der Client lädt `<url>/<Dateiname>` per HTTP(S), mit derselben Prüfung.
+- Größenlimits: Der Server bietet Packs über `packDownload.maxPackSizeMb` (Default 100) nicht an, der Client lädt nichts über 200 MB.
+- Server ohne Mod: Kommt 5 s nach dem Join kein `server_packs`, zeigt der Voicepack-Screen einen gelben Hinweis.
+- Performance: Smalltalk- und Hostile-Ticks laufen nur, wenn ein Spieler im Umkreis von 48 Blöcken ist. Folge für Tests über RCON ohne Spieler: Smalltalk und Kampfsprüche kommen dort nicht mehr. Eine Spark-Messung mit 200 Villagern steht noch aus.
+
+**Migration**
+- `Version1Converter` (core, getestet) wandelt V1-Resourcepacks um, im Spiel per Drag & Drop mit Dialog (Name, Sprache, Geschlecht). Event- und Berufs-Umbenennungen sind enthalten, die Untertitel werden zu `text`.
+- `voices[].legacyIds` ist neu im Manifest, im Schema und im Web-Editor-Import. `LegacyVoices` prüft zuerst die `legacyIds` und dann die Voice-ID.
+- Abweichung: Statt eines Toasts beim Start zeigt der Voicepack-Screen den Hinweis „V1-Stimmen gefunden“.
+
+**Default-Pack**
+- `./gradlew :core:buildDefaultPack` baut `build/voicepacks/teajay-default-2.0.0.voicepack` (ca. 13 MB). Es enthält die TeaJay-Villager-Stimme (männlich, `legacyIds: ["teajay"]`) und die Hexen-Testaufnahmen.
+- Das Pack kommt nicht ins JAR. Stimmen für Frauen, Kinder, Händler und Illager fehlen noch, dafür braucht es neue Aufnahmen.
+
+**Doku und Release**
+- README ist neu geschrieben. Neu sind `docs/voicepack-format.md` (Event-Tabelle aus dem `EventCatalog` erzeugt), `docs/creating-voicepacks.md` und `CHANGELOG.md`.
+- Die Version ist jetzt `2.0.0-beta.1`. Der Build hängt `+mc26.3` an, die JARs heißen `talkingvillagers-<loader>-<version>.jar`.
+- `.github/workflows/publish.yml` (mc-publish für Modrinth, CurseForge und GitHub) läuft bei Tags `v*`. Die Projekt-IDs sind Platzhalter, die Secrets `MODRINTH_TOKEN` und `CURSEFORGE_TOKEN` müssen noch angelegt werden.
+- `DownloadClientGameTest` läuft nur mit `TV_TEST_SERVER=localhost:25565` gegen einen laufenden Dev-Server. Er bricht einen Download per Verbindungsabbruch ab und prüft, dass der Cache leer bleibt. Danach lädt er vollständig herunter und prüft, dass das Pack nicht aktiv wird.
+
+**Offen:** Beta auf Modrinth, Testmatrix unten, Aufnahmen für das Default-Pack.
+
 ## Ziel
 V2 ist veröffentlichungsreif: Es läuft robust auf Servern, alte Packs und Welten lassen sich übernehmen, ein Default-Pack wird mitgeliefert, die Doku ist aktuell, und die Mod ist auf Modrinth und CurseForge veröffentlicht.
 

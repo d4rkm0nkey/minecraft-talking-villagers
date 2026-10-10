@@ -84,7 +84,7 @@ public final class PackReader {
                 return new VoiceLine(line.file(), line.text(), duration, line.conditions());
             }).toList()));
             return new Voice(voice.id(), voice.name(), voice.entities(), voice.gender(), voice.child(), voice.language(),
-                    voice.pitch(), voice.weight(), lines);
+                    voice.pitch(), voice.weight(), lines, voice.legacyIds());
         }).toList();
         return new VoicePack(pack.format(), pack.id(), pack.name(), pack.version(), pack.description(), pack.authors(),
                 pack.language(), voices);

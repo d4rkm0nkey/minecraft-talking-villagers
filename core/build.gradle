@@ -60,3 +60,13 @@ tasks.register('writeEventCatalog', JavaExec) {
     mainClass = 'me.teajay.talkingvillagers.core.catalog.EventCatalogJson'
     args = [rootProject.file('schema/events.json').absolutePath]
 }
+
+// builds the default voicepack from packs-src, distributed separately from the mod jar
+tasks.register('buildDefaultPack', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'me.teajay.talkingvillagers.core.convert.DefaultPackBuilder'
+    def version = rootProject.property('default_pack_version')
+    args = [rootProject.file('packs-src/teajay-default').absolutePath,
+            rootProject.file("build/voicepacks/teajay-default-${version}.voicepack").absolutePath,
+            version]
+}

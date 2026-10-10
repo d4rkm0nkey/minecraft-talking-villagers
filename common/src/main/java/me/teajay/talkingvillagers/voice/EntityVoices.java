@@ -300,8 +300,15 @@ public final class EntityVoices {
     /**
      * Called every server tick of villagers and wandering traders; does real work once per {@link Chatter#INTERVAL} ticks.
      */
+    /** Range in which players can hear small talk; entities farther away skip their chatter logic. */
+    private static final double HEARING_RANGE = 48;
+
+    private static boolean isHeard(Entity entity, ServerLevel level) {
+        return level.hasNearbyAlivePlayer(entity.getX(), entity.getY(), entity.getZ(), HEARING_RANGE);
+    }
+
     public static void tickChatter(LivingEntity entity, ServerLevel level) {
-        if ((level.getGameTime() + entity.getId()) % Chatter.INTERVAL != 0 || !entity.isAlive()) {
+        if ((level.getGameTime() + entity.getId()) % Chatter.INTERVAL != 0 || !entity.isAlive() || !isHeard(entity, level)) {
             return;
         }
         Optional<ResolvedVoice> voice = voice(entity);
@@ -414,9 +421,11 @@ public final class EntityVoices {
      * Called every server tick of a mob; witches and illagers check their fight state once per second.
      */
     public static void tickHostile(Mob mob, ServerLevel level) {
+        if ((level.getGameTime() + mob.getId()) % Chatter.INTERVAL != 0 || !mob.isAlive() || !isHeard(mob, level)) {
+            return;
+        }
         Optional<EntityKind> kind = kindOf(mob);
-        if (kind.isEmpty() || !EventCatalog.HOSTILE.contains(kind.get())
-                || (level.getGameTime() + mob.getId()) % Chatter.INTERVAL != 0 || !mob.isAlive()) {
+        if (kind.isEmpty() || !EventCatalog.HOSTILE.contains(kind.get())) {
             return;
         }
         Optional<ResolvedVoice> voice = voice(mob);

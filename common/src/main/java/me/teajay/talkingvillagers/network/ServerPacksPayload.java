@@ -23,15 +23,19 @@ public record ServerPacksPayload(List<PackInfo> packs) implements CustomPacketPa
     }
 
     /**
-     * @param size file size in bytes, for the download dialog
+     * @param size         file size in bytes, for the download dialog
+     * @param downloadable the server sends this pack on request
+     * @param url          HTTP(S) address to download the pack from instead, or empty
      */
-    public record PackInfo(String id, String name, String version, String sha256, long size) {
+    public record PackInfo(String id, String name, String version, String sha256, long size, boolean downloadable, String url) {
         public static final StreamCodec<ByteBuf, PackInfo> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.stringUtf8(64), PackInfo::id,
                 ByteBufCodecs.stringUtf8(256), PackInfo::name,
                 ByteBufCodecs.stringUtf8(64), PackInfo::version,
                 ByteBufCodecs.stringUtf8(64), PackInfo::sha256,
                 ByteBufCodecs.VAR_LONG, PackInfo::size,
+                ByteBufCodecs.BOOL, PackInfo::downloadable,
+                ByteBufCodecs.stringUtf8(2048), PackInfo::url,
                 PackInfo::new);
     }
 

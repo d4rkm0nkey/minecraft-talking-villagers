@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -11,8 +13,12 @@ import java.util.Locale;
  *
  * @param volume multiplier for all voice lines, on top of the vanilla sound categories
  */
-public record ClientConfig(float volume, Subtitles subtitles) {
-    public static final ClientConfig DEFAULT = new ClientConfig(1.0f, Subtitles.TRANSCRIPT);
+public record ClientConfig(float volume, Subtitles subtitles, List<String> trustedServers) {
+    public static final ClientConfig DEFAULT = new ClientConfig(1.0f, Subtitles.TRANSCRIPT, List.of());
+
+    public ClientConfig {
+        trustedServers = List.copyOf(trustedServers);
+    }
 
     public enum Subtitles {
         /** The transcript of the line, or "Villager speaks" if the line has none. */
@@ -37,14 +43,24 @@ public record ClientConfig(float volume, Subtitles subtitles) {
 
     public static final Codec<ClientConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.floatRange(0, 2).optionalFieldOf("volume", DEFAULT.volume).forGetter(ClientConfig::volume),
-            SUBTITLES.optionalFieldOf("subtitles", DEFAULT.subtitles).forGetter(ClientConfig::subtitles)
+            SUBTITLES.optionalFieldOf("subtitles", DEFAULT.subtitles).forGetter(ClientConfig::subtitles),
+            Codec.STRING.listOf().optionalFieldOf("trustedServers", DEFAULT.trustedServers).forGetter(ClientConfig::trustedServers)
     ).apply(instance, ClientConfig::new));
 
     public ClientConfig withVolume(float value) {
-        return new ClientConfig(value, subtitles);
+        return new ClientConfig(value, subtitles, trustedServers);
     }
 
     public ClientConfig withSubtitles(Subtitles value) {
-        return new ClientConfig(volume, value);
+        return new ClientConfig(volume, value, trustedServers);
+    }
+
+    /** Servers whose voicepacks are downloaded without asking. */
+    public ClientConfig trusting(String server) {
+        List<String> servers = new ArrayList<>(trustedServers);
+        if (!servers.contains(server)) {
+            servers.add(server);
+        }
+        return new ClientConfig(volume, subtitles, servers);
     }
 }

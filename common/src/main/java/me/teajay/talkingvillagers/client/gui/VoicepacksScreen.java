@@ -1,7 +1,9 @@
 package me.teajay.talkingvillagers.client.gui;
 
 import com.mojang.blaze3d.Blaze3D;
+import me.teajay.talkingvillagers.TalkingVillagers;
 import me.teajay.talkingvillagers.client.ClientVoices;
+import me.teajay.talkingvillagers.client.PackDownloads;
 import me.teajay.talkingvillagers.client.PreviewSounds;
 import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
@@ -9,6 +11,7 @@ import me.teajay.talkingvillagers.core.model.VoicePack;
 import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.pack.Voicepacks;
+import me.teajay.talkingvillagers.platform.Services;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -23,12 +26,15 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The voicepack manager: lists installed packs, installs dropped files, enables, disables and deletes packs.
@@ -40,6 +46,8 @@ public class VoicepacksScreen extends Screen {
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 56, 33);
     private @Nullable RowList list;
     private @Nullable EditBox search;
+    private boolean downloadsShown;
+    private int ticks;
 
     public VoicepacksScreen(@Nullable Screen parent) {
         super(GuiTexts.key("packs.title"));
@@ -118,17 +126,91 @@ public class VoicepacksScreen extends Screen {
             }
         }
 
+        if (hasVersion1Config()) {
+            rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.v1_found").copy().withStyle(ChatFormatting.YELLOW))
+                    .secondary(GuiTexts.key("packs.v1_found.hint")).build());
+        }
+
+        if (ClientVoices.isServerWithoutMod()) {
+            rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.server_without_mod").copy().withStyle(ChatFormatting.YELLOW))
+                    .secondary(GuiTexts.key("packs.server_without_mod.hint")).build());
+        }
+
         List<ServerPacksPayload.PackInfo> missing = ClientVoices.missingPacks();
         if (!missing.isEmpty()) {
             rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.missing").copy().withStyle(ChatFormatting.YELLOW)).build());
+            Map<String, PackDownloads.Download> downloads = PackDownloads.active();
             for (ServerPacksPayload.PackInfo info : missing) {
-                rows.add(new RowList.RowBuilder(font).icon(PackIcons.DEFAULT)
-                        .line(Component.literal(info.name() + " " + info.version()))
-                        .secondary(GuiTexts.key("packs.missing.entry", GuiTexts.size(info.size())))
-                        .build());
+                PackDownloads.Download download = downloads.get(info.sha256());
+                RowList.RowBuilder row = new RowList.RowBuilder(font).icon(PackIcons.DEFAULT)
+                        .line(Component.literal(info.name() + " " + info.version()));
+                if (download != null) {
+                    row.secondary(download.progress() < 0 ? GuiTexts.key("packs.downloading")
+                            : GuiTexts.key("packs.downloading.progress", Math.round(download.progress() * 100)));
+                } else {
+                    row.secondary(GuiTexts.key("packs.missing.entry", GuiTexts.size(info.size())));
+                    if (PackDownloads.canDownload(info)) {
+                        row.widget(Button.builder(GuiTexts.key("packs.download"), button -> {
+                            PackDownloads.accept(List.of(info), false);
+                            refresh();
+                        }).width(80).build());
+                    }
+                }
+                rows.add(row.build());
+            }
+        }
+
+        if (!index.cached().isEmpty()) {
+            rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.cached").copy().withStyle(ChatFormatting.GRAY))
+                    .secondary(GuiTexts.key("packs.cached.hint")).build());
+            for (LoadedPack cached : index.cached()) {
+                if (cached.isUsable() && matches(cached, filter)) {
+                    rows.add(cachedRow(cached, index));
+                }
             }
         }
         list.setRows(rows);
+        downloadsShown = !PackDownloads.active().isEmpty();
+    }
+
+    @Override
+    public void tick() {
+        // show download progress and finished downloads
+        if ((downloadsShown || !PackDownloads.active().isEmpty()) && ++ticks % 10 == 0) {
+            refresh();
+        }
+    }
+
+    private RowList.Row cachedRow(LoadedPack loaded, PackIndex index) {
+        VoicePack pack = loaded.pack().orElseThrow();
+        boolean installed = index.all().stream().anyMatch(other -> other.sha256().equals(loaded.sha256()));
+        Button install = Button.builder(GuiTexts.key("packs.install_cached"), button -> {
+            try {
+                Voicepacks.repository().installCached(loaded);
+            } catch (IOException e) {
+                TalkingVillagers.LOG.error("Cannot install {}", loaded.source(), e);
+            }
+            Voicepacks.reload();
+            refresh();
+        }).width(110).tooltip(Tooltip.create(GuiTexts.key("packs.install_cached.tooltip"))).build();
+        install.active = !installed;
+        return new RowList.RowBuilder(font)
+                .icon(PackIcons.get(loaded))
+                .line(Component.literal(pack.name() + " ").append(Component.literal(pack.version()).withStyle(ChatFormatting.GRAY)), 0xFFA0A0A0)
+                .secondary(GuiTexts.key("packs.entry", pack.language(), pack.voices().size()))
+                .widget(Button.builder(GuiTexts.key("packs.details"), button -> minecraft.gui.setScreen(new PackDetailsScreen(this, loaded))).width(56).build())
+                .widget(install)
+                .build();
+    }
+
+    /** Version 1 kept one JSON file per voice in config/talkingvillagers/voices. */
+    private static boolean hasVersion1Config() {
+        Path voices = Services.PLATFORM.getGameDir().resolve("config").resolve("talkingvillagers").resolve("voices");
+        try (var files = Files.list(voices)) {
+            return files.anyMatch(file -> file.toString().endsWith(".json"));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private static boolean matches(LoadedPack pack, String filter) {

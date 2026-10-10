@@ -40,7 +40,7 @@ public final class ManifestCodec {
     /** Minecraft resource paths only allow lower case; segments must not start with a dot to rule out {@code ..}. */
     private static final Pattern FILE = Pattern.compile("^sounds/([a-z0-9_-][a-z0-9_.-]*/)*[a-z0-9_-][a-z0-9_.-]*\\.ogg$");
     private static final Set<String> PACK_KEYS = Set.of("$schema", "format", "id", "name", "version", "description", "authors", "language", "voices");
-    private static final Set<String> VOICE_KEYS = Set.of("id", "name", "entities", "gender", "child", "language", "pitch", "weight", "lines");
+    private static final Set<String> VOICE_KEYS = Set.of("id", "name", "entities", "gender", "child", "language", "pitch", "weight", "lines", "legacyIds");
     private static final Set<String> LINE_KEYS = Set.of("file", "text", "duration", "conditions");
     private static final Set<String> CONDITION_KEYS = Set.of("professions", "weather");
 
@@ -142,11 +142,12 @@ public final class ManifestCodec {
                 report(ProblemCode.INVALID_VALUE, join(path, "weight"), "Weight must be between 1 and 100");
             }
             Map<String, List<VoiceLine>> lines = lines(json, path);
+            List<String> legacyIds = stringList(json, "legacyIds", path, false, Function.identity());
 
             if (id.isEmpty() || name.isEmpty() || entities.isEmpty() || gender.isEmpty()) {
                 return Optional.empty();
             }
-            return Optional.of(new Voice(id.get(), name.get(), entities, gender.get(), child, language, pitch, weight, lines));
+            return Optional.of(new Voice(id.get(), name.get(), entities, gender.get(), child, language, pitch, weight, lines, legacyIds));
         }
 
         private Set<EntityKind> entities(JsonObject json, String path) {
@@ -462,6 +463,9 @@ public final class ManifestCodec {
             }
         });
         json.add("lines", lines);
+        if (!voice.legacyIds().isEmpty()) {
+            json.add("legacyIds", stringArray(voice.legacyIds()));
+        }
         return json;
     }
 

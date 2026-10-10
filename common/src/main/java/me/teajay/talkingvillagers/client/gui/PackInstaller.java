@@ -46,6 +46,11 @@ final class PackInstaller {
         for (Path file : files) {
             String name = file.getFileName().toString();
             if (!name.endsWith(VoicePack.FILE_EXTENSION)) {
+                if (files.size() == 1 && isVersion1Pack(file)) {
+                    // an old resource pack: offer to convert it
+                    minecraft.gui.setScreen(new ConvertScreen(screen, file, afterInstall));
+                    return;
+                }
                 rejected.add(Component.translatable(isVersion1Pack(file) ? "talkingvillagers.gui.install.v1" : "talkingvillagers.gui.install.not_voicepack", name).getString());
                 continue;
             }

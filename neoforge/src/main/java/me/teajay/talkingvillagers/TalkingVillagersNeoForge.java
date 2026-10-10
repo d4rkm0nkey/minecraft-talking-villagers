@@ -1,8 +1,11 @@
 package me.teajay.talkingvillagers;
 
 import me.teajay.talkingvillagers.client.ClientVoices;
+import me.teajay.talkingvillagers.client.PackDownloads;
 import me.teajay.talkingvillagers.command.TalkingVillagersCommand;
 import me.teajay.talkingvillagers.network.ClientPacksPayload;
+import me.teajay.talkingvillagers.network.PackChunkPayload;
+import me.teajay.talkingvillagers.network.RequestPackPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.network.SpeakPayload;
 import me.teajay.talkingvillagers.platform.NeoForgePlatformAttachments;
@@ -15,6 +18,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -30,6 +34,7 @@ public class TalkingVillagersNeoForge {
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> TalkingVillagersCommand.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener((ServerStartingEvent event) -> ServerVoices.onServerStarting(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> ServerVoices.onServerStopped());
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> ServerVoices.onServerTick(event.getServer()));
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 ServerVoices.onPlayerJoin(player);
@@ -48,6 +53,12 @@ public class TalkingVillagersNeoForge {
         // the client handlers only run on the client, so the client classes are never loaded on a dedicated server
         registrar.playToClient(SpeakPayload.TYPE, SpeakPayload.STREAM_CODEC, (payload, context) -> ClientVoices.onSpeak(payload));
         registrar.playToClient(ServerPacksPayload.TYPE, ServerPacksPayload.STREAM_CODEC, (payload, context) -> ClientVoices.onServerPacks(payload));
+        registrar.playToClient(PackChunkPayload.TYPE, PackChunkPayload.STREAM_CODEC, (payload, context) -> PackDownloads.onChunk(payload));
+        registrar.playToServer(RequestPackPayload.TYPE, RequestPackPayload.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                ServerVoices.onPackRequest(player, payload);
+            }
+        });
         registrar.playToServer(ClientPacksPayload.TYPE, ClientPacksPayload.STREAM_CODEC, (payload, context) -> {
             if (context.player() instanceof ServerPlayer player) {
                 ServerVoices.onClientPacks(player, payload);

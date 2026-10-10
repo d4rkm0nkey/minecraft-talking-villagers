@@ -23,11 +23,13 @@ import java.util.function.Predicate;
  * Immutable snapshot of the installed voicepacks.
  *
  * @param all     every pack file found, including broken, disabled and shadowed ones
+ * @param cached  packs downloaded from a server; only used to play that server's lines, never active
  * @param active  the packs in use, one per pack id
  * @param byHash  every usable pack by its SHA-256, so a line can be played from exactly the file the server meant
  */
 public record PackIndex(
         List<LoadedPack> all,
+        List<LoadedPack> cached,
         Map<String, LoadedPack> active,
         Map<String, LoadedPack> byHash,
         Map<VoiceRef, ResolvedVoice> voices,
@@ -35,10 +37,15 @@ public record PackIndex(
 ) {
     public static final PackIndex EMPTY = build(List.of(), id -> true);
 
+    public static PackIndex build(List<LoadedPack> packs, Predicate<String> enabled) {
+        return build(packs, List.of(), enabled);
+    }
+
     /**
+     * @param cached  packs downloaded from servers
      * @param enabled whether a pack id is enabled by the user
      */
-    public static PackIndex build(List<LoadedPack> packs, Predicate<String> enabled) {
+    public static PackIndex build(List<LoadedPack> packs, List<LoadedPack> cached, Predicate<String> enabled) {
         Map<String, LoadedPack> active = new LinkedHashMap<>();
         Map<String, LoadedPack> byHash = new LinkedHashMap<>();
         // newest version first, so it wins when two files contain the same pack id
@@ -54,6 +61,8 @@ public record PackIndex(
                     }
                 });
 
+        cached.stream().filter(LoadedPack::isUsable).forEach(loaded -> byHash.putIfAbsent(loaded.sha256(), loaded));
+
         Map<VoiceRef, ResolvedVoice> voices = new LinkedHashMap<>();
         Map<EntityKind, List<ResolvedVoice>> byKind = new EnumMap<>(EntityKind.class);
         active.values().stream()
@@ -63,7 +72,7 @@ public record PackIndex(
                     voice.voice().entities().forEach(kind -> byKind.computeIfAbsent(kind, k -> new ArrayList<>()).add(voice));
                 });
         byKind.replaceAll((kind, list) -> List.copyOf(list));
-        return new PackIndex(List.copyOf(packs), Map.copyOf(active), Map.copyOf(byHash), Map.copyOf(voices), Map.copyOf(byKind));
+        return new PackIndex(List.copyOf(packs), List.copyOf(cached), Map.copyOf(active), Map.copyOf(byHash), Map.copyOf(voices), Map.copyOf(byKind));
     }
 
     public Collection<LoadedPack> activePacks() {

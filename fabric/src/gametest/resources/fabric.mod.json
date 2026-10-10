@@ -7,7 +7,8 @@
   "entrypoints": {
     "fabric-client-gametest": [
       "me.teajay.talkingvillagers.test.GuiClientGameTest",
-      "me.teajay.talkingvillagers.test.SpeakClientGameTest"
+      "me.teajay.talkingvillagers.test.SpeakClientGameTest",
+      "me.teajay.talkingvillagers.test.DownloadClientGameTest"
     ]
   },
   "depends": {

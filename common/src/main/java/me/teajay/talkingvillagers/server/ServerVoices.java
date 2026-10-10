@@ -3,15 +3,15 @@ package me.teajay.talkingvillagers.server;
 import me.teajay.talkingvillagers.TalkingVillagers;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.model.VoicePack;
+import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.network.ClientPacksPayload;
+import me.teajay.talkingvillagers.network.RequestPackPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -53,6 +53,15 @@ public final class ServerVoices {
 
     public static void onPlayerLeave(ServerPlayer player) {
         CLIENT_PACKS.remove(player.getUUID());
+        PackTransfers.onPlayerLeave(player);
+    }
+
+    public static void onServerTick(MinecraftServer minecraftServer) {
+        PackTransfers.tick(minecraftServer);
+    }
+
+    public static void onPackRequest(ServerPlayer player, RequestPackPayload payload) {
+        PackTransfers.onRequest(player, payload.sha256());
     }
 
     public static void onClientPacks(ServerPlayer player, ClientPacksPayload payload) {
@@ -77,12 +86,10 @@ public final class ServerVoices {
 
     private static ServerPacksPayload.PackInfo info(LoadedPack loaded) {
         VoicePack pack = loaded.pack().orElseThrow();
-        long size;
-        try {
-            size = Files.size(loaded.source());
-        } catch (IOException e) {
-            size = 0;
-        }
-        return new ServerPacksPayload.PackInfo(pack.id(), pack.name(), pack.version(), loaded.sha256(), size);
+        long size = PackTransfers.size(loaded);
+        String base = Configs.server().packDownload().url().trim();
+        String url = base.isEmpty() ? "" : (base.endsWith("/") ? base : base + "/") + loaded.source().getFileName();
+        return new ServerPacksPayload.PackInfo(pack.id(), pack.name(), pack.version(), loaded.sha256(), size,
+                PackTransfers.isDownloadable(loaded.sha256()), url);
     }
 }

@@ -34,6 +34,9 @@ public final class ClientVoices {
     /** The line each entity is saying right now, by entity id. */
     private static final Map<Integer, VoiceSoundInstance> PLAYING = new HashMap<>();
     private static @Nullable ServerPacksPayload serverPacks;
+    /** Ticks since joining a server that has not sent its pack list yet. */
+    private static int ticksWithoutPackList;
+    private static @Nullable Object connection;
 
     private ClientVoices() {
     }
@@ -41,6 +44,27 @@ public final class ClientVoices {
     public static void onServerPacks(ServerPacksPayload payload) {
         serverPacks = payload;
         answerServer();
+        PackDownloads.onServerPacks(missingPacks());
+    }
+
+    /** Client tick. */
+    public static void tick(Minecraft minecraft) {
+        Object current = minecraft.getConnection();
+        if (current != connection) {
+            connection = current;
+            ticksWithoutPackList = 0;
+        } else if (current != null && serverPacks == null) {
+            ticksWithoutPackList++;
+        }
+        PackDownloads.tick(minecraft);
+    }
+
+    /**
+     * Whether we are connected to a server that did not send its voicepacks within five seconds, so it most likely
+     * does not have the mod and villagers sound like vanilla.
+     */
+    public static boolean isServerWithoutMod() {
+        return connection != null && serverPacks == null && ticksWithoutPackList > 100;
     }
 
     /**
@@ -57,6 +81,7 @@ public final class ClientVoices {
     public static void onDisconnect() {
         serverPacks = null;
         PLAYING.clear();
+        PackDownloads.onDisconnect();
     }
 
     /**

@@ -15,8 +15,8 @@ import java.util.Optional;
 import java.util.SplittableRandom;
 
 /**
- * Takes over the voice of villagers saved by version 1 ({@code VoiceName} and {@code VoicePitch}), if a pack with a
- * voice of that id is installed. Otherwise the villager gets a new voice the usual way.
+ * Takes over the voice of villagers saved by version 1 ({@code VoiceName} and {@code VoicePitch}), if a pack has a voice
+ * that lists that name in {@code legacyIds} or has it as id. Otherwise the villager gets a new voice the usual way.
  */
 public final class LegacyVoices {
     private static final String VOICE_NAME = "VoiceName";
@@ -32,7 +32,9 @@ public final class LegacyVoices {
             return;
         }
         Optional<ResolvedVoice> voice = Voicepacks.index().voices().values().stream()
-                .filter(candidate -> candidate.ref().voiceId().equals(name.get()) && candidate.voice().child() == entity.isBaby())
+                .filter(candidate -> candidate.voice().child() == entity.isBaby())
+                .filter(candidate -> candidate.voice().legacyIds().contains(name.get()) || candidate.ref().voiceId().equals(name.get()))
+                .sorted((a, b) -> Boolean.compare(!a.voice().legacyIds().contains(name.get()), !b.voice().legacyIds().contains(name.get())))
                 .findFirst();
         if (voice.isEmpty()) {
             return;

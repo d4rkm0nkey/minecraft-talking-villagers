@@ -81,6 +81,40 @@ class PackRepositoryTest {
     }
 
     @Test
+    void cachedPacksArePlayableButNeverActive() throws Exception {
+        PackRepository repository = new PackRepository(dir);
+        Files.createDirectories(repository.cacheDirectory());
+        Path cached = pack("server", "1.0.0").write(repository.cacheDirectory(), "abc.voicepack");
+
+        PackIndex index = repository.reload();
+
+        assertThat(index.active()).isEmpty();
+        assertThat(index.cached()).hasSize(1);
+        String hash = index.cached().getFirst().sha256();
+        assertThat(index.byHash(hash)).isPresent();
+        assertThat(repository.readFile(hash, BASIC_FILES[0])).isNotEmpty();
+
+        Path installed = repository.installCached(index.cached().getFirst());
+        assertThat(installed.getFileName().toString()).isEqualTo("server-1.0.0.voicepack");
+        assertThat(repository.reload().active()).containsOnlyKeys("server");
+        assertThat(Files.exists(cached)).isTrue();
+    }
+
+    @Test
+    void pruneCacheDeletesOldestFilesFirst() throws Exception {
+        PackRepository repository = new PackRepository(dir);
+        Files.createDirectories(repository.cacheDirectory());
+        Path old = Files.write(repository.cacheDirectory().resolve("old.voicepack"), new byte[1000]);
+        Path young = Files.write(repository.cacheDirectory().resolve("young.voicepack"), new byte[1000]);
+        Files.setLastModifiedTime(old, java.nio.file.attribute.FileTime.fromMillis(1000));
+
+        repository.pruneCache(1500);
+
+        assertThat(Files.exists(old)).isFalse();
+        assertThat(Files.exists(young)).isTrue();
+    }
+
+    @Test
     void readsFilesByHash() throws Exception {
         pack("one", "1.0.0").write(dir, "one.voicepack");
         PackRepository repository = new PackRepository(dir);
