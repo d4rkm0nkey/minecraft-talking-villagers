@@ -1,6 +1,6 @@
 # Phase 4 – Witch, Wandering Trader und Illager
 
-## Status: erledigt (Server getestet, Client offen)
+## Status: erledigt
 
 Umgesetzt auf Branch `v2/phase-4`. Getestet auf Dedicated Servern mit Fabric und NeoForge über RCON:
 - Witch, Wandering Trader, Pillager, Vindicator, Evoker und Illusioner bekommen Stimmen aus einem Test-Pack (die Illager-Stimme nutzt `entities: ["illager"]`). Andere Mobs bekommen keine.
@@ -8,6 +8,8 @@ Umgesetzt auf Branch `v2/phase-4`. Getestet auf Dedicated Servern mit Fabric und
 - `summon_vex` ohne eigene Zeilen fällt auf `cast_spell` zurück.
 
 **Offen:** Ereignisse, die nur mit KI und echtem Spieler auftreten (Spieler entdecken, Angriff, Armbrust spannen, Raid-Horn, Trank trinken und werfen, Lachen, Handel mit dem Trader), und das Hören im Client.
+
+**Client-Test (10.10.2026):** Im echten Client bestätigt: Villager, Hexe, Händler und Illager sprechen mit den Stimmen aus den Test-Packs, die Vanilla-Laute werden ersetzt.
 
 Umsetzung und Abweichungen:
 - **Ein Sound-Hook für alles:** Der zentrale Mixin sitzt jetzt auf `Entity.playSound(SoundEvent, float, float)` statt auf `makeSound`. Damit sind auch die Zauber-Sounds der Spellcaster abgedeckt. Die Tabelle `VanillaSounds` ordnet jedem Vanilla-Sound pro Entity-Art ein Event zu. Das „Wololo“ des Evokers bleibt bewusst Vanilla.

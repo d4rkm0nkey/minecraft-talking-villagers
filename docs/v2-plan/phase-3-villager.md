@@ -1,6 +1,6 @@
 # Phase 3 – Villager neu (Attachments, Controller, Kind/Erwachsen, Geschlecht)
 
-## Status: erledigt (Server getestet, Client offen)
+## Status: erledigt
 
 Umgesetzt auf Branch `v2/phase-3`. Getestet auf Dedicated Servern mit Fabric und NeoForge über RCON mit einem Test-Pack (Mann, Frau, Junge, Mädchen):
 - Erwachsene und Kinder bekommen passende Stimmen.
@@ -9,6 +9,8 @@ Umgesetzt auf Branch `v2/phase-3`. Getestet auf Dedicated Servern mit Fabric und
 - Ein Villager im V1-Format (`VoiceName`, `VoicePitch`) behält seine Stimme.
 
 **Offen:** Hören im Client (Begrüßung, Smalltalk, Handel, Verletzung) und der Client-Mixin, der den lokalen Vanilla-Hurt-/Death-Sound unterdrückt. Beides lässt sich nur mit einem echten Client prüfen.
+
+**Client-Test (10.10.2026):** Im echten Client bestätigt: Villager, Hexe, Händler und Illager sprechen mit den Stimmen aus den Test-Packs, die Vanilla-Laute werden ersetzt.
 
 Umsetzung und Abweichungen:
 - **Regeln in `core`** (`me.teajay.talkingvillagers.core.voice`): `VoiceIdentity`, `VoiceAssigner` (wann und welche Stimme), `EventPolicies` (Cooldown, Chance, Unterbrechen), `SpeakerState` und `VillagerChatter` (Begrüßen, Held, Smalltalk, Wetter). Alles unit-getestet statt per GameTest.

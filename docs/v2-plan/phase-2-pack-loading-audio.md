@@ -4,6 +4,8 @@
 
 Umgesetzt auf Branch `v2/phase-2`. Getestet: Dedicated Server mit Fabric und NeoForge über RCON (Pack laden, `/tv`-Commands, Zeile auswählen und senden). Für den Client gibt es einen automatisierten Fabric-Client-GameTest (`./gradlew :fabric:runClientGameTest`), der eine Welt anlegt, einen Villager sprechen lässt und prüft, dass die Zeile wirklich läuft. **Offen:** Der Test lief bisher nicht bis zum Ende durch; der Prozess wurde jedes Mal von außen per SIGTERM beendet.
 
+**Client-Test (10.10.2026):** Im echten Client bestätigt: Villager, Hexe, Händler und Illager sprechen mit den Stimmen aus den Test-Packs, die Vanilla-Laute werden ersetzt.
+
 Abweichungen vom Plan:
 - **Kein virtuelles Resourcepack.** Ein Mixin auf `SoundBufferLibrary.getCompleteBuffer` liefert die Ogg-Daten für `talkingvillagers:sounds/voice/<sha256>/…` direkt aus der `.voicepack`-Datei. `VoiceSoundInstance` baut ihren `Sound` selbst, eine `sounds.json` entfällt. Vorteile: Ein neues Pack wird ohne Ressourcen-Neuladen sofort hörbar, Packs tauchen nicht in der Resourcepack-Liste auf, und die Lösung ist für Fabric und NeoForge identisch.
 - **Pack-Identität über den Hash.** `SpeakPayload` enthält statt der Pack-ID den SHA-256 der Datei. Der Client spielt damit garantiert aus derselben Datei wie der Server, auch bei unterschiedlichen Pack-Versionen.
