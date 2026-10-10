@@ -43,13 +43,15 @@ public final class VoiceAssigner {
      * Gives the entity a voice that fits its gender, age and language. Gender and language of an existing identity
      * are kept, so a child keeps both when it grows up.
      *
-     * @param usage how often each voice is used nearby, to give neighbours different voices
+     * @param usage          how often each voice is used nearby, to give neighbours different voices
+     * @param wantedLanguage language for an entity that has none yet, e.g. the language of its village
      * @return the new identity; without a fitting voice its {@link VoiceIdentity#voice()} is empty
      */
     public static VoiceIdentity assign(Optional<VoiceIdentity> current, EntityKind kind, boolean child, Collection<ResolvedVoice> pool,
-                                       Map<VoiceRef, Integer> usage, AssignmentSettings settings, RandomGenerator random) {
+                                       Map<VoiceRef, Integer> usage, AssignmentSettings settings, Optional<String> wantedLanguage,
+                                       RandomGenerator random) {
         Gender gender = current.map(VoiceIdentity::gender).orElseGet(() -> rollGender(settings, kind, random));
-        Optional<String> language = current.flatMap(VoiceIdentity::language);
+        Optional<String> language = current.flatMap(VoiceIdentity::language).or(() -> wantedLanguage);
 
         VoiceCriteria criteria = VoiceCriteria.of(kind, child)
                 .withGender(gender)

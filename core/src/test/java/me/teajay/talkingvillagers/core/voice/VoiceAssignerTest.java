@@ -37,7 +37,7 @@ class VoiceAssignerTest {
     private static final List<ResolvedVoice> POOL = List.of(MAN, WOMAN, BOY, GIRL, ENGLISH_MAN);
 
     private VoiceIdentity assign(Optional<VoiceIdentity> current, boolean child, List<ResolvedVoice> pool) {
-        return VoiceAssigner.assign(current, VILLAGER, child, pool, Map.of(), AssignmentSettings.DEFAULT, random);
+        return VoiceAssigner.assign(current, VILLAGER, child, pool, Map.of(), AssignmentSettings.DEFAULT, Optional.empty(), random);
     }
 
     private static Optional<ResolvedVoice> lookup(VoiceRef ref) {
@@ -98,6 +98,25 @@ class VoiceAssignerTest {
     }
 
     @Test
+    void usesWantedLanguageForNewEntities() {
+        for (int i = 0; i < 20; i++) {
+            VoiceIdentity identity = VoiceAssigner.assign(Optional.empty(), VILLAGER, false, POOL, Map.of(),
+                    new AssignmentSettings(0.0, 0.0, VoiceCriteria.ChildFallback.VANILLA, false), Optional.of("en"), random);
+            assertThat(identity.voice()).contains(ENGLISH_MAN.ref());
+            assertThat(identity.language()).contains("en");
+        }
+    }
+
+    @Test
+    void existingLanguageWinsOverWantedLanguage() {
+        VoiceIdentity german = new VoiceIdentity(Gender.MALE, Optional.empty(), 1, false, Optional.of("de"), false);
+
+        VoiceIdentity identity = VoiceAssigner.assign(Optional.of(german), VILLAGER, false, POOL, Map.of(), AssignmentSettings.DEFAULT, Optional.of("en"), random);
+
+        assertThat(identity.voice()).contains(MAN.ref());
+    }
+
+    @Test
     void manualVoiceSurvivesGrowingUp() {
         VoiceIdentity manual = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, true, Optional.empty(), true);
 
@@ -120,7 +139,7 @@ class VoiceAssignerTest {
 
         assertThat(identity.voice()).isEmpty();
         assertThat(identity.child()).isTrue();
-        assertThat(VoiceAssigner.assign(Optional.of(identity), VILLAGER, true, List.of(), Map.of(), AssignmentSettings.DEFAULT, random).gender())
+        assertThat(VoiceAssigner.assign(Optional.of(identity), VILLAGER, true, List.of(), Map.of(), AssignmentSettings.DEFAULT, Optional.empty(), random).gender())
                 .isEqualTo(identity.gender());
     }
 
@@ -128,7 +147,7 @@ class VoiceAssignerTest {
     void childFallbackPitchesAdultVoiceUp() {
         AssignmentSettings settings = new AssignmentSettings(0.0, 0.0, VoiceCriteria.ChildFallback.PITCH_UP_ADULT, false);
 
-        VoiceIdentity identity = VoiceAssigner.assign(Optional.empty(), VILLAGER, true, List.of(MAN), Map.of(), settings, random);
+        VoiceIdentity identity = VoiceAssigner.assign(Optional.empty(), VILLAGER, true, List.of(MAN), Map.of(), settings, Optional.empty(), random);
 
         assertThat(identity.voice()).contains(MAN.ref());
         assertThat(identity.pitch()).isEqualTo(1.0f + Selection.CHILD_PITCH_BOOST);

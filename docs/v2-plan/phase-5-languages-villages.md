@@ -1,5 +1,21 @@
 # Phase 5 – Sprachen und Sprache pro Dorf
 
+## Status: erledigt (Server getestet)
+
+Umgesetzt auf Branch `v2/phase-5`. Getestet auf Dedicated Servern mit Fabric und NeoForge über RCON mit zwei Packs gleicher Stimmen in Deutsch und Englisch und `languageMode: per_village`:
+- Vier Villager-Gruppen ohne Glocke, je 300 Blöcke auseinander, warten bis zu 30 Sekunden auf ein Dorf und bekommen dann je einen gemeinsamen Anker. Jede Gruppe spricht einheitlich, die Gruppen bekamen unterschiedliche Sprachen.
+- Zwei benachbarte Hexen teilen sich eine Sprache.
+- Die Sprachen überstehen einen Neustart.
+
+**Nicht getestet:** Dörfer mit echter Glocke (Villager mit KI finden ihren Treffpunkt erst nach einiger Zeit), Raid-Sprache und die Modi `preferred` und `nearest_village` im Spiel. Die Logik dahinter ist unit-getestet bzw. sehr klein.
+
+Umsetzung und Abweichungen:
+- **Server-Config** `config/talkingvillagers-server.json` gibt es schon jetzt (eigentlich Phase 7): Geschlechterverteilung, Kinder-Fallback und alle Spracheinstellungen. Fehlende Werte werden mit Standardwerten ergänzt. `/tv reload` lädt Config und Packs neu.
+- **Sprachwahl in `core`** (`me.teajay.talkingvillagers.core.language`): `LanguageMode`, `LanguageSettings`, `LanguageAnchors` (nächster Anker im Radius) und `LanguageChooser` (Kandidaten nur aus Sprachen mit Erwachsenenstimmen für die Entity-Art, `allowedLanguages` als Filter).
+- **`LanguageData`** speichert pro Dimension die Dorf-Anker, die Anker für Hexenhütten und Außenposten und die Sprache jedes laufenden Raids. Beendete Raids werden beim nächsten Eintrag entfernt.
+- **Wartezeit:** Ein Villager ohne Glocke und ohne Anker in der Nähe wartet bis zu 600 Ticks. Erst dann wird an seiner Position ein Anker angelegt. Danach ist seine Sprache in der `VoiceIdentity` gespeichert und bleibt, auch wenn er umzieht oder erwachsen wird.
+- **`/tv debug language [pos]`** zeigt Modus, Dorfsprache und Außenposten-Sprache an einer Position. Die Commands zum Ändern kommen in Phase 6.
+
 ## Ziel
 Jedes Voicepack (oder jede Voice) hat eine Sprache. Wenn Packs mehrerer Sprachen installiert sind, kann jedes Dorf zufällig eine Sprache bekommen, und alle Bewohner sprechen sie.
 

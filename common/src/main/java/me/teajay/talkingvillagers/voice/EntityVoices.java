@@ -8,12 +8,14 @@ import me.teajay.talkingvillagers.core.model.VoiceRef;
 import me.teajay.talkingvillagers.core.model.Weather;
 import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.core.select.LineContext;
-import me.teajay.talkingvillagers.core.voice.AssignmentSettings;
 import me.teajay.talkingvillagers.core.voice.EventPolicies;
 import me.teajay.talkingvillagers.core.voice.SpeakerState;
 import me.teajay.talkingvillagers.core.voice.Chatter;
 import me.teajay.talkingvillagers.core.voice.VoiceAssigner;
 import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
+import me.teajay.talkingvillagers.config.Configs;
+import me.teajay.talkingvillagers.config.ServerConfig;
+import me.teajay.talkingvillagers.language.LanguageResolver;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
 import me.teajay.talkingvillagers.server.SpeechService;
@@ -87,13 +89,22 @@ public final class EntityVoices {
             // nothing fits and the packs did not change since the last try
             return Optional.empty();
         }
-
         return assign(entity, kind.get(), current, level, index);
     }
 
     private static Optional<ResolvedVoice> assign(LivingEntity entity, EntityKind kind, Optional<VoiceIdentity> current, ServerLevel level, PackIndex index) {
+        ServerConfig config = Configs.server();
+        Optional<String> wantedLanguage = Optional.empty();
+        if (current.flatMap(VoiceIdentity::language).isEmpty()) {
+            LanguageResolver.Resolution resolution = LanguageResolver.resolve(entity, kind, level, index, config.language());
+            if (resolution.pending()) {
+                // e.g. a new villager that does not know its village yet
+                return Optional.empty();
+            }
+            wantedLanguage = resolution.language();
+        }
         VoiceIdentity identity = VoiceAssigner.assign(current, kind, entity.isBaby(), index.voicesFor(kind),
-                neighbourVoices(entity, level), AssignmentSettings.DEFAULT, RANDOM);
+                neighbourVoices(entity, level), config.assignment(), wantedLanguage, RANDOM);
         Services.ATTACHMENTS.setIdentity(entity, identity);
         if (identity.voice().isEmpty()) {
             state(entity).assignmentFailedFor(index);

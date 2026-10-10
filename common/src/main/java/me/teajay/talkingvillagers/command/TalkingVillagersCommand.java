@@ -5,14 +5,17 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.core.catalog.VoiceEvent;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
+import me.teajay.talkingvillagers.core.language.LanguageAnchors;
 import me.teajay.talkingvillagers.core.model.ResolvedVoice;
 import me.teajay.talkingvillagers.core.model.VoicePack;
 import me.teajay.talkingvillagers.core.model.VoiceRef;
 import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
+import me.teajay.talkingvillagers.language.LanguageData;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
 import me.teajay.talkingvillagers.server.SpeechService;
@@ -22,7 +25,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
@@ -44,6 +49,9 @@ public final class TalkingVillagersCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralCommandNode<CommandSourceStack> root = dispatcher.register(Commands.literal("talkingvillagers")
+                .then(Commands.literal("reload")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .executes(TalkingVillagersCommand::reloadAll))
                 .then(Commands.literal("packs")
                         .then(Commands.literal("list").executes(TalkingVillagersCommand::listPacks))
                         .then(Commands.literal("reload")
@@ -51,6 +59,10 @@ public final class TalkingVillagersCommand {
                                 .executes(TalkingVillagersCommand::reloadPacks)))
                 .then(Commands.literal("debug")
                         .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(Commands.literal("language")
+                                .executes(context -> language(context, BlockPos.containing(context.getSource().getPosition())))
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                        .executes(context -> language(context, BlockPosArgument.getBlockPos(context, "pos")))))
                         .then(Commands.literal("info")
                                 .then(Commands.argument("target", EntityArgument.entity())
                                         .executes(TalkingVillagersCommand::info)))
@@ -93,6 +105,23 @@ public final class TalkingVillagersCommand {
                     .withStyle(active ? ChatFormatting.GREEN : ChatFormatting.GRAY), false);
         }
         return index.active().size();
+    }
+
+    private static int reloadAll(CommandContext<CommandSourceStack> context) {
+        Configs.load();
+        context.getSource().sendSuccess(() -> Component.translatable("commands.talkingvillagers.config.reloaded", Configs.serverFile().toString()), true);
+        return reloadPacks(context);
+    }
+
+    private static int language(CommandContext<CommandSourceStack> context, BlockPos pos) {
+        CommandSourceStack source = context.getSource();
+        LanguageData data = LanguageData.get(source.getLevel());
+        int radius = Configs.server().villageRadius();
+        String village = data.villages().find(pos.getX(), pos.getY(), pos.getZ(), radius).map(LanguageAnchors.Anchor::language).orElse("-");
+        String outsider = data.outsiders().find(pos.getX(), pos.getY(), pos.getZ(), radius).map(LanguageAnchors.Anchor::language).orElse("-");
+        source.sendSuccess(() -> Component.translatable("commands.talkingvillagers.language",
+                pos.toShortString(), Configs.server().languageMode().id(), village, outsider), false);
+        return 1;
     }
 
     private static int reloadPacks(CommandContext<CommandSourceStack> context) {

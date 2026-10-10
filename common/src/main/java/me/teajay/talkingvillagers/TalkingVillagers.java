@@ -1,6 +1,7 @@
 package me.teajay.talkingvillagers;
 
 import me.teajay.talkingvillagers.client.ClientVoices;
+import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
 import me.teajay.talkingvillagers.server.ServerVoices;
@@ -25,6 +26,7 @@ public final class TalkingVillagers {
 
     public static void init() {
         LOG.info("{} loaded on {} ({})", MOD_NAME, Services.PLATFORM.getPlatformName(), Services.PLATFORM.getEnvironmentName());
+        Configs.load();
         Voicepacks.onReload(ServerVoices::onPacksReloaded);
         Voicepacks.reload();
     }

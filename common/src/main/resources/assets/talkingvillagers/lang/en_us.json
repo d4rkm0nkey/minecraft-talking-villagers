@@ -11,5 +11,7 @@
   "commands.talkingvillagers.say.success": "%s of %s entities said a line",
   "subtitles.talkingvillagers.speaks": "%s speaks",
   "commands.talkingvillagers.info": "%s: voice %s, %s, %s, pitch %s, language %s (%s)",
-  "commands.talkingvillagers.info.none": "%s has no voice"
+  "commands.talkingvillagers.info.none": "%s has no voice",
+  "commands.talkingvillagers.config.reloaded": "Config reloaded from %s",
+  "commands.talkingvillagers.language": "%s: mode %s, village language %s, witch/outpost language %s"
 }
