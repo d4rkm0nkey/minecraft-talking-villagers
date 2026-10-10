@@ -43,6 +43,18 @@ public final class LanguageChooser {
     }
 
     /**
+     * The language a child inherits: one of its parents' languages, picked at random.
+     *
+     * @return empty if no parent has a language
+     */
+    public static Optional<String> inherit(Optional<String> parent, Optional<String> otherParent, RandomGenerator random) {
+        if (parent.isPresent() && otherParent.isPresent()) {
+            return random.nextBoolean() ? parent : otherParent;
+        }
+        return parent.or(() -> otherParent);
+    }
+
+    /**
      * The first preferred language that has voices.
      */
     public static Optional<String> preferred(List<String> candidates, List<String> preferred) {

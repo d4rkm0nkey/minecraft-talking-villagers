@@ -14,6 +14,8 @@ Umsetzung und Abweichungen:
 - **Sprachwahl in `core`** (`me.teajay.talkingvillagers.core.language`): `LanguageMode`, `LanguageSettings`, `LanguageAnchors` (nächster Anker im Radius) und `LanguageChooser` (Kandidaten nur aus Sprachen mit Erwachsenenstimmen für die Entity-Art, `allowedLanguages` als Filter).
 - **`LanguageData`** speichert pro Dimension die Dorf-Anker, die Anker für Hexenhütten und Außenposten und die Sprache jedes laufenden Raids. Beendete Raids werden beim nächsten Eintrag entfernt.
 - **Wartezeit:** Ein Villager ohne Glocke und ohne Anker in der Nähe wartet bis zu 600 Ticks. Erst dann wird an seiner Position ein Anker angelegt. Danach ist seine Sprache in der `VoiceIdentity` gespeichert und bleibt, auch wenn er umzieht oder erwachsen wird.
+- **Kinder erben die Sprache:** Ein neugeborener Villager bekommt die Sprache eines zufällig gewählten Elternteils, egal in welchem Dorf er geboren wird und in jedem Sprachmodus. Seine Stimme wird beim ersten Gebrauch in dieser Sprache gewählt. Hook: `Villager.getBreedOffspring`. Im echten Spiel noch nicht getestet, weil sich Villager per Konsole nicht verpaaren lassen.
+- **Umzug getestet:** Ein englischer Villager, der ins deutsche Dorf teleportiert wurde, spricht dort weiter Englisch.
 - **`/tv debug language [pos]`** zeigt Modus, Dorfsprache und Außenposten-Sprache an einer Position. Die Commands zum Ändern kommen in Phase 6.
 
 ## Ziel
@@ -39,8 +41,9 @@ Minecraft hat kein Dorf-Objekt. Vorgehen:
    - Deshalb ist die Zuweisung in Phase 3 lazy: Frisch generierte Dorfbewohner haben in den ersten Ticks noch keine Glocke.
 4. Die gewählte Sprache wird zusätzlich in der `VoiceIdentity` des Villagers gespeichert. Zieht ein Villager in ein anderes Dorf, **behält** er seine Stimme und Sprache (ein Zugezogener). Kinder, die im neuen Dorf geboren werden, bekommen die Dorfsprache.
 
-### Kinder beim Erwachsenwerden
-Die neue Stimme wird in der **in der Identity gespeicherten** Sprache gewählt, nicht neu ermittelt. Das Kind behält seine Sprache.
+### Kinder
+- Bei der Geburt erbt das Kind die Sprache eines zufälligen Elternteils (nicht die Sprache des Geburtsdorfs).
+- Beim Erwachsenwerden wird die neue Stimme in der **in der Identity gespeicherten** Sprache gewählt. Das Kind behält seine Sprache.
 
 ## Andere Entities
 | Entity | Sprache |

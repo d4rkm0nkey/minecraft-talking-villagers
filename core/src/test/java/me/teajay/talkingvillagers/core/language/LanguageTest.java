@@ -60,6 +60,18 @@ class LanguageTest {
     }
 
     @Test
+    void childInheritsLanguageOfARandomParent() {
+        Set<Optional<String>> inherited = new HashSet<>();
+        for (int i = 0; i < 50; i++) {
+            inherited.add(LanguageChooser.inherit(Optional.of("en"), Optional.of("de"), random));
+        }
+        assertThat(inherited).containsExactlyInAnyOrder(Optional.of("en"), Optional.of("de"));
+        assertThat(LanguageChooser.inherit(Optional.empty(), Optional.of("de"), random)).contains("de");
+        assertThat(LanguageChooser.inherit(Optional.of("en"), Optional.empty(), random)).contains("en");
+        assertThat(LanguageChooser.inherit(Optional.empty(), Optional.empty(), random)).isEmpty();
+    }
+
+    @Test
     void anchorsShareLanguageWithinRadius() {
         LanguageAnchors anchors = new LanguageAnchors();
         anchors.add(0, 64, 0, "de");

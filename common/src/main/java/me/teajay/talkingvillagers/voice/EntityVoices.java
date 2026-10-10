@@ -3,6 +3,8 @@ package me.teajay.talkingvillagers.voice;
 import me.teajay.talkingvillagers.core.catalog.EntityKind;
 import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.core.catalog.VoiceEvent;
+import me.teajay.talkingvillagers.core.language.LanguageChooser;
+import me.teajay.talkingvillagers.core.model.Gender;
 import me.teajay.talkingvillagers.core.model.ResolvedVoice;
 import me.teajay.talkingvillagers.core.model.VoiceRef;
 import me.teajay.talkingvillagers.core.model.Weather;
@@ -212,6 +214,22 @@ public final class EntityVoices {
             }
         }
         return false;
+    }
+
+    /**
+     * A villager child was born: it speaks the language of one of its parents, wherever it was born.
+     */
+    public static void onBirth(LivingEntity child, LivingEntity parent, LivingEntity otherParent) {
+        Optional<String> language = LanguageChooser.inherit(
+                Services.ATTACHMENTS.getIdentity(parent).flatMap(VoiceIdentity::language),
+                Services.ATTACHMENTS.getIdentity(otherParent).flatMap(VoiceIdentity::language),
+                RANDOM);
+        if (language.isPresent() && Services.ATTACHMENTS.getIdentity(child).isEmpty()) {
+            EntityKind kind = kindOf(child).orElse(EntityKind.VILLAGER);
+            Gender gender = VoiceAssigner.rollGender(Configs.server().assignment(), kind, RANDOM);
+            // no voice yet: it is chosen on first use, in the inherited language
+            Services.ATTACHMENTS.setIdentity(child, new VoiceIdentity(gender, Optional.empty(), 1.0f, true, language, false));
+        }
     }
 
     /**

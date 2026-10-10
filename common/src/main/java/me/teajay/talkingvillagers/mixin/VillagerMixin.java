@@ -4,6 +4,7 @@ import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.voice.EntityVoices;
 import me.teajay.talkingvillagers.voice.LegacyVoices;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.storage.ValueInput;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Villager.class)
 public abstract class VillagerMixin {
@@ -36,6 +38,14 @@ public abstract class VillagerMixin {
         // vanilla only gossips if neither villager gossiped in the last minute
         if (lastGossipTime == timestamp) {
             EntityVoices.onEvent(talkingvillagers$self(), EventCatalog.GOSSIP);
+        }
+    }
+
+    @Inject(method = "getBreedOffspring", at = @At("RETURN"))
+    private void talkingvillagers$birth(ServerLevel level, AgeableMob partner, CallbackInfoReturnable<Villager> cir) {
+        Villager child = cir.getReturnValue();
+        if (child != null) {
+            EntityVoices.onBirth(child, talkingvillagers$self(), partner);
         }
     }
 
