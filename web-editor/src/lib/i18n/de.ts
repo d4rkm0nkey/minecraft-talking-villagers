@@ -55,6 +55,8 @@ export const de: Record<string, string> = {
   "pack.compress": "Kompressor (gleichmäßige Lautstärke)",
   "pack.normalize": "Normalisieren (−1 dB)",
   "pack.trim": "Stille am Anfang und Ende entfernen",
+  "pack.fade": "Ein-/Ausblenden",
+  "pack.fade.off": "aus",
   "pack.sample_rate": "Abtastrate",
   "pack.quality": "Qualität",
   "pack.noise_profile": "Rauschprofil",

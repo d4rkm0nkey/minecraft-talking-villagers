@@ -112,6 +112,18 @@ export function trimSilence(pcm: Float32Array, sampleRate: number, options: Segm
   return { start: segments[0].start, end: segments[segments.length - 1].end };
 }
 
+/** Fades the first and last milliseconds in and out (raised cosine), at most a quarter of the line each. */
+export function fade(pcm: Float32Array, sampleRate: number, ms: number): Float32Array {
+  const out = pcm.slice();
+  const length = Math.min(Math.round((ms / 1000) * sampleRate), Math.floor(pcm.length / 4));
+  for (let i = 0; i < length; i++) {
+    const gain = 0.5 - 0.5 * Math.cos((Math.PI * i) / length);
+    out[i] *= gain;
+    out[out.length - 1 - i] *= gain;
+  }
+  return out;
+}
+
 /** Scales the audio so its peak reaches the target level. */
 export function normalize(pcm: Float32Array, targetDb = -1): Float32Array {
   const max = peak(pcm);

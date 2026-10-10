@@ -1,5 +1,5 @@
 import type { Line, Processing } from "../model/types";
-import { compress, highPass, noiseGate, normalize, resample, speechThreshold, frameLevels, trimSilence } from "./dsp";
+import { compress, fade, highPass, noiseGate, normalize, resample, speechThreshold, frameLevels, trimSilence } from "./dsp";
 import { spectralGate } from "./spectralGate";
 
 export interface Audio {
@@ -14,7 +14,7 @@ export type Denoiser = (pcm: Float32Array, sampleRate: number) => Promise<Float3
 
 /**
  * Turns a raw recording into the audio that is exported: manual trim, high-pass, noise reduction, automatic trim,
- * noise gate, compression, normalisation and sample rate conversion. The raw recording is never changed.
+ * noise gate, compression, normalisation, fade in/out and sample rate conversion. The raw recording is never changed.
  */
 export async function processLine(raw: Audio, line: Pick<Line, "trimStart" | "trimEnd">, settings: Processing,
                                   noiseProfile: Float32Array | undefined, denoise: Denoiser | undefined): Promise<Audio> {
@@ -33,5 +33,6 @@ export async function processLine(raw: Audio, line: Pick<Line, "trimStart" | "tr
   if (settings.noiseGate) pcm = noiseGate(pcm, sampleRate, speechThreshold(frameLevels(pcm, sampleRate)) - 6);
   if (settings.compress) pcm = compress(pcm, sampleRate);
   if (settings.normalize) pcm = normalize(pcm, -1);
+  if (settings.fadeMs > 0) pcm = fade(pcm, sampleRate, settings.fadeMs);
   return { sampleRate: settings.sampleRate, data: resample(pcm, sampleRate, settings.sampleRate) };
 }

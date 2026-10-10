@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compress, detectSegments, highPass, noiseGate, normalize, peak, resample, rms, toDb, toMono, trimSilence } from "../src/lib/audio/dsp";
+import { compress, detectSegments, fade, highPass, noiseGate, normalize, peak, resample, rms, toDb, toMono, trimSilence } from "../src/lib/audio/dsp";
 import { fft } from "../src/lib/audio/fft";
 import { noiseProfile, spectralGate } from "../src/lib/audio/spectralGate";
 import { add, concat, noise, sine } from "./helpers";
@@ -97,5 +97,26 @@ describe("spectral noise reduction", () => {
 
     expect(rms(cleaned, 0, SR * 0.9)).toBeLessThan(rms(recording, 0, SR * 0.9) / 3);
     expect(rms(cleaned, SR * 1.2, SR * 1.8)).toBeGreaterThan(rms(voice) * 0.8);
+  });
+});
+
+describe("fade", () => {
+  it("starts and ends silent and leaves the middle untouched", () => {
+    const pcm = new Float32Array(SR).fill(0.5);
+
+    const faded = fade(pcm, SR, 20);
+
+    expect(faded[0]).toBe(0);
+    expect(faded[faded.length - 1]).toBe(0);
+    expect(faded[Math.round(0.01 * SR)]).toBeCloseTo(0.25, 2);
+    expect(faded[SR / 2]).toBe(0.5);
+    expect(pcm[0]).toBe(0.5);
+  });
+
+  it("never fades more than a quarter of a very short line", () => {
+    const faded = fade(new Float32Array(400).fill(1), SR, 100);
+
+    expect(faded[100]).toBe(1);
+    expect(faded[299]).toBe(1);
   });
 });

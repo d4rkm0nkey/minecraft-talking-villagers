@@ -53,6 +53,7 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
 }
 
 /** No trim and no processing step that would change the audio. */
+// the fade is left out: it only smooths cuts, and an untrimmed original has none
 export function isUnchanged(line: Line, processing: Processing): boolean {
   return line.trimStart === 0 && line.trimEnd === 0 && !processing.highPass && !processing.denoise && !processing.spectralGate
     && !processing.trim && !processing.noiseGate && !processing.compress && !processing.normalize;

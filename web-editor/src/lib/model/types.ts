@@ -47,6 +47,8 @@ export interface Processing {
   compress: boolean;
   normalize: boolean;
   trim: boolean;
+  /** Fade in and out in milliseconds, so cuts in breaths or noise don't click; 0 turns it off. */
+  fadeMs: number;
   /** Sample rate of the exported files. */
   sampleRate: 22050 | 44100 | 48000;
   /** Vorbis quality, 0 (small) to 10 (best). */
@@ -80,6 +82,7 @@ export const DEFAULT_PROCESSING: Processing = {
   compress: false,
   normalize: true,
   trim: true,
+  fadeMs: 15,
   sampleRate: 44100,
   quality: 5,
 };

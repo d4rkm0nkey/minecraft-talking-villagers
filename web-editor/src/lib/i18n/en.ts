@@ -55,6 +55,8 @@ export const en: Record<string, string> = {
   "pack.compress": "Compressor (even loudness)",
   "pack.normalize": "Normalize (−1 dB)",
   "pack.trim": "Remove silence at start and end",
+  "pack.fade": "Fade in/out",
+  "pack.fade.off": "off",
   "pack.sample_rate": "Sample rate",
   "pack.quality": "Quality",
   "pack.noise_profile": "Noise profile",

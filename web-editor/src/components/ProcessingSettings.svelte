@@ -26,6 +26,8 @@
   <label class="inline"><input type="checkbox" bind:checked={project.processing.compress} onchange={() => touch(project)} />{t("pack.compress")}</label>
   <label class="inline"><input type="checkbox" bind:checked={project.processing.normalize} onchange={() => touch(project)} />{t("pack.normalize")}</label>
   <label class="inline"><input type="checkbox" bind:checked={project.processing.trim} onchange={() => touch(project)} />{t("pack.trim")}</label>
+  <label>{t("pack.fade")}: {project.processing.fadeMs ? `${project.processing.fadeMs} ms` : t("pack.fade.off")}
+    <input type="range" min="0" max="100" step="5" bind:value={project.processing.fadeMs} onchange={() => touch(project)} /></label>
   {#if !compact}
     <label>{t("pack.sample_rate")}
       <select bind:value={project.processing.sampleRate} onchange={() => touch(project)}>

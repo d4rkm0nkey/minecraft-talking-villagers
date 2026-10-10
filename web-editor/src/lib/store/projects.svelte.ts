@@ -1,5 +1,5 @@
 import { del, get, set } from "idb-keyval";
-import type { Project } from "../model/types";
+import { DEFAULT_PROCESSING, type Project } from "../model/types";
 import { deleteAudio } from "./audio";
 
 /**
@@ -16,7 +16,7 @@ export async function loadProjects(): Promise<void> {
   const list: Project[] = [];
   for (const id of ids) {
     const project = (await get(key(id))) as Project | undefined;
-    if (project) list.push(project);
+    if (project) list.push({ ...project, processing: { ...DEFAULT_PROCESSING, ...project.processing } });
   }
   projects.list = list.sort((a, b) => b.modified - a.modified);
   projects.loaded = true;
