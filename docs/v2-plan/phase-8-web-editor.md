@@ -1,5 +1,28 @@
 # Phase 8 – Web-Editor zum Erstellen von Voicepacks
 
+## Status: erledigt (Aufnahme mit Mikrofon noch ungetestet)
+
+Umgesetzt auf Branch `v2/phase-8` im Ordner `web-editor/`. Svelte 5, Vite 8, TypeScript 5.9, fflate, wasm-media-encoders (Vorbis), RNNoise (WASM, wird erst bei Bedarf geladen), ajv, idb-keyval.
+
+Geprüft:
+- 23 Vitest-Tests: Spracherkennung, Kürzen, Aufteilen, Normalisieren, Hochpass, Noise Gate, Kompressor, Resampling, FFT, Rauschprofil-Filter, Manifest, Prüfregeln, Katalog, Übersetzungen und der komplette Export.
+- **Gegencheck:** Der Export-Test schreibt ein `.voicepack`, `WebEditorExportTest` (Java) lädt es mit dem `PackReader` der Mod: keine Fehler, keine Warnungen.
+- Typprüfung (`svelte-check`) ohne Fehler und Warnungen, Produktions-Build ok.
+- Startseite, Pack-Editor, Stimmen-Editor und Studio-Einstieg per headless Firefox (WebDriver BiDi) als Screenshot angesehen.
+
+**Nicht getestet:** Aufnahme mit echtem Mikrofon (Teleprompter, Auto-Stopp, langer Take, Raumstille), RNNoise im Browser, Drag & Drop von Dateien, Import alter V1-Packs. Das braucht einen echten Browser mit Mikrofon.
+
+Umsetzung und Abweichungen:
+- **Event-Katalog für den Editor:** `schema/events.json` wird aus dem Java-`EventCatalog` erzeugt (`./gradlew :core:writeEventCatalog`), ein Test hält es synchron. Gruppen, Beschreibungen und empfohlene Variantenzahl stehen im Editor (Deutsch und Englisch).
+- **Prüfregeln** sind im Editor nachgebaut (`check()` in `manifest.ts`), mit denselben Codes wie `ProblemCode` der Mod, statt einer gemeinsamen `lint-rules.json`.
+- **Aufnahme als rohes PCM** über ein AudioWorklet statt `MediaRecorder`. Browser-eigene Rauschunterdrückung, Echo-Unterdrückung und automatische Verstärkung sind aus.
+- **Bearbeitungskette** (nicht-destruktiv, beim Export und in der Vorschau): manueller Zuschnitt → Hochpass → RNNoise → Rauschprofil (Spectral Gating, Stärke einstellbar) → automatisches Kürzen → Noise Gate → Kompressor → Normalisieren → Abtastrate (22,05 / 44,1 / 48 kHz). Jeder Schritt lässt sich einzeln abschalten.
+- **Eigene Wellenform** (Canvas) mit Zuschnitt-Griffen statt `wavesurfer.js`.
+- **Kein Playwright-E2E-Test.** Die Oberfläche wurde per Screenshots geprüft, die Logik per Unit-Tests.
+- **Dateinamen im Pack:** `sounds/<stimme>/<event>/01.ogg`, `02.ogg`, …
+- **Entwicklungshilfe:** `#demo-pack`, `#demo-voice` und `#demo-studio` legen im Dev-Server ein Beispielprojekt an (nicht im veröffentlichten Build).
+- **Deployment:** `.github/workflows/web-editor.yml` veröffentlicht `web-editor/dist` bei Änderungen auf `master` per GitHub Pages. Pages muss dafür in den Repository-Einstellungen aktiviert sein. Der CI-Build führt zusätzlich die Web-Tests vor dem Gradle-Build aus.
+
 ## Ziel
 Eine einfache, rein clientseitige Web-App (kein Backend), mit der jeder ohne Python-Skripte und ohne Ordnerstruktur ein `.voicepack` erstellen oder bearbeiten kann. Gehostet auf GitHub Pages.
 

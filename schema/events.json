@@ -1,0 +1,496 @@
+{
+  "$comment": "Generated from EventCatalog by ./gradlew :core:writeEventCatalog – do not edit",
+  "events": [
+    {
+      "id": "ambient",
+      "entities": [
+        "villager",
+        "wandering_trader",
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "hurt",
+      "entities": [
+        "villager",
+        "wandering_trader",
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "death",
+      "entities": [
+        "villager",
+        "wandering_trader",
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "celebrate",
+      "entities": [
+        "villager",
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "greeting",
+      "entities": [
+        "villager",
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "random",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "gossip",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "yes",
+      "entities": [
+        "villager",
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "no",
+      "entities": [
+        "villager",
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "trade",
+      "entities": [
+        "villager",
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "trade_success",
+      "entities": [
+        "villager",
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "level_up",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "hero",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "hero_gift",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "good_weather",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "bad_weather",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "sleep",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "wake_up",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "panic",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "grow_up",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "drink_potion",
+      "entities": [
+        "wandering_trader",
+        "witch"
+      ]
+    },
+    {
+      "id": "throw_potion",
+      "entities": [
+        "witch"
+      ]
+    },
+    {
+      "id": "laugh",
+      "entities": [
+        "witch"
+      ]
+    },
+    {
+      "id": "disappear",
+      "entities": [
+        "wandering_trader"
+      ]
+    },
+    {
+      "id": "spot_player",
+      "entities": [
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "attack",
+      "entities": [
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "charge",
+      "entities": [
+        "pillager"
+      ]
+    },
+    {
+      "id": "raid_horn",
+      "entities": [
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "cast_spell",
+      "entities": [
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "summon_vex",
+      "entities": [
+        "evoker"
+      ],
+      "parent": "cast_spell"
+    },
+    {
+      "id": "fangs",
+      "entities": [
+        "evoker"
+      ],
+      "parent": "cast_spell"
+    },
+    {
+      "id": "mirror",
+      "entities": [
+        "illusioner"
+      ],
+      "parent": "cast_spell"
+    },
+    {
+      "id": "idle",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ],
+      "parent": "ambient"
+    },
+    {
+      "id": "combat",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ],
+      "parent": "ambient"
+    },
+    {
+      "id": "raid_idle",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ],
+      "parent": "idle"
+    },
+    {
+      "id": "lost_target",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "low_health",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "victory",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "ally_died",
+      "entities": [
+        "witch",
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ]
+    },
+    {
+      "id": "patrol",
+      "entities": [
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ],
+      "parent": "idle"
+    },
+    {
+      "id": "patrol_leader",
+      "entities": [
+        "pillager",
+        "vindicator",
+        "evoker",
+        "illusioner"
+      ],
+      "parent": "patrol"
+    },
+    {
+      "id": "charge_at",
+      "entities": [
+        "vindicator"
+      ],
+      "parent": "spot_player"
+    },
+    {
+      "id": "johnny",
+      "entities": [
+        "vindicator"
+      ],
+      "parent": "combat"
+    },
+    {
+      "id": "retreat",
+      "entities": [
+        "evoker"
+      ],
+      "parent": "combat"
+    },
+    {
+      "id": "wololo",
+      "entities": [
+        "evoker"
+      ]
+    },
+    {
+      "id": "blindness",
+      "entities": [
+        "illusioner"
+      ],
+      "parent": "cast_spell"
+    },
+    {
+      "id": "brew",
+      "entities": [
+        "witch"
+      ],
+      "parent": "idle"
+    },
+    {
+      "id": "heal_self",
+      "entities": [
+        "witch"
+      ],
+      "parent": "drink_potion"
+    },
+    {
+      "id": "drink_other",
+      "entities": [
+        "witch"
+      ],
+      "parent": "drink_potion"
+    },
+    {
+      "id": "heal_ally",
+      "entities": [
+        "witch"
+      ],
+      "parent": "throw_potion"
+    },
+    {
+      "id": "panic_loop",
+      "entities": [
+        "villager"
+      ],
+      "parent": "panic"
+    },
+    {
+      "id": "pre_raid",
+      "entities": [
+        "villager"
+      ],
+      "parent": "panic"
+    },
+    {
+      "id": "hide",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "work",
+      "entities": [
+        "villager"
+      ],
+      "parent": "random"
+    },
+    {
+      "id": "play",
+      "entities": [
+        "villager"
+      ],
+      "parent": "random"
+    },
+    {
+      "id": "meet",
+      "entities": [
+        "villager"
+      ],
+      "parent": "gossip"
+    },
+    {
+      "id": "attacked_by_player",
+      "entities": [
+        "villager"
+      ],
+      "parent": "hurt"
+    },
+    {
+      "id": "spot_zombie",
+      "entities": [
+        "villager"
+      ],
+      "parent": "panic"
+    },
+    {
+      "id": "spot_raider",
+      "entities": [
+        "villager"
+      ],
+      "parent": "panic"
+    },
+    {
+      "id": "villager_died",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "cured",
+      "entities": [
+        "villager"
+      ],
+      "parent": "celebrate"
+    },
+    {
+      "id": "love",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "greeting_friendly",
+      "entities": [
+        "villager"
+      ],
+      "parent": "greeting"
+    },
+    {
+      "id": "greeting_unfriendly",
+      "entities": [
+        "villager"
+      ],
+      "parent": "greeting"
+    },
+    {
+      "id": "trade_unfriendly",
+      "entities": [
+        "villager"
+      ],
+      "parent": "trade"
+    }
+  ]
+}

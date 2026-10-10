@@ -32,3 +32,4 @@ remappedSrc/
 # web editor
 web-editor/node_modules/
 web-editor/dist/
+web-editor/build/

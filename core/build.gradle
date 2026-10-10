@@ -32,6 +32,8 @@ test {
     finalizedBy(jacocoTestReport)
     // the JSON schema lives at the repository root and is shared with the web editor
     systemProperty('talkingvillagers.schemaDir', rootProject.file('schema').absolutePath)
+    // written by the web editor's tests (npm test), checked by WebEditorExportTest
+    systemProperty('talkingvillagers.webExport', rootProject.file('web-editor/build/test-export.voicepack').absolutePath)
 }
 
 jacocoTestReport {
@@ -50,4 +52,11 @@ configurations {
 
 artifacts {
     coreJava sourceSets.main.java.sourceDirectories.singleFile
+}
+
+// regenerates schema/events.json for the web editor
+tasks.register('writeEventCatalog', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'me.teajay.talkingvillagers.core.catalog.EventCatalogJson'
+    args = [rootProject.file('schema/events.json').absolutePath]
 }
