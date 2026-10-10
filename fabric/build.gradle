@@ -43,6 +43,10 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            // ./gradlew :fabric:runClient -PquickPlay=localhost:25565 joins that server right away
+            if (project.hasProperty('quickPlay')) {
+                programArgs('--quickPlayMultiplayer', project.property('quickPlay').toString())
+            }
         }
         server {
             server()

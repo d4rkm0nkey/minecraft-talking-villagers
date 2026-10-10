@@ -13,7 +13,15 @@ Umgesetzt auf Branch `v2/phase-9` (abgeleitet von `v2/phase-8`).
 - `packDownload.url`: Der Client lädt `<url>/<Dateiname>` per HTTP(S), mit derselben Prüfung.
 - Größenlimits: Der Server bietet Packs über `packDownload.maxPackSizeMb` (Default 100) nicht an, der Client lädt nichts über 200 MB.
 - Server ohne Mod: Kommt 5 s nach dem Join kein `server_packs`, zeigt der Voicepack-Screen einen gelben Hinweis.
-- Performance: Smalltalk- und Hostile-Ticks laufen nur, wenn ein Spieler im Umkreis von 48 Blöcken ist. Folge für Tests über RCON ohne Spieler: Smalltalk und Kampfsprüche kommen dort nicht mehr. Eine Spark-Messung mit 200 Villagern steht noch aus.
+- Performance: Smalltalk- und Hostile-Ticks laufen nur, wenn ein Spieler im Umkreis von 48 Blöcken ist. Folge für Tests über RCON ohne Spieler: Smalltalk und Kampfsprüche kommen dort nicht mehr. Messung am 2026-10-10 (Fabric-Dev-Server, 200 Villager in einem 40×40-Gehege, Spieler daneben, je 60 s JFR auf dem Server-Thread):
+
+  | Szenario | Ø ms/Tick (P95) | Anteil Talking Villagers |
+  |---|---|---|
+  | Spieler im Gehege, Smalltalk aktiv | 27,1 (41,0) | 0,44 % ≈ 0,12 ms/Tick |
+  | Spieler 180 Blöcke weg (Mod im Leerlauf) | 28,3 (43,6) | 0,17 % |
+  | Kampf: 50 Illager, 5 Hexen, 5 Zombies im Gehege, 625 Zeilen/min | 24,6 (35,5) | 0,64 % ≈ 0,16 ms/Tick |
+
+  Die Tickzeit kommt fast ganz aus der Vanilla-KI der Villager. Der Unterschied zwischen den ersten beiden Zeilen ist Rauschen. Auf dem Client lag der Anteil am Render-Thread bei 0,08 %.
 
 **Migration**
 - `Version1Converter` (core, getestet) wandelt V1-Resourcepacks um, im Spiel per Drag & Drop mit Dialog (Name, Sprache, Geschlecht). Event- und Berufs-Umbenennungen sind enthalten, die Untertitel werden zu `text`.
