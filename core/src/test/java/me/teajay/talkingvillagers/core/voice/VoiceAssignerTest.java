@@ -70,7 +70,7 @@ class VoiceAssignerTest {
 
     @Test
     void growingUpKeepsGenderAndLanguage() {
-        VoiceIdentity girl = new VoiceIdentity(Gender.FEMALE, Optional.of(GIRL.ref()), 1.0f, true, Optional.of("de"), false);
+        VoiceIdentity girl = new VoiceIdentity(Gender.FEMALE, Optional.of(GIRL.ref()), 1.0f, true, Optional.of("de"), false, false);
 
         assertThat(VoiceAssigner.needsAssignment(Optional.of(girl), false, VoiceAssignerTest::lookup)).isTrue();
         VoiceIdentity adult = assign(Optional.of(girl), false, POOL);
@@ -83,7 +83,7 @@ class VoiceAssignerTest {
 
     @Test
     void keepsLanguageOverOtherVoices() {
-        VoiceIdentity englishBoy = new VoiceIdentity(Gender.MALE, Optional.empty(), 1.0f, true, Optional.of("en"), false);
+        VoiceIdentity englishBoy = new VoiceIdentity(Gender.MALE, Optional.empty(), 1.0f, true, Optional.of("en"), false, false);
 
         for (int i = 0; i < 20; i++) {
             assertThat(assign(Optional.of(englishBoy), false, POOL).voice()).contains(ENGLISH_MAN.ref());
@@ -92,7 +92,7 @@ class VoiceAssignerTest {
 
     @Test
     void remembersLanguageOfFirstVoice() {
-        VoiceIdentity identity = assign(Optional.of(new VoiceIdentity(Gender.MALE, Optional.empty(), 1, false, Optional.empty(), false)), false, List.of(ENGLISH_MAN));
+        VoiceIdentity identity = assign(Optional.of(new VoiceIdentity(Gender.MALE, Optional.empty(), 1, false, Optional.empty(), false, false)), false, List.of(ENGLISH_MAN));
 
         assertThat(identity.language()).contains("en");
     }
@@ -109,7 +109,7 @@ class VoiceAssignerTest {
 
     @Test
     void existingLanguageWinsOverWantedLanguage() {
-        VoiceIdentity german = new VoiceIdentity(Gender.MALE, Optional.empty(), 1, false, Optional.of("de"), false);
+        VoiceIdentity german = new VoiceIdentity(Gender.MALE, Optional.empty(), 1, false, Optional.of("de"), false, false);
 
         VoiceIdentity identity = VoiceAssigner.assign(Optional.of(german), VILLAGER, false, POOL, Map.of(), AssignmentSettings.DEFAULT, Optional.of("en"), random);
 
@@ -118,15 +118,23 @@ class VoiceAssignerTest {
 
     @Test
     void manualVoiceSurvivesGrowingUp() {
-        VoiceIdentity manual = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, true, Optional.empty(), true);
+        VoiceIdentity manual = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, true, Optional.empty(), true, false);
 
         assertThat(VoiceAssigner.needsAssignment(Optional.of(manual), false, VoiceAssignerTest::lookup)).isFalse();
     }
 
     @Test
+    void mutedEntitiesNeverGetAVoice() {
+        VoiceIdentity muted = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, false, Optional.empty(), false, false).mute();
+
+        assertThat(muted.voice()).isEmpty();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(muted), false, VoiceAssignerTest::lookup)).isFalse();
+    }
+
+    @Test
     void reassignsWhenPackWasRemoved() {
-        VoiceIdentity gone = new VoiceIdentity(Gender.MALE, Optional.of(new VoiceRef("removed", "x")), 1.0f, false, Optional.empty(), true);
-        VoiceIdentity fine = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, false, Optional.empty(), false);
+        VoiceIdentity gone = new VoiceIdentity(Gender.MALE, Optional.of(new VoiceRef("removed", "x")), 1.0f, false, Optional.empty(), true, false);
+        VoiceIdentity fine = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, false, Optional.empty(), false, false);
 
         assertThat(VoiceAssigner.needsAssignment(Optional.of(gone), false, VoiceAssignerTest::lookup)).isTrue();
         assertThat(VoiceAssigner.needsAssignment(Optional.of(fine), false, VoiceAssignerTest::lookup)).isFalse();

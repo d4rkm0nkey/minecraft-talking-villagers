@@ -42,6 +42,6 @@ public final class LegacyVoices {
                 ? VoiceAssigner.rollGender(Configs.server().assignment(), EntityKind.VILLAGER, RANDOM)
                 : voice.get().voice().gender();
         Services.ATTACHMENTS.setIdentity(entity, new VoiceIdentity(gender, Optional.of(voice.get().ref()),
-                pitch < 0.1f ? 1.0f : pitch, entity.isBaby(), Optional.of(voice.get().language()), false));
+                pitch < 0.1f ? 1.0f : pitch, entity.isBaby(), Optional.of(voice.get().language()), false, false));
     }
 }

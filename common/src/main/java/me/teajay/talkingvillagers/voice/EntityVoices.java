@@ -228,7 +228,7 @@ public final class EntityVoices {
             EntityKind kind = kindOf(child).orElse(EntityKind.VILLAGER);
             Gender gender = VoiceAssigner.rollGender(Configs.server().assignment(), kind, RANDOM);
             // no voice yet: it is chosen on first use, in the inherited language
-            Services.ATTACHMENTS.setIdentity(child, new VoiceIdentity(gender, Optional.empty(), 1.0f, true, language, false));
+            Services.ATTACHMENTS.setIdentity(child, VoiceIdentity.withoutVoice(gender, true, language));
         }
     }
 

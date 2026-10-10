@@ -52,16 +52,34 @@ public final class SpeechService {
         if (!interrupt && state.isSpeaking(gameTime)) {
             return false;
         }
+        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, state.lastLine(event.id()), RANDOM);
+        return picked.isPresent() && send(entity, level, state, voice, event, picked.get(), pitch, volume, fallback);
+    }
+
+    /**
+     * Says a specific line, e.g. to test a voicepack. Interrupts whatever the entity is saying.
+     *
+     * @param index position in the voice's lines for the event
+     * @return false if the voice has no such line
+     */
+    public static boolean speakLine(Entity entity, SpeakerState state, ResolvedVoice voice, VoiceEvent event, int index, float pitch, float volume) {
+        if (!(entity.level() instanceof ServerLevel level) || entity.isSilent()) {
+            return false;
+        }
+        var lines = voice.voice().lines(event);
+        if (index < 0 || index >= lines.size()) {
+            return false;
+        }
+        return send(entity, level, state, voice, event, new PickedLine(event, index, lines.get(index)), pitch, volume, null);
+    }
+
+    private static boolean send(Entity entity, ServerLevel level, SpeakerState state, ResolvedVoice voice, VoiceEvent event, PickedLine line,
+                                float pitch, float volume, @Nullable Holder<SoundEvent> fallback) {
         Optional<LoadedPack> pack = Voicepacks.index().packOf(voice.ref());
         if (pack.isEmpty()) {
             return false;
         }
-        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, state.lastLine(event.id()), RANDOM);
-        if (picked.isEmpty()) {
-            return false;
-        }
-
-        PickedLine line = picked.get();
+        long gameTime = level.getGameTime();
         int durationTicks = Math.round(line.line().duration().orElse(2.0f) / pitch * 20) + PAUSE_TICKS;
         state.spoke(event, line.event().id(), line.index(), gameTime, durationTicks);
 

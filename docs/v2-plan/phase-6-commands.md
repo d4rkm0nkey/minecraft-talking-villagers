@@ -1,5 +1,36 @@
 # Phase 6 – Commands
 
+## Status: erledigt (Server getestet)
+
+Umgesetzt auf Branch `v2/phase-6`. Alle Commands wurden auf Dedicated Servern mit Fabric und NeoForge über RCON getestet, inklusive der Fehlerfälle: falsche Entity-Art, falsches Alter, Zombie, unbekanntes Event, Zeilennummer außerhalb, ungültiger Sprachcode, Sprache ohne installierte Stimmen. Tab-Vervollständigung lässt sich über RCON nicht prüfen.
+
+Umgesetzter Befehlsumfang:
+```
+/tv reload                                       Config und Packs neu laden
+/tv packs list | info <pack> | reload
+/tv voice get <entity>                           mit [▶ abspielen]-Link
+/tv voice set <entities> <pack:voice> [force]
+/tv voice randomize <entities> [newGender]
+/tv voice clear <entities>                       stumm, behält Vanilla-Sounds
+/tv voice say <entity> <event> [line]
+/tv gender get <entity>
+/tv gender set <entities> male|female
+/tv language village get [pos]
+/tv language village set <language> [pos] [reassign]
+/tv language entity set <entities> <language>
+/tv debug stats                                  welche Stimme wie oft
+/tv debug say <entities> <pack:voice> <event>    beliebige Stimme testen
+```
+
+Abweichungen vom Plan:
+- **Syntax:** `force`, `newGender` und `reassign` sind einfache Wörter statt `force:true` bzw. `--reassign`. `voice randomize` behält das Geschlecht standardmäßig, `newGender` würfelt es neu.
+- **`/tv debug info` und `/tv debug language`** aus Phase 3 und 5 sind durch `voice get` und `language village get` ersetzt.
+- **`VoiceIdentity.muted`** ist neu: Stumm geschaltete Entities bekommen nie automatisch eine Stimme, bis `voice set` oder `voice randomize` sie wieder freigibt.
+- **Entities, die noch auf ihr Dorf warten**, bekommen bei Commands sofort eine Grundidentität. So lassen sich Geschlecht und Sprache auch in den ersten 30 Sekunden ändern.
+- **`gender set` und `language … set`** weisen sofort eine passende neue Stimme zu. Eine manuell gesetzte Stimme wird dabei ersetzt.
+- **Sprachen ohne installierte Stimmen** sind erlaubt, z. B. bevor das Pack installiert ist. Es erscheint nur eine Warnung.
+- **Ausgaben** sind übersetzt (Deutsch und Englisch), auch Geschlecht, Alter und Status.
+
 ## Ziel
 Admins und Packersteller können Stimmen ansehen, ändern und testen. Wurzel-Command: `/talkingvillagers`, Alias `/tv`. Registriert über `CommandRegistrationCallback` (Fabric API).
 

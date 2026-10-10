@@ -30,7 +30,8 @@ public final class VoiceIdentityCodecs {
             Codec.FLOAT.optionalFieldOf("pitch", 1.0f).forGetter(VoiceIdentity::pitch),
             Codec.BOOL.optionalFieldOf("child", false).forGetter(VoiceIdentity::child),
             Codec.STRING.optionalFieldOf("language").forGetter(VoiceIdentity::language),
-            Codec.BOOL.optionalFieldOf("manual", false).forGetter(VoiceIdentity::manual)
+            Codec.BOOL.optionalFieldOf("manual", false).forGetter(VoiceIdentity::manual),
+            Codec.BOOL.optionalFieldOf("muted", false).forGetter(VoiceIdentity::muted)
     ).apply(instance, VoiceIdentity::new));
     public static final Codec<VoiceIdentity> CODEC = MAP_CODEC.codec();
 
@@ -46,6 +47,7 @@ public final class VoiceIdentityCodecs {
             ByteBufCodecs.BOOL, VoiceIdentity::child,
             ByteBufCodecs.optional(ByteBufCodecs.stringUtf8(64)), VoiceIdentity::language,
             ByteBufCodecs.BOOL, VoiceIdentity::manual,
+            ByteBufCodecs.BOOL, VoiceIdentity::muted,
             VoiceIdentity::new);
 
     private VoiceIdentityCodecs() {
@@ -53,6 +55,6 @@ public final class VoiceIdentityCodecs {
 
     /** Placeholder for loaders that need a default value; never stored on an entity. */
     public static VoiceIdentity placeholder() {
-        return new VoiceIdentity(Gender.NEUTRAL, Optional.empty(), 1.0f, false, Optional.empty(), false);
+        return VoiceIdentity.withoutVoice(Gender.NEUTRAL, false, Optional.empty());
     }
 }

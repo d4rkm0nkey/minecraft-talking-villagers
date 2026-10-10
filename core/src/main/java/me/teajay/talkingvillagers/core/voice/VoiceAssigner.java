@@ -27,6 +27,9 @@ public final class VoiceAssigner {
      * @param lookup finds an installed voice
      */
     public static boolean needsAssignment(Optional<VoiceIdentity> current, boolean child, Function<VoiceRef, Optional<ResolvedVoice>> lookup) {
+        if (current.isPresent() && current.get().muted()) {
+            return false;
+        }
         if (current.isEmpty() || current.get().voice().isEmpty()) {
             return true;
         }
@@ -64,12 +67,12 @@ public final class VoiceAssigner {
 
         Optional<Selection> selection = VoiceSelector.select(criteria, pool, random);
         if (selection.isEmpty()) {
-            return new VoiceIdentity(gender, Optional.empty(), 1.0f, child, language, false);
+            return VoiceIdentity.withoutVoice(gender, child, language);
         }
         ResolvedVoice voice = selection.get().voice();
         // remember the language of the first voice, so the entity keeps speaking it after growing up
         Optional<String> keptLanguage = language.isPresent() ? language : Optional.of(voice.language());
-        return new VoiceIdentity(gender, Optional.of(voice.ref()), selection.get().samplePitch(random), child, keptLanguage, false);
+        return new VoiceIdentity(gender, Optional.of(voice.ref()), selection.get().samplePitch(random), child, keptLanguage, false, false);
     }
 
     public static Gender rollGender(AssignmentSettings settings, EntityKind kind, RandomGenerator random) {
