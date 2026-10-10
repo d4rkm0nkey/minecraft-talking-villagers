@@ -3,7 +3,7 @@ import { saveAudio } from "./store/audio";
 import { addProject } from "./store/projects.svelte";
 
 /**
- * Development only (#demo-pack, #demo-voice, #demo-studio): a sample project with synthetic recordings, to look at the
+ * Development only (#demo-pack, #demo-voice, #demo-witch, #demo-studio): a sample project with synthetic recordings, to look at the
  * screens without clicking through them.
  */
 export async function createDemoProject(): Promise<Project> {
@@ -14,7 +14,8 @@ export async function createDemoProject(): Promise<Project> {
   anna.gender = "female";
   const grimm = newVoice("Grimm", [anna]);
   grimm.entities = ["illager"];
-  project.voices = [anna, grimm];
+  const hilde = newVoice("Hilde", [anna, grimm], ["witch"]);
+  project.voices = [anna, grimm, hilde];
   const texts: [string, string][] = [["greeting", "Hallo, Reisender!"], ["greeting", "Schön, dich zu sehen."], ["hurt", ""], ["work", "Noch drei Brote."]];
   for (const [event, text] of texts) {
     const audioId = newId();
@@ -27,6 +28,8 @@ export async function createDemoProject(): Promise<Project> {
     await saveAudio(audioId, { sampleRate, data });
     anna.lines.push({ id: newId(), event, audioId, text, trimStart: 0.2, trimEnd: 0.3, conditions: { professions: event === "work" ? ["farmer"] : [] } });
   }
+  // a line from before the voice became a witch voice, shown as unused
+  hilde.lines.push({ ...anna.lines[0], id: newId(), event: "gossip", text: "Hast du schon gehört?" });
   await addProject(project);
   return project;
 }

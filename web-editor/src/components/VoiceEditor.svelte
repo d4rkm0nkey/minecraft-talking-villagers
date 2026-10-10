@@ -14,6 +14,8 @@
 
   const events = $derived(eventsFor(voice.entities));
   const used = $derived(new Set(voice.lines.map((line) => line.event)));
+  /** Lines for events none of the selected entities triggers, e.g. after unticking "villager". */
+  const unusedLines = $derived(voice.lines.filter((line) => !events.some((event) => event.id === line.event)));
   const groups = $derived(GROUPS.map((group) => ({ id: group.id, events: events.filter((event) => group.events.includes(event.id)) }))
     .filter((group) => group.events.length > 0));
 
@@ -76,14 +78,28 @@
       {/each}
     </div>
   </div>
-  <label class="inline" style="margin-top: 10px"><input type="checkbox" bind:checked={voice.child} onchange={() => touch(project)} />{t("voice.child")}</label>
-  <div class="small muted">{t("voice.child.hint")}</div>
+  {#if voice.entities.includes("villager") || voice.child}
+    <!-- only villagers have children -->
+    <label class="inline" style="margin-top: 10px"><input type="checkbox" bind:checked={voice.child} onchange={() => touch(project)} />{t("voice.child")}</label>
+    <div class="small muted">{t("voice.child.hint")}</div>
+  {/if}
 </section>
 
 <div class="row spread">
   <strong>{t("voice.progress", { done: events.filter((event) => used.has(event.id)).length, total: events.length })}</strong>
   <label class="inline small"><input type="checkbox" bind:checked={showEmpty} />{t("voice.show_all")}</label>
 </div>
+
+{#if unusedLines.length > 0}
+  <section class="panel unused">
+    <h2>{t("voice.unused")}</h2>
+    <p class="small muted">{t("voice.unused.hint")}</p>
+    {#each unusedLines as line (line.id)}
+      <div class="small"><strong>{line.event}</strong></div>
+      <LineRow {project} {voice} {line} ondelete={() => removeLine(line.id)} />
+    {/each}
+  </section>
+{/if}
 
 {#each groups as group (group.id)}
   <section class="panel">
@@ -115,6 +131,7 @@
 {/each}
 
 <style>
+  .unused { border-color: var(--warning); }
   .event { border-top: 1px solid var(--border); padding: 6px 0; }
   .file { flex-direction: row; }
   .file input { display: none; }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Project } from "../lib/model/types";
   import { newVoice } from "../lib/model/types";
+  import { VOICE_TYPES } from "../lib/model/catalog";
   import { touch } from "../lib/store/projects.svelte";
   import { loadAudio } from "../lib/store/audio";
   import { check } from "../lib/pack/manifest";
@@ -12,6 +13,7 @@
 
   let { project, onback, onvoice }: { project: Project; onback: () => void; onvoice: (voiceId: string) => void } = $props();
   let voiceName = $state("");
+  let voiceType = $state("villager");
   let exportState = $state<{ done: number; total: number; message?: string; error?: string } | undefined>();
   let noiseSeconds = $state<number | undefined>();
 
@@ -34,7 +36,8 @@
   }
 
   function addVoice() {
-    const voice = newVoice(voiceName.trim(), project.voices);
+    const entities = VOICE_TYPES.find((type) => type.id === voiceType)?.entities ?? ["villager"];
+    const voice = newVoice(voiceName.trim(), project.voices, entities);
     project.voices.push(voice);
     voiceName = "";
     touch(project);
@@ -141,6 +144,10 @@
   <div class="row" style="margin-top: 12px">
     <input type="text" bind:value={voiceName} placeholder={t("pack.voice_name")} style="max-width: 260px"
            onkeydown={(e) => e.key === "Enter" && voiceName.trim() && addVoice()} />
+    <label class="inline">{t("pack.voice_for")}
+      <select bind:value={voiceType}>
+        {#each VOICE_TYPES as type}<option value={type.id}>{t(`entity.${type.id}`)}</option>{/each}
+      </select></label>
     <button class="primary" disabled={!voiceName.trim()} onclick={addVoice}>{t("pack.add_voice")}</button>
   </div>
 </section>

@@ -33,6 +33,18 @@ export function expandEntities(entities: string[]): string[] {
   return [...new Set(entities.flatMap((entity) => (entity === "illager" ? ILLAGERS : [entity])))];
 }
 
+/** Choices when creating a voice; a voice can be extended to more entities later. */
+export const VOICE_TYPES: { id: string; entities: string[] }[] = [
+  { id: "villager", entities: ["villager"] },
+  { id: "wandering_trader", entities: ["wandering_trader"] },
+  { id: "witch", entities: ["witch"] },
+  { id: "illager", entities: ["illager"] },
+  { id: "pillager", entities: ["pillager"] },
+  { id: "vindicator", entities: ["vindicator"] },
+  { id: "evoker", entities: ["evoker"] },
+  { id: "illusioner", entities: ["illusioner"] },
+];
+
 /** Events triggered by at least one of the entities. */
 export function eventsFor(entities: string[]): CatalogEvent[] {
   const kinds = expandEntities(entities);

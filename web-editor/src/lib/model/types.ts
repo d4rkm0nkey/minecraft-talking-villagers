@@ -118,8 +118,9 @@ export function newProject(name: string, language: string): Project {
   };
 }
 
-export function newVoice(name: string, existing: Voice[]): Voice {
+export function newVoice(name: string, existing: Voice[], entities: string[] = ["villager"]): Voice {
   let id = slugify(name);
   for (let n = 2; existing.some((voice) => voice.id === id); n++) id = `${slugify(name)}-${n}`;
-  return { id, name, entities: ["villager"], gender: "male", child: false, pitchMin: 0.95, pitchMax: 1.05, lines: [] };
+  const gender: Gender = entities.includes("witch") ? "female" : "male";
+  return { id, name, entities: [...entities], gender, child: false, pitchMin: 0.95, pitchMax: 1.05, lines: [] };
 }

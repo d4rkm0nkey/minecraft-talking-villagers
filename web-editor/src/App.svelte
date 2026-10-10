@@ -26,6 +26,7 @@
       const voiceId = demo.voices[0].id;
       if (location.hash === "#demo-pack") view = { name: "pack", projectId: demo.id };
       if (location.hash === "#demo-voice") view = { name: "voice", projectId: demo.id, voiceId };
+      if (location.hash === "#demo-witch") view = { name: "voice", projectId: demo.id, voiceId: demo.voices[2].id };
       if (location.hash === "#demo-studio") view = { name: "studio", projectId: demo.id, voiceId, event: "greeting" };
     }
   });

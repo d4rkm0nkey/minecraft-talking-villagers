@@ -3,7 +3,7 @@
   import type { Project, Voice } from "../lib/model/types";
   import { newId } from "../lib/model/types";
   import type { Audio } from "../lib/audio/process";
-  import { EVENTS } from "../lib/model/catalog";
+  import { eventsFor } from "../lib/model/catalog";
   import { Recorder, microphones } from "../lib/recorder/recorder";
   import { detectSegments } from "../lib/audio/dsp";
   import { play } from "../lib/audio/browser";
@@ -62,8 +62,14 @@
     }
   }
 
+  /** Events this voice can say; other prefixes are not accepted. */
+  const allowed = $derived(eventsFor(voice.entities).map((event) => event.id));
+  const invalidPrefixes = $derived([...new Set(script.split("\n")
+    .map((line) => /^([a-z_]+)\s*:/.exec(line.trim())?.[1])
+    .filter((event): event is string => !!event && !allowed.includes(event)))]);
+
   function parseScript(): Item[] {
-    const known = new Set(EVENTS.map((event) => event.id));
+    const known = new Set(allowed);
     const items = script.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
       const match = /^([a-z_]+)\s*:\s*(.*)$/.exec(line);
       return match && known.has(match[1]) ? { event: match[1], text: match[2] } : { event: initialEvent, text: line };
@@ -234,9 +240,13 @@
   <section class="panel">
     <h2>{t("studio.script")}</h2>
     <p class="muted small">{t("studio.script.hint", { event: initialEvent })}</p>
-    <textarea bind:value={script} placeholder={"greeting: Hallo, Reisender!\ngreeting: Schön, dich zu sehen.\nhurt:\nhurt:"}></textarea>
+    <p class="muted small">{t("studio.script.events")} {allowed.join(", ")}</p>
+    <textarea bind:value={script} placeholder={`${initialEvent}: …\n${initialEvent}: …\nhurt:\nhurt:`}></textarea>
+    {#if invalidPrefixes.length > 0}
+      <p class="small" style="color: var(--danger)">{t("studio.script.invalid", { events: invalidPrefixes.join(", ") })}</p>
+    {/if}
     <div class="row" style="margin-top: 8px">
-      <button class="primary" disabled={!micReady} onclick={begin}>{t("studio.start")}</button>
+      <button class="primary" disabled={!micReady || invalidPrefixes.length > 0} onclick={begin}>{t("studio.start")}</button>
     </div>
   </section>
 {:else}
