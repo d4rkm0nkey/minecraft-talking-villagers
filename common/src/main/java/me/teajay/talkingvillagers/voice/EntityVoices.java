@@ -12,6 +12,8 @@ import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.core.select.LineContext;
 import me.teajay.talkingvillagers.core.voice.EventPolicies;
 import me.teajay.talkingvillagers.core.voice.SpeakerState;
+import me.teajay.talkingvillagers.core.voice.Threat;
+import me.teajay.talkingvillagers.core.voice.VillagerActivity;
 import me.teajay.talkingvillagers.core.voice.Chatter;
 import me.teajay.talkingvillagers.core.voice.HostileChatter;
 import me.teajay.talkingvillagers.core.voice.VoiceAssigner;
@@ -33,6 +35,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.PatrollingMonster;
+import net.minecraft.world.entity.monster.Vex;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
@@ -48,6 +52,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.SplittableRandom;
 import java.util.WeakHashMap;
 
@@ -58,6 +63,7 @@ import java.util.WeakHashMap;
 public final class EntityVoices {
     /** Radius in blocks in which voices are counted to give neighbours different voices. */
     private static final double NEIGHBOURHOOD = 48.0;
+    private static final float HIDE_VOLUME = 0.5f;
     /** Allies within this radius notice when a witch or illager dies. */
     private static final double ALLY_RADIUS = 16.0;
     private static final Map<Entity, SpeakerState> STATES = new WeakHashMap<>();
@@ -164,8 +170,25 @@ public final class EntityVoices {
         if (event.isPresent() && event.get() == EventCatalog.AMBIENT && entity instanceof Mob mob && EventCatalog.HOSTILE.contains(kind.get())) {
             // witches and illagers talk according to their state: idle, on patrol, in a raid or fighting
             event = Optional.of(HostileChatter.ambientEvent(kind.get(), hostileSituation(mob)));
+        } else if (event.isPresent() && entity instanceof Villager villager) {
+            event = Optional.of(villagerSoundEvent(villager, event.get()));
         }
         return event.isPresent() && onEvent(entity, event.get(), sound);
+    }
+
+    /**
+     * Villagers call for help instead of humming while they panic, and react to being hit by a player.
+     */
+    private static VoiceEvent villagerSoundEvent(Villager villager, VoiceEvent event) {
+        if (event == EventCatalog.AMBIENT) {
+            return Chatter.ambientEvent(activity(villager));
+        }
+        boolean hitByPlayerNow = villager.getLastHurtByMob() instanceof Player && villager.getLastHurtByMobTimestamp() == villager.tickCount;
+        if (event == EventCatalog.HURT && hitByPlayerNow
+                && state(villager).isReady(EventCatalog.ATTACKED_BY_PLAYER, EventPolicies.of(EventCatalog.ATTACKED_BY_PLAYER), villager.level().getGameTime())) {
+            return EventCatalog.ATTACKED_BY_PLAYER;
+        }
+        return event;
     }
 
     /**
@@ -212,7 +235,9 @@ public final class EntityVoices {
         }
         Holder<SoundEvent> fallback = vanillaSound == null ? null : BuiltInRegistries.SOUND_EVENT.wrapAsHolder(vanillaSound);
         float pitch = Services.ATTACHMENTS.getIdentity(entity).map(VoiceIdentity::pitch).orElse(1.0f);
-        return SpeechService.speak(entity, state(entity), voice, event, context(entity), pitch, 1.0f, interrupts, fallback);
+        // villagers hiding from raiders whisper
+        float volume = event == EventCatalog.HIDE ? HIDE_VOLUME : 1.0f;
+        return SpeechService.speak(entity, state(entity), voice, event, context(entity), pitch, volume, interrupts, fallback);
     }
 
     private static boolean crowded(LivingEntity entity) {
@@ -243,6 +268,7 @@ public final class EntityVoices {
             // no voice yet: it is chosen on first use, in the inherited language
             Services.ATTACHMENTS.setIdentity(child, VoiceIdentity.withoutVoice(gender, true, language));
         }
+        onEvent(RANDOM.nextBoolean() ? parent : otherParent, EventCatalog.LOVE);
     }
 
     /**
@@ -273,34 +299,92 @@ public final class EntityVoices {
             return;
         }
         SpeakerState state = state(entity);
-        Optional<Player> player;
-        boolean smallTalk;
-        if (entity instanceof Villager villager) {
-            if (state.updatePanic(villager.getBrain().isActive(Activity.PANIC))) {
-                onEvent(villager, EventCatalog.PANIC);
-                return;
-            }
-            if (villager.isTrading()) {
-                return;
-            }
-            player = villager.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER);
-            smallTalk = true;
-        } else {
-            if (entity instanceof AbstractVillager merchant && merchant.isTrading()) {
-                return;
-            }
-            player = Optional.ofNullable(level.getNearestPlayer(entity, EventPolicies.GREETING_DISTANCE)).filter(entity::hasLineOfSight);
-            smallTalk = false;
+        if (entity instanceof AbstractVillager merchant && merchant.isTrading()) {
+            return;
         }
-
-        Chatter.Situation situation = new Chatter.Situation(
-                level.getGameTime(),
-                player.map(p -> OptionalDouble.of(p.distanceTo(entity))).orElse(OptionalDouble.empty()),
-                player.filter(p -> p.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)).isPresent() && entity instanceof Villager,
-                weather(level),
-                level.isBrightOutside(),
-                smallTalk);
+        Chatter.Situation situation;
+        if (entity instanceof Villager villager) {
+            Optional<Player> player = villager.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER);
+            situation = new Chatter.Situation(
+                    level.getGameTime(),
+                    player.map(p -> OptionalDouble.of(p.distanceTo(villager))).orElse(OptionalDouble.empty()),
+                    player.filter(p -> p.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)).isPresent(),
+                    weather(level),
+                    level.isBrightOutside(),
+                    true,
+                    activity(villager),
+                    threat(villager),
+                    player.map(p -> OptionalInt.of(villager.getPlayerReputation(p))).orElse(OptionalInt.empty()));
+        } else {
+            Optional<Player> player = Optional.ofNullable(level.getNearestPlayer(entity, EventPolicies.GREETING_DISTANCE)).filter(entity::hasLineOfSight);
+            situation = Chatter.Situation.calm(
+                    level.getGameTime(),
+                    player.map(p -> OptionalDouble.of(p.distanceTo(entity))).orElse(OptionalDouble.empty()),
+                    false,
+                    weather(level),
+                    level.isBrightOutside(),
+                    false);
+        }
         Chatter.decide(state, situation, RANDOM).ifPresent(event -> speak(entity, voice.get(), event, null));
+    }
+
+    private static VillagerActivity activity(Villager villager) {
+        var brain = villager.getBrain();
+        if (brain.isActive(Activity.PANIC)) {
+            return VillagerActivity.PANIC;
+        }
+        if (brain.isActive(Activity.PRE_RAID)) {
+            return VillagerActivity.PRE_RAID;
+        }
+        if (brain.isActive(Activity.HIDE) || brain.isActive(Activity.RAID)) {
+            return VillagerActivity.HIDE;
+        }
+        if (brain.isActive(Activity.CELEBRATE)) {
+            return VillagerActivity.CELEBRATE;
+        }
+        if (brain.isActive(Activity.REST)) {
+            return VillagerActivity.REST;
+        }
+        if (brain.isActive(Activity.WORK)) {
+            return VillagerActivity.WORK;
+        }
+        if (brain.isActive(Activity.PLAY)) {
+            return VillagerActivity.PLAY;
+        }
+        if (brain.isActive(Activity.MEET)) {
+            return VillagerActivity.MEET;
+        }
+        return VillagerActivity.IDLE;
+    }
+
+    private static Threat threat(Villager villager) {
+        var brain = villager.getBrain();
+        Optional<LivingEntity> source = brain.getMemory(MemoryModuleType.NEAREST_HOSTILE)
+                .or(() -> brain.getMemory(MemoryModuleType.HURT_BY_ENTITY));
+        if (source.isEmpty()) {
+            return Threat.NONE;
+        }
+        LivingEntity threat = source.get();
+        if (threat instanceof Player) {
+            return Threat.PLAYER;
+        }
+        if (threat instanceof Zombie) {
+            return Threat.ZOMBIE;
+        }
+        if (threat instanceof Raider || threat instanceof Vex) {
+            return Threat.RAIDER;
+        }
+        return Threat.OTHER;
+    }
+
+    /**
+     * Event for a villager that starts trading: unfriendly if the player has a bad reputation with it.
+     */
+    public static VoiceEvent tradeEvent(LivingEntity merchant, Player player) {
+        if (merchant instanceof Villager villager && villager.getPlayerReputation(player) <= EventPolicies.UNFRIENDLY_REPUTATION) {
+            return EventCatalog.TRADE_UNFRIENDLY;
+        }
+        return EventCatalog.TRADE;
     }
 
     /**
@@ -367,6 +451,13 @@ public final class EntityVoices {
             } else {
                 onEvent(killer, EventCatalog.LAUGH);
             }
+        }
+        if (victim instanceof Villager) {
+            victim.level().getEntitiesOfClass(Villager.class, victim.getBoundingBox().inflate(ALLY_RADIUS),
+                            villager -> villager != victim && villager.isAlive() && hasVoice(villager))
+                    .stream()
+                    .min(Comparator.comparingDouble(villager -> villager.distanceToSqr(victim)))
+                    .ifPresent(villager -> onEvent(villager, EventCatalog.VILLAGER_DIED));
         }
         if (kindOf(victim).filter(EventCatalog.HOSTILE::contains).isPresent()) {
             victim.level().getEntitiesOfClass(Mob.class, victim.getBoundingBox().inflate(ALLY_RADIUS),

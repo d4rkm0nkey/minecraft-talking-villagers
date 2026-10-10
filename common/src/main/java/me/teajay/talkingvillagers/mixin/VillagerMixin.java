@@ -5,6 +5,8 @@ import me.teajay.talkingvillagers.voice.EntityVoices;
 import me.teajay.talkingvillagers.voice.LegacyVoices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.storage.ValueInput;
 import org.spongepowered.asm.mixin.Mixin;
@@ -62,6 +64,13 @@ public abstract class VillagerMixin {
         Villager self = talkingvillagers$self();
         if (!self.level().isClientSide() && self.isAlive() && self.level().isBrightOutside()) {
             EntityVoices.onEvent(self, EventCatalog.WAKE_UP);
+        }
+    }
+
+    @Inject(method = "onReputationEventFrom", at = @At("TAIL"))
+    private void talkingvillagers$reputationEvent(ReputationEventType type, Entity source, CallbackInfo ci) {
+        if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+            EntityVoices.onEvent(talkingvillagers$self(), EventCatalog.CURED);
         }
     }
 

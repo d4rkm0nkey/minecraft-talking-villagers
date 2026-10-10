@@ -133,7 +133,22 @@
         "brew",
         "heal_self",
         "drink_other",
-        "heal_ally"
+        "heal_ally",
+        "panic_loop",
+        "pre_raid",
+        "hide",
+        "work",
+        "play",
+        "meet",
+        "attacked_by_player",
+        "spot_zombie",
+        "spot_raider",
+        "villager_died",
+        "cured",
+        "love",
+        "greeting_friendly",
+        "greeting_unfriendly",
+        "trade_unfriendly"
       ]
     },
     "profession": {

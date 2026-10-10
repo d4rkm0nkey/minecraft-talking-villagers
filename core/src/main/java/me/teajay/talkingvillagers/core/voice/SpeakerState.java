@@ -15,7 +15,8 @@ public final class SpeakerState {
     private final Map<String, Long> lastSpoken = new HashMap<>();
     private final Map<String, Integer> lastLine = new HashMap<>();
     private long nextRandomChat = -1;
-    private boolean panicking;
+    private VillagerActivity activity = VillagerActivity.IDLE;
+    private long nextAlarmLine;
     private boolean inCombat;
     private boolean lowHealthSaid;
     private long nextCombatLine = -1;
@@ -67,13 +68,20 @@ public final class SpeakerState {
         this.nextRandomChat = gameTime;
     }
 
-    /**
-     * @return true if the entity just started panicking
-     */
-    public boolean updatePanic(boolean panicking) {
-        boolean started = panicking && !this.panicking;
-        this.panicking = panicking;
-        return started;
+    public VillagerActivity activity() {
+        return activity;
+    }
+
+    public void setActivity(VillagerActivity activity) {
+        this.activity = activity;
+    }
+
+    public long nextAlarmLine() {
+        return nextAlarmLine;
+    }
+
+    public void setNextAlarmLine(long gameTime) {
+        this.nextAlarmLine = gameTime;
     }
 
     public boolean inCombat() {

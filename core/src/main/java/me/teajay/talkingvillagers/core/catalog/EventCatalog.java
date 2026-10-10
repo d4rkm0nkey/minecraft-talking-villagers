@@ -80,6 +80,23 @@ public final class EventCatalog {
     public static final VoiceEvent DRINK_OTHER = register("drink_other", EnumSet.of(WITCH), DRINK_POTION);
     public static final VoiceEvent HEAL_ALLY = register("heal_ally", EnumSet.of(WITCH), THROW_POTION);
 
+    // villager states and reactions; most fall back to an existing event
+    public static final VoiceEvent PANIC_LOOP = register("panic_loop", EnumSet.of(VILLAGER), PANIC);
+    public static final VoiceEvent PRE_RAID = register("pre_raid", EnumSet.of(VILLAGER), PANIC);
+    public static final VoiceEvent HIDE = register("hide", EnumSet.of(VILLAGER));
+    public static final VoiceEvent WORK = register("work", EnumSet.of(VILLAGER), RANDOM);
+    public static final VoiceEvent PLAY = register("play", EnumSet.of(VILLAGER), RANDOM);
+    public static final VoiceEvent MEET = register("meet", EnumSet.of(VILLAGER), GOSSIP);
+    public static final VoiceEvent ATTACKED_BY_PLAYER = register("attacked_by_player", EnumSet.of(VILLAGER), HURT);
+    public static final VoiceEvent SPOT_ZOMBIE = register("spot_zombie", EnumSet.of(VILLAGER), PANIC);
+    public static final VoiceEvent SPOT_RAIDER = register("spot_raider", EnumSet.of(VILLAGER), PANIC);
+    public static final VoiceEvent VILLAGER_DIED = register("villager_died", EnumSet.of(VILLAGER));
+    public static final VoiceEvent CURED = register("cured", EnumSet.of(VILLAGER), CELEBRATE);
+    public static final VoiceEvent LOVE = register("love", EnumSet.of(VILLAGER));
+    public static final VoiceEvent GREETING_FRIENDLY = register("greeting_friendly", EnumSet.of(VILLAGER), GREETING);
+    public static final VoiceEvent GREETING_UNFRIENDLY = register("greeting_unfriendly", EnumSet.of(VILLAGER), GREETING);
+    public static final VoiceEvent TRADE_UNFRIENDLY = register("trade_unfriendly", EnumSet.of(VILLAGER), TRADE);
+
     private EventCatalog() {
     }
 

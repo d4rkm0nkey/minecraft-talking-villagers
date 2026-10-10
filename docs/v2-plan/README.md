@@ -38,6 +38,7 @@ Ziel: Talking Villagers wird für die aktuelle Minecraft-Version (26.x, Fabric) 
 | 1 | [phase-1-core-format.md](phase-1-core-format.md) | Voicepack-Format v2 (`.voicepack`), Kern-Domain, Stimmenauswahl, Tests | 0 |
 | 2 | [phase-2-pack-loading-audio.md](phase-2-pack-loading-audio.md) | Packs laden, virtuelles Resourcepack, Abspielen, Networking | 1 |
 | 3 | [phase-3-villager.md](phase-3-villager.md) | Villager neu: Attachments, Controller, Kinder/Erwachsen, Geschlecht | 2 |
+| 3b | [phase-3b-villager-states.md](phase-3b-villager-states.md) | Villager-Zustände (Panik, Raid, Verstecken, Arbeit) und Reaktionen (Spieler-Angriff, Heilung, Reputation) | 3, 4b |
 | 4 | [phase-4-more-entities.md](phase-4-more-entities.md) | Witch, Wandering Trader, Pillager, Vindicator, Evoker, Illusioner | 3 |
 | 4b | [phase-4b-hostile-states.md](phase-4b-hostile-states.md) | Zustände für Witches und Illager: Leerlauf, Patrouille, Raid, Kampf, Reaktionen | 4 |
 | 5 | [phase-5-languages-villages.md](phase-5-languages-villages.md) | Sprachen, zufällige Sprache pro Dorf | 3 |

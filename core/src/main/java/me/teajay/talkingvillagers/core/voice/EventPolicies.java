@@ -19,6 +19,10 @@ public final class EventPolicies {
     public static final double GREETING_DISTANCE = 5.0;
     public static final int MIN_RANDOM_CHAT_DELAY = 300;
     public static final int MAX_RANDOM_CHAT_DELAY = 5000;
+    /** Reputation at or below which villagers greet a player coldly; iron golems attack at -100. */
+    public static final int UNFRIENDLY_REPUTATION = -30;
+    /** Reputation at or above which villagers greet a player warmly. */
+    public static final int FRIENDLY_REPUTATION = 30;
 
     private static final Map<String, EventPolicy> POLICIES = new HashMap<>();
 
@@ -26,6 +30,15 @@ public final class EventPolicies {
         put(EventCatalog.HURT, new EventPolicy(10, 1.0, true));
         put(EventCatalog.DEATH, new EventPolicy(0, 1.0, true));
         put(EventCatalog.GREETING, new EventPolicy(6000, 0.4, false));
+        put(EventCatalog.GREETING_FRIENDLY, new EventPolicy(6000, 0.4, false));
+        put(EventCatalog.GREETING_UNFRIENDLY, new EventPolicy(6000, 0.4, false));
+        put(EventCatalog.ATTACKED_BY_PLAYER, new EventPolicy(60, 1.0, true));
+        put(EventCatalog.SPOT_ZOMBIE, new EventPolicy(200, 1.0, true));
+        put(EventCatalog.SPOT_RAIDER, new EventPolicy(200, 1.0, true));
+        put(EventCatalog.PRE_RAID, new EventPolicy(0, 1.0, true));
+        put(EventCatalog.VILLAGER_DIED, new EventPolicy(200, 0.8, true));
+        put(EventCatalog.CURED, new EventPolicy(0, 1.0, true));
+        put(EventCatalog.LOVE, new EventPolicy(200, 0.5, false));
         put(EventCatalog.HERO, new EventPolicy(2000, 0.5, false));
         put(EventCatalog.GOSSIP, new EventPolicy(1200, 0.5, false));
         put(EventCatalog.YES, new EventPolicy(20, 1.0, false));

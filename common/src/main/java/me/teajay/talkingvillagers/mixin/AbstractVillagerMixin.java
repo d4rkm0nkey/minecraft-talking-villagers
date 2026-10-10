@@ -20,7 +20,7 @@ public abstract class AbstractVillagerMixin {
     private void talkingvillagers$trade(@Nullable Player player, CallbackInfo ci) {
         AbstractVillager self = (AbstractVillager) (Object) this;
         if (player != null && self.getTradingPlayer() == null && !self.level().isClientSide()) {
-            EntityVoices.onEvent(self, EventCatalog.TRADE);
+            EntityVoices.onEvent(self, EntityVoices.tradeEvent(self, player));
         }
     }
 
