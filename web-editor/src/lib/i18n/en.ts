@@ -125,6 +125,7 @@ export const en: Record<string, string> = {
   "studio.room_tone.have": "Noise profile recorded. Only record it again when the room or microphone changes.",
   "studio.room_tone.missing": "No noise profile yet. Record 2 s of room tone once; it is used for the whole pack.",
   "studio.enable_first": "Enable the microphone above first.",
+  "studio.trim_hint": "Drag the edges to cut the start and end (keyboard noise, for example). You can still change the cut later on the voice page.",
   "studio.done": "All lines recorded!",
   "studio.recording": "Recording",
   "studio.ready": "Ready",

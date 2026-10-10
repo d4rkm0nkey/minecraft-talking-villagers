@@ -125,6 +125,7 @@ export const de: Record<string, string> = {
   "studio.room_tone.have": "Rauschprofil vorhanden. Neu aufnehmen nur, wenn sich Raum oder Mikrofon ändern.",
   "studio.room_tone.missing": "Noch kein Rauschprofil. Einmal 2 s Raumstille aufnehmen, das gilt für das ganze Pack.",
   "studio.enable_first": "Zuerst oben das Mikrofon aktivieren.",
+  "studio.trim_hint": "Ränder ziehen, um Anfang und Ende abzuschneiden (z. B. Tastaturgeräusche). Der Schnitt bleibt auch später auf der Stimmen-Seite änderbar.",
   "studio.done": "Alle Zeilen aufgenommen!",
   "studio.recording": "Aufnahme läuft",
   "studio.ready": "Bereit",

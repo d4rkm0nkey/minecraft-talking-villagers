@@ -10,6 +10,7 @@
   import { saveAudio, deleteAudio, loadAudio } from "../lib/store/audio";
   import { touch } from "../lib/store/projects.svelte";
   import LevelMeter from "./LevelMeter.svelte";
+  import Waveform from "./Waveform.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
   import { processLine } from "../lib/audio/process";
   import { noiseProfile } from "../lib/audio/spectralGate";
@@ -37,6 +38,8 @@
   let index = $state(0);
   let phase = $state<Phase>("idle");
   let take = $state<Audio | undefined>();
+  /** Trim of the current take in seconds, set on the waveform before accepting. */
+  let trim = $state({ start: 0, end: 0 });
   let countdown = $state(0);
   let peakDb = $state(-90);
   let clipping = $state(false);
@@ -158,13 +161,14 @@
       return;
     }
     take = audio;
+    trim = { start: 0, end: 0 };
     phase = "review";
   }
 
-  async function addLine(audio: Audio, item: Item) {
+  async function addLine(audio: Audio, item: Item, trimStart = 0, trimEnd = 0) {
     const audioId = newId();
     await saveAudio(audioId, audio);
-    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart: 0, trimEnd: 0, conditions: { professions: [] } });
+    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart, trimEnd, conditions: { professions: [] } });
     recorded++;
     touch(project);
   }
@@ -183,7 +187,7 @@
   /** @param variant record another take of the same line */
   async function accept(variant = false) {
     if (!take || !current) return;
-    await addLine(take, current);
+    await addLine(take, current, trim.start, trim.end);
     take = undefined;
     if (!variant) index++;
     if (index >= queue.length) {
@@ -200,9 +204,17 @@
   async function playProcessed() {
     if (!take) return;
     const noise = project.noiseProfileAudioId ? await loadAudio(project.noiseProfileAudioId) : undefined;
-    const processed = await processLine(take, { trimStart: 0, trimEnd: 0 }, $state.snapshot(project.processing),
+    const processed = await processLine(take, { trimStart: trim.start, trimEnd: trim.end }, $state.snapshot(project.processing),
       noise ? noiseProfile(noise.data) : undefined, denoise);
     play(processed, (voice.pitchMin + voice.pitchMax) / 2);
+  }
+
+  /** Plays the take without processing, but with the trim applied. */
+  function playRaw() {
+    if (!take) return;
+    const start = Math.round(trim.start * take.sampleRate);
+    const end = take.data.length - Math.round(trim.end * take.sampleRate);
+    play({ sampleRate: take.sampleRate, data: take.data.slice(start, Math.max(start, end)) });
   }
 
   async function roomTone() {
@@ -326,6 +338,12 @@
       {:else}<span class="muted">{t("studio.ready")}</span>{/if}
       {#if clipping}<span class="error"> · {t("studio.clipping")}</span>{/if}
     </div>
+    {#if phase === "review" && take}
+      <div class="trim">
+        <Waveform audio={take} bind:trimStart={trim.start} bind:trimEnd={trim.end} height={72} />
+        <p class="muted small">{t("studio.trim_hint")}</p>
+      </div>
+    {/if}
     <div class="row">
       {#if phase === "recording"}
         <button class="primary" onclick={stopRecording}>■ {t("common.stop")}</button>
@@ -334,7 +352,7 @@
       {/if}
       <button disabled={phase !== "review"} onclick={() => accept()}>✔ {t("studio.accept")}</button>
       <button disabled={phase !== "review"} onclick={() => accept(true)}>＋ {t("studio.variant")}</button>
-      <button disabled={!take} onclick={() => take && play(take)}>▶ {t("studio.play_raw")}</button>
+      <button disabled={!take} onclick={playRaw}>▶ {t("studio.play_raw")}</button>
       <button disabled={!take} onclick={playProcessed}>✨▶ {t("studio.play_processed")}</button>
       <button onclick={() => { phase = "setup"; take = undefined; }}>{t("studio.edit_script")}</button>
     </div>
@@ -351,6 +369,8 @@
   .prompter.recording { border-color: var(--record); box-shadow: 0 0 0 2px var(--record) inset; }
   .text { font-size: 2rem; line-height: 1.3; margin: 24px 0 12px; min-height: 2.6em; }
   .event { width: auto; }
+  .trim { margin-bottom: 12px; }
+  .trim p { margin: 4px 0 0; }
   .countdown { font-size: 3rem; font-weight: bold; }
   .status { margin: 12px 0; min-height: 1.5em; }
   .rec { color: var(--record); font-weight: bold; }
