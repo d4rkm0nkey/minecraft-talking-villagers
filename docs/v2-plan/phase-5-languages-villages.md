@@ -43,6 +43,7 @@ Minecraft hat kein Dorf-Objekt. Vorgehen:
 
 ### Kinder
 - Bei der Geburt erbt das Kind die Sprache eines zufälligen Elternteils (nicht die Sprache des Geburtsdorfs).
+- Kinder ohne Eltern (gespawnt, aus generierten Dörfern, Spawn-Ei) oder mit Eltern ohne Sprache bekommen die Sprache ihres Dorfs. Auf dem Server getestet.
 - Beim Erwachsenwerden wird die neue Stimme in der **in der Identity gespeicherten** Sprache gewählt. Das Kind behält seine Sprache.
 
 ## Andere Entities
