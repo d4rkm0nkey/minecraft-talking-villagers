@@ -1,6 +1,8 @@
 package me.teajay.talkingvillagers.client;
 
 import me.teajay.talkingvillagers.TalkingVillagers;
+import me.teajay.talkingvillagers.config.ClientConfig;
+import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.core.catalog.VoiceEvent;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
@@ -124,11 +126,15 @@ public final class ClientVoices {
             minecraft.getSoundManager().stop(previous);
         }
 
-        Component subtitle = line.get().text()
-                .<Component>map(Component::literal)
-                .orElseGet(() -> Component.translatable("subtitles.talkingvillagers.speaks", entity.getDisplayName()));
+        ClientConfig config = Configs.client();
+        Component generic = Component.translatable("subtitles.talkingvillagers.speaks", entity.getDisplayName());
+        Component subtitle = switch (config.subtitles()) {
+            case TRANSCRIPT -> line.get().text().<Component>map(Component::literal).orElse(generic);
+            case GENERIC -> generic;
+            case OFF -> null;
+        };
         VoiceSoundInstance instance = new VoiceSoundInstance(
-                VoiceAudio.soundLocation(payload.packHash(), line.get().file()), entity, payload.volume(), payload.pitch(), subtitle);
+                VoiceAudio.soundLocation(payload.packHash(), line.get().file()), entity, payload.volume() * config.volume(), payload.pitch(), subtitle);
         PLAYING.put(entity.getId(), instance);
         minecraft.getSoundManager().play(instance);
     }

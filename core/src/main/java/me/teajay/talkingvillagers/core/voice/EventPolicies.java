@@ -12,8 +12,7 @@ import java.util.Map;
 public final class EventPolicies {
     /** Ticks between ambient sounds of entities with a voice; vanilla villagers use 80. */
     public static final int AMBIENT_INTERVAL = 300;
-    /** At most this many entities speak at the same time within {@link #CROWD_RADIUS}, e.g. during raids. */
-    public static final int MAX_CONCURRENT_SPEAKERS = 3;
+    /** Radius for the limit of entities speaking at the same time (config {@code maxConcurrentSpeakers}). */
     public static final double CROWD_RADIUS = 32.0;
     /** Distance in blocks within which villagers greet players. */
     public static final double GREETING_DISTANCE = 5.0;

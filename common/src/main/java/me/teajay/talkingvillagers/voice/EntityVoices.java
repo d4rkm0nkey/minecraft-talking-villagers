@@ -49,6 +49,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -72,8 +73,16 @@ public final class EntityVoices {
     private EntityVoices() {
     }
 
+    /**
+     * The entity's kind, if it can have a voice and its kind is enabled in the config.
+     */
     public static Optional<EntityKind> kindOf(Entity entity) {
-        return EntityKinds.of(entity);
+        return EntityKinds.of(entity).filter(Configs.server()::isEnabled);
+    }
+
+    /** Installed voices that are not disabled in the config. */
+    private static Optional<ResolvedVoice> enabledVoice(PackIndex index, VoiceRef ref) {
+        return Configs.server().isVoiceEnabled(ref) ? index.voice(ref) : Optional.empty();
     }
 
     public static SpeakerState state(Entity entity) {
@@ -96,7 +105,7 @@ public final class EntityVoices {
         PackIndex index = Voicepacks.index();
         Optional<VoiceIdentity> current = Services.ATTACHMENTS.getIdentity(entity);
         boolean child = entity.isBaby();
-        if (!VoiceAssigner.needsAssignment(current, child, index::voice)) {
+        if (!VoiceAssigner.needsAssignment(current, child, ref -> enabledVoice(index, ref))) {
             return current.flatMap(VoiceIdentity::voice).flatMap(index::voice);
         }
         SpeakerState state = state(entity);
@@ -119,7 +128,8 @@ public final class EntityVoices {
             }
             wantedLanguage = resolution.language();
         }
-        VoiceIdentity identity = VoiceAssigner.assign(current, kind, entity.isBaby(), index.voicesFor(kind),
+        List<ResolvedVoice> pool = index.voicesFor(kind).stream().filter(voice -> config.isVoiceEnabled(voice.ref())).toList();
+        VoiceIdentity identity = VoiceAssigner.assign(current, kind, entity.isBaby(), pool,
                 neighbourVoices(entity, level), config.assignment(), wantedLanguage, RANDOM);
         Services.ATTACHMENTS.setIdentity(entity, identity);
         if (identity.voice().isEmpty()) {
@@ -247,7 +257,7 @@ public final class EntityVoices {
         for (Map.Entry<Entity, SpeakerState> entry : STATES.entrySet()) {
             Entity other = entry.getKey();
             if (other != entity && other.level() == entity.level() && entry.getValue().isSpeaking(now)
-                    && other.distanceToSqr(entity) <= radiusSqr && ++speaking >= EventPolicies.MAX_CONCURRENT_SPEAKERS) {
+                    && other.distanceToSqr(entity) <= radiusSqr && ++speaking >= Configs.server().maxConcurrentSpeakers()) {
                 return true;
             }
         }

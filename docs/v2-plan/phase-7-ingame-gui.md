@@ -1,5 +1,37 @@
 # Phase 7 – Voicepack-Manager und Einstellungen in Mod Menu
 
+## Status: erledigt
+
+Umgesetzt auf Branch `v2/phase-7` (abgeleitet von `v2/phase-3b`). Geprüft mit einem automatisierten Fabric-Client-Test (`GuiClientGameTest`), der alle Screens öffnet und Screenshots macht. Der Abspiel-Test aus Phase 2 lief dabei ebenfalls erfolgreich durch.
+
+Umgesetzt:
+- **`VoicepacksScreen`** (Einstieg über Mod Menu bzw. die NeoForge-Mod-Liste):
+  - Suche, Pack-Zeilen mit Icon, Version, Sprache und Stimmen-Zusammenfassung
+  - An/Aus, Löschen nach `voicepacks/.trash`, „Details“
+  - fehlerhafte Packs in Rot mit erstem Fehler
+  - Abschnitt „Vom Server verwendet, fehlen hier“
+  - Buttons: Ordner öffnen, Neu laden, Web-Editor, Einstellungen
+- **Drag & Drop:** Prüfung jeder Datei, Bestätigungsdialog mit Name, Version, Stimmenanzahl und Sprache, „ersetzt vX“ bei Updates (die alte Datei wandert in den Papierkorb), Toast danach. V1-Packs und andere Dateien werden mit Erklärung abgelehnt.
+- **`PackDetailsScreen`:** Infos, pro Stimme Probehören (▶), Zeilenliste und An/Aus; bei Problemen alle Fehler und Warnungen mit Fundstelle.
+- **`VoiceLinesScreen`:** alle Zeilen einer Stimme nach Event, mit Text, Datei, Länge, Bedingungen und ▶.
+- **`SettingsScreen`:**
+  - Für dich: Lautstärke, Untertitel (Text / „Dorfbewohner spricht“ / aus)
+  - Stimmen: Anteil Frauen, Anteil weiblicher Hexen, Kinder-Fallback, gleichzeitige Sprecher
+  - Wer spricht: an/aus pro Entity-Art
+  - Sprache: Modus, bevorzugte und erlaubte Sprachen, strikt, Händler, Raids
+
+  Änderungen werden beim Schließen gespeichert. Server-Einstellungen sind auf fremden Servern ausgegraut.
+- **Config:** `config/talkingvillagers-client.json` ist neu. Die Server-Config bekommt `disabledEntities`, `disabledPacks`, `disabledVoices` und `maxConcurrentSpeakers`. Deaktivierte Packs und Stimmen werden nicht mehr zugewiesen, betroffene Entities bekommen eine neue Stimme.
+- **Probehören** im Menü (`PreviewSounds`): nicht positionsabhängig, Kategorie „Stimme/Sprache“.
+- **Texte:** Deutsch und Englisch.
+
+Abweichungen vom Plan:
+- **Kein Button im Sound-Menü und keine Taste:** Der Einstieg ist Mod Menu (Fabric) bzw. die eingebaute Mod-Liste (NeoForge). Ein zusätzlicher Einstieg kann später kommen.
+- **Keine Einstellung für Smalltalk-Häufigkeit und Cooldowns pro Event** („Erweitert“). Die Werte aus `EventPolicies` gelten weiterhin.
+- **Web-Editor-Button:** Er verlinkt auf die geplante GitHub-Pages-Adresse. Die Seite gibt es erst mit Phase 8.
+- **V1-Packs** werden erkannt, aber noch nicht konvertiert (Phase 9).
+- **Fehlende Server-Packs** werden nur angezeigt, der Download kommt mit Phase 9.
+
 ## Ziel
 Voicepacks werden komplett im Spiel verwaltet: installieren (per Drag & Drop), aktivieren/deaktivieren, Stimmen anhören, löschen. Der Einstieg erfolgt über Mod Menu (Config-Button) und optional über einen Button im Optionen-Menü. SpruceUI und Cloth Config werden durch Vanilla-Widgets ersetzt.
 

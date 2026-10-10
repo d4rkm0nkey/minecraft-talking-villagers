@@ -6,6 +6,7 @@
   "environment": "*",
   "entrypoints": {
     "fabric-client-gametest": [
+      "me.teajay.talkingvillagers.test.GuiClientGameTest",
       "me.teajay.talkingvillagers.test.SpeakClientGameTest"
     ]
   },

@@ -35,6 +35,7 @@ public final class TalkingVillagers {
      * Client side setup, called after {@link #init()}.
      */
     public static void initClient() {
+        Configs.loadClient();
         Voicepacks.onReload(ClientVoices::onLocalPacksReloaded);
     }
 }
