@@ -59,6 +59,8 @@ button.icon { padding: 4px 8px; min-width: 34px; }
 .error { color: var(--danger); }
 .warning { color: var(--warning); }
 .chip { display: inline-block; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.8rem; }
+header.top .brand { display: flex; align-items: center; gap: 12px; }
+header.top .brand img { border-radius: 10px; flex-shrink: 0; }
 header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 details > summary { cursor: pointer; }
 @media (max-width: 600px) { main { padding: 12px; } }

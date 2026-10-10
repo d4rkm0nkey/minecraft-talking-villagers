@@ -34,9 +34,12 @@
 
 <main>
   <header class="top">
-    <div>
-      <h1>{t("app.title")}</h1>
-      <div class="muted small">{t("app.subtitle")}</div>
+    <div class="brand">
+      <img src="{import.meta.env.BASE_URL}logo.png" alt="" width="56" height="56" />
+      <div>
+        <h1>{t("app.title")}</h1>
+        <div class="muted small">{t("app.subtitle")}</div>
+      </div>
     </div>
     <select value={locale.language} onchange={(e) => setLanguage(e.currentTarget.value)} aria-label="Language" style="width: auto">
       <option value="de">Deutsch</option>
