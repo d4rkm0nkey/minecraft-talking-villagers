@@ -5,6 +5,8 @@ import { spectralGate } from "./spectralGate";
 export interface Audio {
   sampleRate: number;
   data: Float32Array;
+  /** The original Ogg Vorbis file, for lines opened from an existing pack; exported unchanged if nothing was edited. */
+  ogg?: Uint8Array;
 }
 
 /** Optional neural denoiser, only available in the browser. */

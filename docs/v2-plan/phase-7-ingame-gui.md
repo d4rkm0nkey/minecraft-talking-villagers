@@ -13,7 +13,9 @@ Umgesetzt:
   - Buttons: Ordner öffnen, Neu laden, Web-Editor, Einstellungen
 - **Drag & Drop:** Prüfung jeder Datei, Bestätigungsdialog mit Name, Version, Stimmenanzahl und Sprache, „ersetzt vX“ bei Updates (die alte Datei wandert in den Papierkorb), Toast danach. V1-Packs und andere Dateien werden mit Erklärung abgelehnt.
 - **`PackDetailsScreen`:** Infos, pro Stimme Probehören (▶), Zeilenliste und An/Aus; bei Problemen alle Fehler und Warnungen mit Fundstelle.
-- **`VoiceLinesScreen`:** alle Zeilen einer Stimme nach Event, mit Text, Datei, Länge, Bedingungen und ▶.
+- **Zeilen in zwei Ebenen:** `VoiceEventsScreen` listet die Events einer Stimme mit Beschreibung, Anzahl, ▶ (zufällige Probe) und „Zeilen ›“. `EventLinesScreen` zeigt die Zeilen eines Events mit Text, Datei, Länge, Bedingungen und ▶.
+- **Suchfelder:** in der Event-Liste (findet Events auch über den Text ihrer Zeilen, die Suche wird in die Zeilenliste übernommen), in der Zeilenliste ab 6 Zeilen und in den Pack-Details ab 4 Stimmen.
+- **Event-Beschreibungen** stammen aus dem Web-Editor und stehen als `talkingvillagers.event.<id>` in den Sprachdateien.
 - **`SettingsScreen`:**
   - Für dich: Lautstärke, Untertitel (Text / „Dorfbewohner spricht“ / aus)
   - Stimmen: Anteil Frauen, Anteil weiblicher Hexen, Kinder-Fallback, gleichzeitige Sprecher

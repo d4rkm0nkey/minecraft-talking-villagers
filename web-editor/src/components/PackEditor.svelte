@@ -24,6 +24,15 @@
     if (id) void loadAudio(id).then((audio) => (noiseSeconds = audio ? Math.round((audio.data.length / audio.sampleRate) * 10) / 10 : undefined));
   });
 
+  /** 1.2.3 becomes 1.2.4; the mod installs the newer version over the older one. */
+  function bumpVersion() {
+    const parts = project.version.split(/[-+]/)[0].split(".").map((part) => Number.parseInt(part, 10) || 0);
+    while (parts.length < 3) parts.push(0);
+    parts[parts.length - 1]++;
+    project.version = parts.join(".");
+    touch(project);
+  }
+
   function addVoice() {
     const voice = newVoice(voiceName.trim(), project.voices);
     project.voices.push(voice);
@@ -83,7 +92,13 @@
   <div class="grid">
     <label>{t("start.name")}<input type="text" bind:value={project.name} oninput={() => touch(project)} /></label>
     <label>{t("pack.id")}<input type="text" bind:value={project.packId} oninput={() => touch(project)} /></label>
-    <label>{t("pack.version")}<input type="text" bind:value={project.version} oninput={() => touch(project)} /></label>
+    <label>
+      {t("pack.version")}
+      <span class="row" style="flex-wrap: nowrap">
+        <input type="text" bind:value={project.version} oninput={() => touch(project)} />
+        <button class="icon" title={t("pack.version.bump")} aria-label={t("pack.version.bump")} onclick={bumpVersion}>+1</button>
+      </span>
+    </label>
     <label>
       {t("start.language")}
       <input type="text" bind:value={project.language} list="pack-languages" oninput={() => touch(project)} />

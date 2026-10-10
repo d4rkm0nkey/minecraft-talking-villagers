@@ -35,6 +35,11 @@ public class PackDetailsScreen extends ListScreen {
     }
 
     @Override
+    protected boolean searchable() {
+        return pack.pack().map(p -> p.voices().size() > 3).orElse(false);
+    }
+
+    @Override
     protected List<RowList.Row> rows() {
         List<RowList.Row> rows = new ArrayList<>();
         if (pack.pack().isPresent()) {
@@ -47,7 +52,9 @@ public class PackDetailsScreen extends ListScreen {
                     .build());
             boolean editable = GuiTexts.canEditServerSettings();
             for (ResolvedVoice voice : p.resolvedVoices()) {
-                rows.add(voiceRow(voice, editable));
+                if (matches(voice.voice().name(), voice.ref().voiceId(), GuiTexts.entities(voice.voice()).getString(), voice.language())) {
+                    rows.add(voiceRow(voice, editable));
+                }
             }
         }
         for (Problem problem : pack.problems()) {
@@ -83,7 +90,7 @@ public class PackDetailsScreen extends ListScreen {
                 .line(name, enabled ? 0xFFFFFFFF : 0xFF808080)
                 .secondary(GuiTexts.entities(voice).copy().append(" · " + resolved.language() + " · ").append(GuiTexts.key("details.lines", lines)))
                 .widget(play)
-                .widget(Button.builder(GuiTexts.key("details.show_lines"), button -> minecraft.gui.setScreen(new VoiceLinesScreen(this, pack, resolved)))
+                .widget(Button.builder(GuiTexts.key("details.show_lines"), button -> minecraft.gui.setScreen(new VoiceEventsScreen(this, pack, resolved)))
                         .width(56).build())
                 .widget(toggle)
                 .build();

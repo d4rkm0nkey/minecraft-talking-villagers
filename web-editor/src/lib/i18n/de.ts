@@ -16,6 +16,8 @@ export const de: Record<string, string> = {
   "start.language": "Sprache",
   "start.create": "Anlegen",
   "start.open": ".voicepack öffnen",
+  "pack.version.bump": "Version erhöhen (für Updates)",
+  "start.open.hint": "Vorhandenes Voicepack öffnen und bearbeiten. Unveränderte Zeilen werden beim Export unverändert übernommen.",
   "start.import_v1": "Pack aus Version 1 importieren",
   "start.import_v1.gender": "Geschlecht der Stimmen",
   "start.voices": "{count} Stimme(n) · {lines} Zeile(n)",

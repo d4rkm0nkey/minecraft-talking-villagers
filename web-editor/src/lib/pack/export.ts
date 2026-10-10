@@ -1,5 +1,5 @@
 import { zipSync, strToU8 } from "fflate";
-import type { Project } from "../model/types";
+import type { Line, Processing, Project } from "../model/types";
 import { buildManifest, linePath } from "./manifest";
 import { processLine, type Audio, type Denoiser } from "../audio/process";
 import { encodeVorbis } from "../audio/encode";
@@ -33,6 +33,13 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
       perEvent.set(line.event, index + 1);
       const raw = await options.loadAudio(line.audioId);
       if (!raw) throw new Error(`Missing audio for line ${line.id}`);
+      if (raw.ogg && isUnchanged(line, project.processing)) {
+        // lines from an opened pack are copied as they are, so editing a pack does not re-encode (and degrade) them
+        durations.set(line.id, raw.data.length / raw.sampleRate);
+        files[linePath(voice, line, index)] = raw.ogg;
+        options.onProgress?.(++done, total);
+        continue;
+      }
       const processed = await processLine(raw, line, project.processing, profile, options.denoise);
       durations.set(line.id, processed.data.length / processed.sampleRate);
       files[linePath(voice, line, index)] = await encodeVorbis(processed.data, processed.sampleRate, project.processing.quality);
@@ -43,6 +50,12 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
   files["voicepack.json"] = strToU8(JSON.stringify(buildManifest(project, durations), null, 2));
   if (project.icon) files["icon.png"] = dataUrlToBytes(project.icon);
   return zipSync(files, { level: 0 });
+}
+
+/** No trim and no processing step that would change the audio. */
+export function isUnchanged(line: Line, processing: Processing): boolean {
+  return line.trimStart === 0 && line.trimEnd === 0 && !processing.highPass && !processing.denoise && !processing.spectralGate
+    && !processing.trim && !processing.noiseGate && !processing.compress && !processing.normalize;
 }
 
 export function dataUrlToBytes(dataUrl: string): Uint8Array {

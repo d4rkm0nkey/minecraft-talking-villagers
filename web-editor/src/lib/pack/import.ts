@@ -1,6 +1,7 @@
 import { strFromU8, unzipSync } from "fflate";
 import { decodeFile } from "../audio/browser";
 import { saveAudio } from "../store/audio";
+import type { Audio } from "../audio/process";
 import { DEFAULT_PROCESSING, newId, newVoice, slugify, type Gender, type Line, type Project, type Voice } from "../model/types";
 
 /**
@@ -13,13 +14,26 @@ const bytesToDataUrl = (bytes: Uint8Array, type: string) => {
   return `data:${type};base64,${btoa(binary)}`;
 };
 
-async function audioLine(bytes: Uint8Array, event: string, text: string, conditions: Line["conditions"]): Promise<Line> {
+/** How audio is decoded and stored; replaceable in tests, where there is no browser. */
+export interface ImportServices {
+  decode: (data: ArrayBuffer) => Promise<Audio>;
+  save: (id: string, audio: Audio) => Promise<void>;
+}
+
+const BROWSER: ImportServices = { decode: decodeFile, save: saveAudio };
+
+async function audioLine(services: ImportServices, bytes: Uint8Array, event: string, text: string, conditions: Line["conditions"]): Promise<Line> {
   const audioId = newId();
-  await saveAudio(audioId, await decodeFile(bytes.slice().buffer));
+  const audio = await services.decode(bytes.slice().buffer);
+  // keep the original file, so unchanged lines are exported without re-encoding
+  await services.save(audioId, { ...audio, ogg: bytes.slice() });
   return { id: newId(), event, audioId, text, trimStart: 0, trimEnd: 0, conditions };
 }
 
-export async function importVoicepack(data: ArrayBuffer): Promise<Project> {
+/**
+ * Opens a .voicepack for editing. Its audio is already processed, so all processing steps start switched off.
+ */
+export async function importVoicepack(data: ArrayBuffer, services: ImportServices = BROWSER): Promise<Project> {
   const files = unzipSync(new Uint8Array(data));
   const manifest = JSON.parse(strFromU8(files["voicepack.json"]));
   const now = Date.now();
@@ -40,7 +54,7 @@ export async function importVoicepack(data: ArrayBuffer): Promise<Project> {
       for (const line of lines) {
         const bytes = files[line.file];
         if (bytes) {
-          voice.lines.push(await audioLine(bytes, event, line.text ?? "", {
+          voice.lines.push(await audioLine(services, bytes, event, line.text ?? "", {
             professions: line.conditions?.professions ?? [], weather: line.conditions?.weather,
           }));
         }
@@ -59,7 +73,8 @@ const V1_PROFESSIONS: Record<string, string> = { cartograph: "cartographer" };
  * Converts a version 1 resource pack: one folder per voice with sub folders per profession ("all" for every villager)
  * and event. Transcripts are taken from lang/en_us.json where available.
  */
-export async function importVersion1(data: ArrayBuffer, name: string, language: string, gender: Gender): Promise<Project> {
+export async function importVersion1(data: ArrayBuffer, name: string, language: string, gender: Gender,
+                                     services: ImportServices = BROWSER): Promise<Project> {
   const files = unzipSync(new Uint8Array(data));
   const now = Date.now();
   const project: Project = {
@@ -83,7 +98,7 @@ export async function importVersion1(data: ArrayBuffer, name: string, language: 
     const sound = file.replace(/\d*\.ogg$/, "");
     const text = lang[`subtitles.talkingvillagers.${voiceName}_${sound}`] ?? "";
     const professions = profession === "all" ? [] : [V1_PROFESSIONS[profession] ?? profession];
-    voice.lines.push(await audioLine(files[path], event, text, { professions }));
+    voice.lines.push(await audioLine(services, files[path], event, text, { professions }));
   }
   project.voices = [...voices.values()];
   return project;

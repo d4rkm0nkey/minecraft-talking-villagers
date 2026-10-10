@@ -87,6 +87,7 @@
       <span>{t("start.open")}</span>
     </label>
   </div>
+  <p class="muted small">{t("start.open.hint")}</p>
   <details style="margin-top: 12px">
     <summary>{t("start.import_v1")}</summary>
     <div class="row" style="margin-top: 8px">

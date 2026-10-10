@@ -5,7 +5,7 @@
 Umgesetzt auf Branch `v2/phase-8` im Ordner `web-editor/`. Svelte 5, Vite 8, TypeScript 5.9, fflate, wasm-media-encoders (Vorbis), RNNoise (WASM, wird erst bei Bedarf geladen), ajv, idb-keyval.
 
 Geprüft:
-- 23 Vitest-Tests: Spracherkennung, Kürzen, Aufteilen, Normalisieren, Hochpass, Noise Gate, Kompressor, Resampling, FFT, Rauschprofil-Filter, Manifest, Prüfregeln, Katalog, Übersetzungen und der komplette Export.
+- 25 Vitest-Tests: Spracherkennung, Kürzen, Aufteilen, Normalisieren, Hochpass, Noise Gate, Kompressor, Resampling, FFT, Rauschprofil-Filter, Manifest, Prüfregeln, Katalog, Übersetzungen und der komplette Export.
 - **Gegencheck:** Der Export-Test schreibt ein `.voicepack`, `WebEditorExportTest` (Java) lädt es mit dem `PackReader` der Mod: keine Fehler, keine Warnungen.
 - Typprüfung (`svelte-check`) ohne Fehler und Warnungen, Produktions-Build ok.
 - Startseite, Pack-Editor, Stimmen-Editor und Studio-Einstieg per headless Firefox (WebDriver BiDi) als Screenshot angesehen.
@@ -19,6 +19,7 @@ Umsetzung und Abweichungen:
 - **Bearbeitungskette** (nicht-destruktiv, beim Export und in der Vorschau): manueller Zuschnitt → Hochpass → RNNoise → Rauschprofil (Spectral Gating, Stärke einstellbar) → automatisches Kürzen → Noise Gate → Kompressor → Normalisieren → Abtastrate (22,05 / 44,1 / 48 kHz). Jeder Schritt lässt sich einzeln abschalten.
 - **Eigene Wellenform** (Canvas) mit Zuschnitt-Griffen statt `wavesurfer.js`.
 - **Kein Playwright-E2E-Test.** Die Oberfläche wurde per Screenshots geprüft, die Logik per Unit-Tests.
+- **Vorhandene Packs bearbeiten:** „.voicepack öffnen“ lädt Metadaten, Icon, Stimmen, Zeilen, Texte und Bedingungen. Die originalen Ogg-Dateien bleiben erhalten. Unveränderte Zeilen (kein Zuschnitt, keine Bearbeitung aktiv) werden beim Export Byte für Byte übernommen statt neu kodiert, und nur geänderte Zeilen werden neu kodiert. Ein „+1“-Knopf erhöht die Version für Updates. Abgesichert durch einen Rundlauf-Test (Export → Öffnen → Export).
 - **Dateinamen im Pack:** `sounds/<stimme>/<event>/01.ogg`, `02.ogg`, …
 - **Entwicklungshilfe:** `#demo-pack`, `#demo-voice` und `#demo-studio` legen im Dev-Server ein Beispielprojekt an (nicht im veröffentlichten Build).
 - **Deployment:** `.github/workflows/web-editor.yml` veröffentlicht `web-editor/dist` bei Änderungen auf `master` per GitHub Pages. Pages muss dafür in den Repository-Einstellungen aktiviert sein. Der CI-Build führt zusätzlich die Web-Tests vor dem Gradle-Build aus.

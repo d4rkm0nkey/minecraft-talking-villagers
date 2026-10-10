@@ -1,7 +1,9 @@
 package me.teajay.talkingvillagers.test;
 
 import me.teajay.talkingvillagers.client.gui.PackDetailsScreen;
-import me.teajay.talkingvillagers.client.gui.VoiceLinesScreen;
+import me.teajay.talkingvillagers.client.gui.EventLinesScreen;
+import me.teajay.talkingvillagers.client.gui.VoiceEventsScreen;
+import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.client.gui.VoicepacksScreen;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.model.ResolvedVoice;
@@ -30,7 +32,14 @@ public class GuiClientGameTest implements FabricClientGameTest {
               "description": "Shows every kind of row", "authors": ["TeaJay"],
               "voices": [
                 { "id": "anna", "name": "Anna", "entities": ["villager"], "gender": "female",
-                  "lines": { "greeting": [{ "file": "sounds/a/hello.ogg", "text": "Hallo, Reisender!" }],
+                  "lines": { "greeting": [{ "file": "sounds/a/hello.ogg", "text": "Hallo, Reisender!" },
+                                          { "file": "sounds/a/hello.ogg", "text": "Schön, dich zu sehen." },
+                                          { "file": "sounds/a/hello.ogg", "text": "Guten Morgen!" },
+                                          { "file": "sounds/a/hello.ogg", "text": "Na, auch unterwegs?" },
+                                          { "file": "sounds/a/hello.ogg", "text": "Willkommen im Dorf." },
+                                          { "file": "sounds/a/hello.ogg", "text": "Ah, ein Fremder." }],
+                             "random": [{ "file": "sounds/a/hello.ogg", "text": "Die Ernte wird gut dieses Jahr." }],
+                             "work": [{ "file": "sounds/a/hello.ogg", "text": "Noch drei Brote.", "conditions": { "professions": ["farmer"] } }],
                              "hurt": [{ "file": "sounds/a/hello.ogg" }], "death": [{ "file": "sounds/a/hello.ogg" }] } },
                 { "id": "kid", "name": "Kind", "entities": ["villager"], "gender": "male", "child": true,
                   "lines": { "hurt": [{ "file": "sounds/a/hello.ogg" }], "death": [{ "file": "sounds/a/hello.ogg" }] } },
@@ -63,8 +72,12 @@ public class GuiClientGameTest implements FabricClientGameTest {
             context.waitTicks(10);
             context.takeScreenshot("tv-details");
 
-            ResolvedVoice grimm = loaded.pack().orElseThrow().resolvedVoices().get(2);
-            context.setScreen(() -> new VoiceLinesScreen(overview, loaded, grimm));
+            ResolvedVoice anna = loaded.pack().orElseThrow().resolvedVoices().get(0);
+            context.setScreen(() -> new VoiceEventsScreen(overview, loaded, anna));
+            context.waitTicks(10);
+            context.takeScreenshot("tv-events");
+
+            context.setScreen(() -> new EventLinesScreen(overview, loaded, anna, EventCatalog.GREETING, ""));
             context.waitTicks(10);
             context.takeScreenshot("tv-lines");
 
