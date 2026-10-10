@@ -6,10 +6,13 @@
   import { eventsFor } from "../lib/model/catalog";
   import { Recorder, microphones } from "../lib/recorder/recorder";
   import { detectSegments } from "../lib/audio/dsp";
-  import { play } from "../lib/audio/browser";
-  import { saveAudio, deleteAudio } from "../lib/store/audio";
+  import { denoise, play } from "../lib/audio/browser";
+  import { saveAudio, deleteAudio, loadAudio } from "../lib/store/audio";
   import { touch } from "../lib/store/projects.svelte";
   import LevelMeter from "./LevelMeter.svelte";
+  import ProcessingSettings from "./ProcessingSettings.svelte";
+  import { processLine } from "../lib/audio/process";
+  import { noiseProfile } from "../lib/audio/spectralGate";
   import { t } from "../lib/i18n/index.svelte";
 
   let { project, voice, initialEvent, onback }: { project: Project; voice: Voice; initialEvent: string; onback: () => void } = $props();
@@ -162,6 +165,15 @@
     else phase = "idle";
   }
 
+  /** Plays the take as it will be exported, with the current processing settings. */
+  async function playProcessed() {
+    if (!take) return;
+    const noise = project.noiseProfileAudioId ? await loadAudio(project.noiseProfileAudioId) : undefined;
+    const processed = await processLine(take, { trimStart: 0, trimEnd: 0 }, $state.snapshot(project.processing),
+      noise ? noiseProfile(noise.data) : undefined, denoise);
+    play(processed, (voice.pitchMin + voice.pitchMax) / 2);
+  }
+
   async function roomTone() {
     phase = "roomtone";
     recorder.start();
@@ -190,7 +202,7 @@
     } else if ((key === "r" || key === "R") && (phase === "review" || phase === "idle")) {
       startRecording();
     } else if ((key === "p" || key === "P") && take) {
-      play(take);
+      void playProcessed();
     } else if (key === "+" && phase === "review") {
       void accept(true);
     } else if (key === "ArrowRight" && phase !== "recording") {
@@ -236,6 +248,11 @@
   </div>
 </section>
 
+<details class="panel">
+  <summary><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
+  <ProcessingSettings {project} compact />
+</details>
+
 {#if phase === "setup"}
   <section class="panel">
     <h2>{t("studio.script")}</h2>
@@ -277,7 +294,8 @@
       {/if}
       <button disabled={phase !== "review"} onclick={() => accept()}>✔ {t("studio.accept")}</button>
       <button disabled={phase !== "review"} onclick={() => accept(true)}>＋ {t("studio.variant")}</button>
-      <button disabled={!take} onclick={() => take && play(take)}>▶ {t("common.play")}</button>
+      <button disabled={!take} onclick={() => take && play(take)}>▶ {t("studio.play_raw")}</button>
+      <button disabled={!take} onclick={playProcessed}>✨▶ {t("studio.play_processed")}</button>
       <button onclick={() => { phase = "setup"; take = undefined; }}>{t("studio.edit_script")}</button>
     </div>
     <p class="muted small">{t("studio.keys")}</p>

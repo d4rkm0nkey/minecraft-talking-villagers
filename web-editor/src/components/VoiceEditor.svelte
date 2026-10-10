@@ -7,6 +7,7 @@
   import { decodeFile } from "../lib/audio/browser";
   import { COMMON_LANGUAGES, languageName } from "../lib/model/languages";
   import LineRow from "./LineRow.svelte";
+  import ProcessingSettings from "./ProcessingSettings.svelte";
   import { locale, t } from "../lib/i18n/index.svelte";
 
   let { project, voice, onback, onstudio }: { project: Project; voice: Voice; onback: () => void; onstudio: (event: string) => void } = $props();
@@ -84,6 +85,11 @@
     <div class="small muted">{t("voice.child.hint")}</div>
   {/if}
 </section>
+
+<details class="panel">
+  <summary><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
+  <ProcessingSettings {project} compact />
+</details>
 
 <div class="row spread">
   <strong>{t("voice.progress", { done: events.filter((event) => used.has(event.id)).length, total: events.length })}</strong>
