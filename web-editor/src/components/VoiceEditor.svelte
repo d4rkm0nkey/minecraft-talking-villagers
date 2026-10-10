@@ -1,7 +1,13 @@
+<script module lang="ts">
+  /** Profession filter per voice, kept while switching to the studio and back. */
+  const filters = new Map<string, string>();
+</script>
+
 <script lang="ts">
+  import { untrack } from "svelte";
   import type { Gender, Project, Voice } from "../lib/model/types";
-  import { newId } from "../lib/model/types";
-  import { ENTITIES, GROUPS, eventsFor, recommendedVariants } from "../lib/model/catalog";
+  import { newId, type Line } from "../lib/model/types";
+  import { ENTITIES, GROUPS, PROFESSIONS, eventsFor, expandEntities, recommendedVariants } from "../lib/model/catalog";
   import { touch } from "../lib/store/projects.svelte";
   import { saveAudio, deleteAudio } from "../lib/store/audio";
   import { decodeFile } from "../lib/audio/browser";
@@ -10,11 +16,32 @@
   import ProcessingSettings from "./ProcessingSettings.svelte";
   import { locale, t } from "../lib/i18n/index.svelte";
 
-  let { project, voice, onback, onstudio }: { project: Project; voice: Voice; onback: () => void; onstudio: (event: string) => void } = $props();
+  let { project, voice, onback, onstudio }: { project: Project; voice: Voice; onback: () => void; onstudio: (event: string, profession?: string) => void } = $props();
   let showEmpty = $state(true);
+  /** "" shows every line, "general" the lines without a profession, otherwise the lines for that profession. */
+  let profession = $state(untrack(() => filters.get(voice.id) ?? ""));
+  $effect(() => {
+    filters.set(voice.id, profession);
+  });
+
+  const villager = $derived(expandEntities(voice.entities).includes("villager"));
+  const filter = $derived(villager ? profession : "");
+  /** Profession that new lines get while the list is filtered. */
+  const newProfession = $derived(filter && filter !== "general" ? filter : undefined);
+  const visibleLines = $derived(voice.lines.filter((line) => matches(line, filter)));
+
+  function matches(line: Line, filter: string): boolean {
+    if (!filter) return true;
+    if (filter === "general") return line.conditions.professions.length === 0;
+    return line.conditions.professions.includes(filter);
+  }
+
+  function count(filter: string): number {
+    return voice.lines.filter((line) => matches(line, filter)).length;
+  }
 
   const events = $derived(eventsFor(voice.entities));
-  const used = $derived(new Set(voice.lines.map((line) => line.event)));
+  const used = $derived(new Set(visibleLines.map((line) => line.event)));
   /** Lines for events none of the selected entities triggers, e.g. after unticking "villager". */
   const unusedLines = $derived(voice.lines.filter((line) => !events.some((event) => event.id === line.event)));
   const groups = $derived(GROUPS.map((group) => ({ id: group.id, events: events.filter((event) => group.events.includes(event.id)) }))
@@ -30,7 +57,7 @@
     for (const file of Array.from(input.files ?? [])) {
       const audioId = newId();
       await saveAudio(audioId, await decodeFile(await file.arrayBuffer()));
-      voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, conditions: { professions: [] } });
+      voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, conditions: { professions: newProfession ? [newProfession] : [] } });
     }
     input.value = "";
     touch(project);
@@ -48,7 +75,7 @@
 <div class="row spread" style="margin-bottom: 12px">
   <button onclick={onback}>← {project.name}</button>
   <h2 style="margin: 0">{voice.name}</h2>
-  <button class="primary" onclick={() => onstudio(events[0]?.id ?? "ambient")}>🎙 {t("voice.studio")}</button>
+  <button class="primary" onclick={() => onstudio(events[0]?.id ?? "ambient", newProfession)}>🎙 {t("voice.studio")}</button>
 </div>
 
 <section class="panel">
@@ -91,6 +118,19 @@
   <ProcessingSettings {project} compact />
 </details>
 
+{#if villager}
+  <section class="panel filter">
+    <label class="inline">{t("voice.filter")}
+      <select bind:value={profession} style="width: auto">
+        <option value="">{t("voice.filter.all")} ({voice.lines.length})</option>
+        <option value="general">{t("voice.filter.general")} ({count("general")})</option>
+        {#each PROFESSIONS as id}<option value={id}>{t(`profession.${id}`)} ({count(id)})</option>{/each}
+      </select>
+    </label>
+    {#if newProfession}<p class="small muted">{t("voice.filter.hint", { profession: t(`profession.${newProfession}`) })}</p>{/if}
+  </section>
+{/if}
+
 <div class="row spread">
   <strong>{t("voice.progress", { done: events.filter((event) => used.has(event.id)).length, total: events.length })}</strong>
   <label class="inline small"><input type="checkbox" bind:checked={showEmpty} />{t("voice.show_all")}</label>
@@ -111,7 +151,7 @@
   <section class="panel">
     <h2>{t(`group.${group.id}`)}</h2>
     {#each group.events.filter((event) => showEmpty || used.has(event.id)) as event (event.id)}
-      {@const lines = voice.lines.filter((line) => line.event === event.id)}
+      {@const lines = visibleLines.filter((line) => line.event === event.id)}
       {@const recommended = recommendedVariants(event.id)}
       <details class="event" open={lines.length > 0}>
         <summary>
@@ -127,7 +167,7 @@
           <LineRow {project} {voice} {line} ondelete={() => removeLine(line.id)} />
         {/each}
         <div class="row" style="margin: 6px 0 10px">
-          <button onclick={() => onstudio(event.id)}>🎙 {t("voice.record")}</button>
+          <button onclick={() => onstudio(event.id, newProfession)}>🎙 {t("voice.record")}</button>
           <label class="file"><input type="file" accept="audio/*" multiple onchange={(e) => addFiles(event.id, e.currentTarget)} /><span>📁 {t("voice.add_files")}</span></label>
           <span class="muted small">{t("voice.recommended", { count: recommended })}</span>
         </div>
@@ -138,6 +178,7 @@
 
 <style>
   .unused { border-color: var(--warning); }
+  .filter p { margin: 6px 0 0; }
   .event { border-top: 1px solid var(--border); padding: 6px 0; }
   .file { flex-direction: row; }
   .file input { display: none; }

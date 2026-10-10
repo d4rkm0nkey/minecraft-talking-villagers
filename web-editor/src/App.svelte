@@ -11,7 +11,7 @@
     | { name: "start" }
     | { name: "pack"; projectId: string }
     | { name: "voice"; projectId: string; voiceId: string }
-    | { name: "studio"; projectId: string; voiceId: string; event: string };
+    | { name: "studio"; projectId: string; voiceId: string; event: string; profession?: string };
 
   let view = $state<View>({ name: "start" });
   const project = $derived(view.name === "start" ? undefined : findProject(view.projectId));
@@ -60,9 +60,9 @@
       {project}
       {voice}
       onback={() => (view = { name: "pack", projectId: project.id })}
-      onstudio={(event) => (view = { name: "studio", projectId: project.id, voiceId: voice.id, event })}
+      onstudio={(event, profession) => (view = { name: "studio", projectId: project.id, voiceId: voice.id, event, profession })}
     />
   {:else if view.name === "studio" && voice}
-    <Studio {project} {voice} initialEvent={view.event} onback={() => (view = { name: "voice", projectId: project.id, voiceId: voice.id })} />
+    <Studio {project} {voice} initialEvent={view.event} profession={view.profession} onback={() => (view = { name: "voice", projectId: project.id, voiceId: voice.id })} />
   {/if}
 </main>

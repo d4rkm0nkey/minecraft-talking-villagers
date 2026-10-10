@@ -16,7 +16,8 @@
   import { noiseProfile } from "../lib/audio/spectralGate";
   import { t } from "../lib/i18n/index.svelte";
 
-  let { project, voice, initialEvent, onback }: { project: Project; voice: Voice; initialEvent: string; onback: () => void } = $props();
+  /** @param profession new lines are only for villagers with this profession */
+  let { project, voice, initialEvent, profession, onback }: { project: Project; voice: Voice; initialEvent: string; profession?: string; onback: () => void } = $props();
 
   type Phase = "setup" | "idle" | "countdown" | "recording" | "review" | "roomtone";
   interface Item { event: string; text: string }
@@ -168,7 +169,7 @@
   async function addLine(audio: Audio, item: Item, trimStart = 0, trimEnd = 0) {
     const audioId = newId();
     await saveAudio(audioId, audio);
-    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart, trimEnd, conditions: { professions: [] } });
+    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart, trimEnd, conditions: { professions: profession ? [profession] : [] } });
     recorded++;
     touch(project);
   }
@@ -265,7 +266,7 @@
 <div class="row spread" style="margin-bottom: 12px">
   <button onclick={onback}>← {voice.name}</button>
   <h2 style="margin: 0">{t("studio.title", { voice: voice.name })}</h2>
-  <span class="muted">{recorded} ♪</span>
+  <span class="muted">{#if profession}<span class="chip">{t(`profession.${profession}`)}</span> {/if}{recorded} ♪</span>
 </div>
 
 <section class="panel">

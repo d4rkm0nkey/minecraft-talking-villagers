@@ -59,11 +59,11 @@
   <div class="row small">
     {#if villager}
       <details>
-        <summary class="muted">{t("line.professions")}{line.conditions.professions.length ? `: ${line.conditions.professions.join(", ")}` : ""}</summary>
+        <summary class="muted">{t("line.professions")}{line.conditions.professions.length ? `: ${line.conditions.professions.map((p) => t(`profession.${p}`)).join(", ")}` : ""}</summary>
         <div class="professions">
           {#each PROFESSIONS as profession}
             <label class="inline"><input type="checkbox" checked={line.conditions.professions.includes(profession)}
-                   onchange={(e) => toggleProfession(profession, e.currentTarget.checked)} />{profession}</label>
+                   onchange={(e) => toggleProfession(profession, e.currentTarget.checked)} />{t(`profession.${profession}`)}</label>
           {/each}
         </div>
       </details>
