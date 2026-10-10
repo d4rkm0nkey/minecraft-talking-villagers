@@ -18,6 +18,10 @@ neoForge {
         client {
             client()
             gameDirectory = this.mkdir(this.file('runs/client'))
+            // ./gradlew :neoforge:runClient -PquickPlay=localhost:25565 joins that server right away
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll('--quickPlayMultiplayer', project.property('quickPlay').toString())
+            }
         }
         data {
             clientData()

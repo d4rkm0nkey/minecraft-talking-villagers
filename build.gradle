@@ -4,3 +4,35 @@ plugins {
     // https://projects.neoforged.net/neoforged/moddevgradle
     id 'net.neoforged.moddev' version '2.0.148' apply false
 }
+
+// common and core are compiled into both loader jars, so they must not use Fabric, NeoForge or Mod Menu classes.
+// Loader specific code belongs into the fabric and neoforge projects, behind the platform services.
+['common', 'core'].each { name ->
+    project(":${name}") {
+        def checkTask = tasks.register('checkNoLoaderImports') {
+            group = 'verification'
+            description = 'Fails if the sources import loader specific classes.'
+            def sources = fileTree('src') { include '**/*.java' }
+            inputs.files(sources)
+            doLast {
+                // imports and fully qualified names; comment lines are fine
+                def forbidden = ~/\b(net\.fabricmc|net\.neoforged|com\.terraformersmc)\./
+                def comment = ~/^\s*(\/\/|\*|\/\*)/
+                def violations = []
+                sources.each { file ->
+                    file.readLines().eachWithIndex { line, index ->
+                        if (line =~ forbidden && !(line =~ comment)) {
+                            violations << "${projectDir.toPath().relativize(file.toPath())}:${index + 1}: ${line.trim()}"
+                        }
+                    }
+                }
+                if (!violations.isEmpty()) {
+                    throw new GradleException("Loader imports in :${name} (move them into fabric or neoforge):\n" + violations.join('\n'))
+                }
+            }
+        }
+        plugins.withId('java') {
+            tasks.named('check') { dependsOn checkTask }
+        }
+    }
+}

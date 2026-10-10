@@ -64,6 +64,11 @@ public final class Voicepacks {
                 pack.warnings().stream().map(Problem::toString).forEach(warning -> TalkingVillagers.LOG.warn("Voicepack {}: {}", name, warning));
             }
         }
-        TalkingVillagers.LOG.info("Loaded {} voicepack(s) with {} voice(s) from {}", index.active().size(), index.voices().size(), REPOSITORY.directory());
+        if (index.cached().isEmpty()) {
+            TalkingVillagers.LOG.info("Loaded {} voicepack(s) with {} voice(s) from {}", index.active().size(), index.voices().size(), REPOSITORY.directory());
+        } else {
+            TalkingVillagers.LOG.info("Loaded {} voicepack(s) with {} voice(s) from {}, plus {} downloaded from servers",
+                    index.active().size(), index.voices().size(), REPOSITORY.directory(), index.cached().size());
+        }
     }
 }
