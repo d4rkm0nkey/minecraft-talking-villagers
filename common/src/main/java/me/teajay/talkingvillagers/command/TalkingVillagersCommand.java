@@ -24,6 +24,7 @@ import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.server.SpeechService;
+import me.teajay.talkingvillagers.server.SpeechWatchers;
 import me.teajay.talkingvillagers.voice.EntityVoices;
 import me.teajay.talkingvillagers.voice.VoiceCommandService;
 import net.minecraft.ChatFormatting;
@@ -393,6 +394,13 @@ public final class TalkingVillagersCommand {
         return Commands.literal("debug")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("stats").executes(TalkingVillagersCommand::stats))
+                .then(Commands.literal("watch").executes(context -> {
+                    CommandSourceStack source = context.getSource();
+                    boolean watching = source.getPlayer() != null ? SpeechWatchers.toggle(source.getPlayer()) : SpeechWatchers.toggleConsole();
+                    source.sendSuccess(() -> Component.translatable(watching
+                            ? "commands.talkingvillagers.watch.on" : "commands.talkingvillagers.watch.off"), false);
+                    return watching ? 1 : 0;
+                }))
                 .then(Commands.literal("say")
                         .then(Commands.argument("targets", EntityArgument.entities())
                                 .then(Commands.argument("voice", IdentifierArgument.id())

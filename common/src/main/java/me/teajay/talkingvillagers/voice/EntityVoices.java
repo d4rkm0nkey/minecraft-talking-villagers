@@ -13,11 +13,14 @@ import me.teajay.talkingvillagers.core.select.LineContext;
 import me.teajay.talkingvillagers.core.voice.EventPolicies;
 import me.teajay.talkingvillagers.core.voice.SpeakerState;
 import me.teajay.talkingvillagers.core.voice.Chatter;
+import me.teajay.talkingvillagers.core.voice.HostileChatter;
 import me.teajay.talkingvillagers.core.voice.VoiceAssigner;
 import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.config.ServerConfig;
 import me.teajay.talkingvillagers.language.LanguageResolver;
+import me.teajay.talkingvillagers.mixin.PatrollingMonsterAccessor;
+import me.teajay.talkingvillagers.mixin.VindicatorAccessor;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
 import me.teajay.talkingvillagers.server.SpeechService;
@@ -28,6 +31,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
@@ -38,6 +43,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +58,8 @@ import java.util.WeakHashMap;
 public final class EntityVoices {
     /** Radius in blocks in which voices are counted to give neighbours different voices. */
     private static final double NEIGHBOURHOOD = 48.0;
+    /** Allies within this radius notice when a witch or illager dies. */
+    private static final double ALLY_RADIUS = 16.0;
     private static final Map<Entity, SpeakerState> STATES = new WeakHashMap<>();
     private static final SplittableRandom RANDOM = new SplittableRandom();
 
@@ -151,7 +159,12 @@ public final class EntityVoices {
         if (sound == null) {
             return false;
         }
-        Optional<VoiceEvent> event = kindOf(entity).flatMap(kind -> VanillaSounds.event(kind, sound));
+        Optional<EntityKind> kind = kindOf(entity);
+        Optional<VoiceEvent> event = kind.flatMap(k -> VanillaSounds.event(k, sound));
+        if (event.isPresent() && event.get() == EventCatalog.AMBIENT && entity instanceof Mob mob && EventCatalog.HOSTILE.contains(kind.get())) {
+            // witches and illagers talk according to their state: idle, on patrol, in a raid or fighting
+            event = Optional.of(HostileChatter.ambientEvent(kind.get(), hostileSituation(mob)));
+        }
         return event.isPresent() && onEvent(entity, event.get(), sound);
     }
 
@@ -304,11 +317,63 @@ public final class EntityVoices {
     }
 
     /**
-     * Witches laugh when they kill something.
+     * Called every server tick of a mob; witches and illagers check their fight state once per second.
      */
-    public static void onKill(LivingEntity victim, DamageSource source) {
-        if (source.getEntity() instanceof LivingEntity killer && killer != victim && !killer.level().isClientSide()) {
-            onEvent(killer, EventCatalog.LAUGH);
+    public static void tickHostile(Mob mob, ServerLevel level) {
+        Optional<EntityKind> kind = kindOf(mob);
+        if (kind.isEmpty() || !EventCatalog.HOSTILE.contains(kind.get())
+                || (level.getGameTime() + mob.getId()) % Chatter.INTERVAL != 0 || !mob.isAlive()) {
+            return;
+        }
+        Optional<ResolvedVoice> voice = voice(mob);
+        if (voice.isEmpty()) {
+            return;
+        }
+        HostileChatter.tick(kind.get(), state(mob), hostileSituation(mob), RANDOM)
+                .ifPresent(event -> onEvent(mob, event, null));
+    }
+
+    private static HostileChatter.Situation hostileSituation(Mob mob) {
+        boolean johnny = mob instanceof VindicatorAccessor vindicator && vindicator.talkingvillagers$isJohnny();
+        LivingEntity target = mob.getTarget();
+        // witches also target raiders to heal them; that is not a fight
+        boolean fighting = target != null && target.isAlive() && (target instanceof Player || johnny);
+        boolean inRaid = mob instanceof Raider raider && raider.hasActiveRaid();
+        boolean patrolling = mob instanceof PatrollingMonsterAccessor patrol && patrol.talkingvillagers$isPatrolling();
+        boolean leader = mob instanceof PatrollingMonster patrol && patrol.isPatrolLeader() && patrolling;
+        return new HostileChatter.Situation(
+                mob.level().getGameTime(),
+                fighting,
+                fighting ? OptionalDouble.of(mob.distanceTo(target)) : OptionalDouble.empty(),
+                inRaid,
+                patrolling,
+                leader,
+                mob.getHealth() / mob.getMaxHealth(),
+                johnny);
+    }
+
+    /**
+     * Reactions to a death: the killer gloats or laughs, and an ally nearby mourns a fallen witch or illager.
+     */
+    public static void onDeath(LivingEntity victim, DamageSource source) {
+        if (victim.level().isClientSide()) {
+            return;
+        }
+        if (source.getEntity() instanceof LivingEntity killer && killer != victim) {
+            // any kill ends the fight successfully, so the killer does not complain about a lost target
+            state(killer).setLastVictory(killer.level().getGameTime());
+            if (victim instanceof Player) {
+                onEvent(killer, EventCatalog.VICTORY);
+            } else {
+                onEvent(killer, EventCatalog.LAUGH);
+            }
+        }
+        if (kindOf(victim).filter(EventCatalog.HOSTILE::contains).isPresent()) {
+            victim.level().getEntitiesOfClass(Mob.class, victim.getBoundingBox().inflate(ALLY_RADIUS),
+                            ally -> ally != victim && ally.isAlive() && kindOf(ally).filter(EventCatalog.HOSTILE::contains).isPresent() && hasVoice(ally))
+                    .stream()
+                    .min(Comparator.comparingDouble(ally -> ally.distanceToSqr(victim)))
+                    .ifPresent(ally -> onEvent(ally, EventCatalog.ALLY_DIED));
         }
     }
 

@@ -13,7 +13,8 @@ import java.util.Optional;
 
 /**
  * Which vanilla sounds a voice replaces. Every sound an entity plays is looked up here; sounds that are not listed,
- * like work sounds or the evoker's "wololo", always stay vanilla.
+ * like work sounds, always stay vanilla. The ambient sound of witches and illagers is turned into a state dependent
+ * event by {@link me.teajay.talkingvillagers.core.voice.HostileChatter}.
  */
 public final class VanillaSounds {
     private static final Map<EntityKind, Map<SoundEvent, VoiceEvent>> SOUNDS = new EnumMap<>(EntityKind.class);
@@ -61,14 +62,15 @@ public final class VanillaSounds {
                 SoundEvents.EVOKER_CELEBRATE, EventCatalog.CELEBRATE,
                 SoundEvents.EVOKER_CAST_SPELL, EventCatalog.CAST_SPELL,
                 SoundEvents.EVOKER_PREPARE_ATTACK, EventCatalog.FANGS,
-                SoundEvents.EVOKER_PREPARE_SUMMON, EventCatalog.SUMMON_VEX));
+                SoundEvents.EVOKER_PREPARE_SUMMON, EventCatalog.SUMMON_VEX,
+                SoundEvents.EVOKER_PREPARE_WOLOLO, EventCatalog.WOLOLO));
         // the illusioner uses its ambient sound to celebrate
         map(EntityKind.ILLUSIONER, Map.of(
                 SoundEvents.ILLUSIONER_AMBIENT, EventCatalog.AMBIENT,
                 SoundEvents.ILLUSIONER_HURT, EventCatalog.HURT,
                 SoundEvents.ILLUSIONER_DEATH, EventCatalog.DEATH,
                 SoundEvents.ILLUSIONER_CAST_SPELL, EventCatalog.CAST_SPELL,
-                SoundEvents.ILLUSIONER_PREPARE_BLINDNESS, EventCatalog.CAST_SPELL,
+                SoundEvents.ILLUSIONER_PREPARE_BLINDNESS, EventCatalog.BLINDNESS,
                 SoundEvents.ILLUSIONER_PREPARE_MIRROR, EventCatalog.MIRROR));
     }
 

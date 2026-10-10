@@ -39,6 +39,7 @@ Ziel: Talking Villagers wird für die aktuelle Minecraft-Version (26.x, Fabric) 
 | 2 | [phase-2-pack-loading-audio.md](phase-2-pack-loading-audio.md) | Packs laden, virtuelles Resourcepack, Abspielen, Networking | 1 |
 | 3 | [phase-3-villager.md](phase-3-villager.md) | Villager neu: Attachments, Controller, Kinder/Erwachsen, Geschlecht | 2 |
 | 4 | [phase-4-more-entities.md](phase-4-more-entities.md) | Witch, Wandering Trader, Pillager, Vindicator, Evoker, Illusioner | 3 |
+| 4b | [phase-4b-hostile-states.md](phase-4b-hostile-states.md) | Zustände für Witches und Illager: Leerlauf, Patrouille, Raid, Kampf, Reaktionen | 4 |
 | 5 | [phase-5-languages-villages.md](phase-5-languages-villages.md) | Sprachen, zufällige Sprache pro Dorf | 3 |
 | 6 | [phase-6-commands.md](phase-6-commands.md) | `/talkingvillagers`-Commands | 3 (5 für Sprach-Commands) |
 | 7 | [phase-7-ingame-gui.md](phase-7-ingame-gui.md) | Voicepack-Manager und Einstellungen in Mod Menu | 2 |
@@ -47,7 +48,7 @@ Ziel: Talking Villagers wird für die aktuelle Minecraft-Version (26.x, Fabric) 
 | 10 | [phase-10-neoforge.md](phase-10-neoforge.md) | NeoForge-Port über die Plattform-Services | 9 (Struktur aus 0) |
 
 ```
-0 ──► 1 ──► 2 ──► 3 ──► 4
+0 ──► 1 ──► 2 ──► 3 ──► 4 ──► 4b
        │     │     ├──► 5 ──► 6
        │     │     └──────────► 6
        │     └──► 7

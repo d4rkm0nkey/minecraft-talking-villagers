@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,7 +24,16 @@ public abstract class MobMixin {
     private void talkingvillagers$spotPlayer(@Nullable LivingEntity target, CallbackInfo ci) {
         Mob self = (Mob) (Object) this;
         if (target instanceof Player && !(self.getTarget() instanceof Player) && !self.level().isClientSide()) {
-            EntityVoices.onEvent(self, EventCatalog.SPOT_PLAYER);
+            // vindicators storm towards their target
+            EntityVoices.onEvent(self, self instanceof Vindicator ? EventCatalog.CHARGE_AT : EventCatalog.SPOT_PLAYER);
+        }
+    }
+
+    @Inject(method = "serverAiStep", at = @At("TAIL"))
+    private void talkingvillagers$tick(CallbackInfo ci) {
+        Mob self = (Mob) (Object) this;
+        if (self.level() instanceof ServerLevel level) {
+            EntityVoices.tickHostile(self, level);
         }
     }
 

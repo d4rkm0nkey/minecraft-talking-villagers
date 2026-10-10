@@ -23,6 +23,6 @@ public abstract class LivingEntityMixin {
 
     @Inject(method = "die", at = @At("HEAD"))
     private void talkingvillagers$killed(DamageSource source, CallbackInfo ci) {
-        EntityVoices.onKill((LivingEntity) (Object) this, source);
+        EntityVoices.onDeath((LivingEntity) (Object) this, source);
     }
 }

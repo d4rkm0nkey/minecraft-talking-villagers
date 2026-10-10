@@ -9,10 +9,12 @@
     "GiveGiftToHeroMixin",
     "LivingEntityMixin",
     "MobMixin",
+    "PatrollingMonsterAccessor",
     "PillagerMixin",
     "RaidMixin",
     "RangedIllagerMixin",
     "VillagerMixin",
+    "VindicatorAccessor",
     "WanderingTraderMixin",
     "WitchMixin"
   ],

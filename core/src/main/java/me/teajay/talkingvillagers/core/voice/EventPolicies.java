@@ -48,6 +48,18 @@ public final class EventPolicies {
         put(EventCatalog.FANGS, new EventPolicy(100, 1.0, false));
         put(EventCatalog.MIRROR, new EventPolicy(100, 1.0, false));
         put(EventCatalog.RAID_HORN, new EventPolicy(0, 1.0, true));
+        put(EventCatalog.COMBAT, new EventPolicy(HostileChatter.MIN_COMBAT_DELAY, 1.0, false));
+        put(EventCatalog.JOHNNY, new EventPolicy(HostileChatter.MIN_COMBAT_DELAY, 1.0, false));
+        put(EventCatalog.LOST_TARGET, new EventPolicy(600, 1.0, false));
+        put(EventCatalog.LOW_HEALTH, new EventPolicy(1200, 1.0, false));
+        put(EventCatalog.VICTORY, new EventPolicy(0, 1.0, true));
+        put(EventCatalog.ALLY_DIED, new EventPolicy(200, 0.6, false));
+        put(EventCatalog.CHARGE_AT, new EventPolicy(400, 1.0, false));
+        put(EventCatalog.RETREAT, new EventPolicy(300, 0.7, false));
+        put(EventCatalog.BLINDNESS, new EventPolicy(100, 1.0, false));
+        put(EventCatalog.HEAL_SELF, new EventPolicy(200, 1.0, false));
+        put(EventCatalog.DRINK_OTHER, new EventPolicy(200, 1.0, false));
+        put(EventCatalog.HEAL_ALLY, new EventPolicy(200, 0.5, false));
     }
 
     private EventPolicies() {

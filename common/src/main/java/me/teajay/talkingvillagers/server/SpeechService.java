@@ -79,6 +79,7 @@ public final class SpeechService {
         if (pack.isEmpty()) {
             return false;
         }
+        SpeechWatchers.notify(entity, voice, event, line);
         long gameTime = level.getGameTime();
         int durationTicks = Math.round(line.line().duration().orElse(2.0f) / pitch * 20) + PAUSE_TICKS;
         state.spoke(event, line.event().id(), line.index(), gameTime, durationTicks);

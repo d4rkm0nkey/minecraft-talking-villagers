@@ -45,5 +45,7 @@
   "commands.talkingvillagers.word.neutral": "neutral",
   "commands.talkingvillagers.word.auto": "automatic",
   "commands.talkingvillagers.word.manual": "set by command",
-  "commands.talkingvillagers.word.muted": "muted"
+  "commands.talkingvillagers.word.muted": "muted",
+  "commands.talkingvillagers.watch.on": "You now see every spoken line",
+  "commands.talkingvillagers.watch.off": "You no longer see spoken lines"
 }

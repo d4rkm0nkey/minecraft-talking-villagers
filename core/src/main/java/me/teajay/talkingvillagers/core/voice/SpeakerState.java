@@ -16,6 +16,11 @@ public final class SpeakerState {
     private final Map<String, Integer> lastLine = new HashMap<>();
     private long nextRandomChat = -1;
     private boolean panicking;
+    private boolean inCombat;
+    private boolean lowHealthSaid;
+    private long nextCombatLine = -1;
+    // far in the past, but without overflowing when the game time is subtracted
+    private long lastVictory = Long.MIN_VALUE / 2;
     private Object failedAssignmentFor;
 
     public boolean isSpeaking(long gameTime) {
@@ -69,6 +74,38 @@ public final class SpeakerState {
         boolean started = panicking && !this.panicking;
         this.panicking = panicking;
         return started;
+    }
+
+    public boolean inCombat() {
+        return inCombat;
+    }
+
+    public void setInCombat(boolean inCombat) {
+        this.inCombat = inCombat;
+    }
+
+    public boolean lowHealthSaid() {
+        return lowHealthSaid;
+    }
+
+    public void setLowHealthSaid(boolean said) {
+        this.lowHealthSaid = said;
+    }
+
+    public long nextCombatLine() {
+        return nextCombatLine;
+    }
+
+    public void setNextCombatLine(long gameTime) {
+        this.nextCombatLine = gameTime;
+    }
+
+    public long lastVictory() {
+        return lastVictory;
+    }
+
+    public void setLastVictory(long gameTime) {
+        this.lastVictory = gameTime;
     }
 
     /**
