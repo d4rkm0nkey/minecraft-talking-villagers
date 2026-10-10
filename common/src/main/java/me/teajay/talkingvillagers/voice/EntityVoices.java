@@ -43,6 +43,7 @@ import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import org.jspecify.annotations.Nullable;
@@ -67,6 +68,9 @@ public final class EntityVoices {
     private static final float HIDE_VOLUME = 0.5f;
     /** Allies within this radius notice when a witch or illager dies. */
     private static final double ALLY_RADIUS = 16.0;
+    /** Ticks between two cheers for the same player, so a fight does not become a chorus. */
+    private static final int CHEER_INTERVAL = 100;
+    private static final Map<Player, Long> LAST_CHEER = new WeakHashMap<>();
     private static final Map<Entity, SpeakerState> STATES = new WeakHashMap<>();
     private static final SplittableRandom RANDOM = new SplittableRandom();
 
@@ -458,9 +462,38 @@ public final class EntityVoices {
     /**
      * Reactions to a death: the killer gloats or laughs, and an ally nearby mourns a fallen witch or illager.
      */
+    /**
+     * A player hit a monster: the nearest villager who sees the fight cheers the player on.
+     */
+    public static void onHurt(LivingEntity victim, DamageSource source) {
+        if (victim instanceof Enemy && !victim.isDeadOrDying() && source.getEntity() instanceof Player player
+                && !player.isSpectator() && victim.level() instanceof ServerLevel level) {
+            long now = level.getGameTime();
+            Long last = LAST_CHEER.get(player);
+            if (last != null && now - last < CHEER_INTERVAL) {
+                return;
+            }
+            nearestWitness(victim).ifPresent(villager -> {
+                LAST_CHEER.put(player, now);
+                onEvent(villager, EventCatalog.CHEER);
+            });
+        }
+    }
+
+    /** The nearest villager with a voice that can see the entity. */
+    private static Optional<Villager> nearestWitness(LivingEntity entity) {
+        return entity.level().getEntitiesOfClass(Villager.class, entity.getBoundingBox().inflate(ALLY_RADIUS),
+                        villager -> villager.isAlive() && !villager.isSleeping() && hasVoice(villager) && villager.hasLineOfSight(entity))
+                .stream()
+                .min(Comparator.comparingDouble(villager -> villager.distanceToSqr(entity)));
+    }
+
     public static void onDeath(LivingEntity victim, DamageSource source) {
         if (victim.level().isClientSide()) {
             return;
+        }
+        if (victim instanceof Enemy && source.getEntity() instanceof Player player && !player.isSpectator()) {
+            nearestWitness(victim).ifPresent(villager -> onEvent(villager, EventCatalog.MONSTER_KILLED));
         }
         if (source.getEntity() instanceof LivingEntity killer && killer != victim) {
             // any kill ends the fight successfully, so the killer does not complain about a lost target

@@ -96,6 +96,10 @@ public final class EventCatalog {
     public static final VoiceEvent GREETING_FRIENDLY = register("greeting_friendly", EnumSet.of(VILLAGER), GREETING);
     public static final VoiceEvent GREETING_UNFRIENDLY = register("greeting_unfriendly", EnumSet.of(VILLAGER), GREETING);
     public static final VoiceEvent TRADE_UNFRIENDLY = register("trade_unfriendly", EnumSet.of(VILLAGER), TRADE);
+    /** A player fights a monster close by. */
+    public static final VoiceEvent CHEER = register("cheer", EnumSet.of(VILLAGER));
+    /** A player killed a monster close by. */
+    public static final VoiceEvent MONSTER_KILLED = register("monster_killed", EnumSet.of(VILLAGER), CHEER);
 
     private EventCatalog() {
     }

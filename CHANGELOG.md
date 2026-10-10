@@ -9,7 +9,7 @@ Complete rewrite for Minecraft 26.3 on Fabric and NeoForge.
 - **Voicepack manager** (Mod Menu / NeoForge mod list): install by drag and drop, enable, disable and delete packs, browse voices, events and lines with search, preview every line, settings screen.
 - **Web editor** for creating and editing packs in the browser, with recording studio, long takes cut at pauses, noise suppression (RNNoise), noise profile, compressor, normalization and export.
 - **New entities:** wandering trader, witch, pillager, vindicator, evoker, illusioner.
-- **Situations:** villagers panic, warn of raids, whisper while hiding, talk about their work, greet depending on reputation, react to deaths, cures and babies. Witches and illagers talk differently when idle, on patrol, in a raid or in combat, and react to low health, lost targets, victories and fallen allies. 65 events with fallbacks, so small packs still work everywhere.
+- **Situations:** villagers panic, warn of raids, whisper while hiding, talk about their work, greet depending on reputation, react to deaths, cures and babies, and cheer on players fighting monsters. Witches and illagers talk differently when idle, on patrol, in a raid or in combat, and react to low health, lost targets, victories and fallen allies. 67 events with fallbacks, so small packs still work everywhere.
 - **Male, female and neutral voices**, with a configurable share.
 - **Child voices:** babies only get child voices and a new adult voice (with a `grow_up` line) when they grow up.
 - **Languages:** one language per pack or voice; optional language per village; children inherit a parent's language, villagers keep theirs when they move; settings for traders and raids.

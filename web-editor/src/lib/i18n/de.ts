@@ -177,6 +177,8 @@ export const de: Record<string, string> = {
   "event.spot_raider": "Sieht Plünderer",
   "event.attacked_by_player": "Wird von einem Spieler geschlagen",
   "event.villager_died": "Ein Nachbar ist gestorben",
+  "event.cheer": "Ein Spieler kämpft in der Nähe gegen ein Monster",
+  "event.monster_killed": "Ein Spieler hat in der Nähe ein Monster getötet",
   "event.pre_raid": "Ein Raid beginnt, alle nach Hause",
   "event.hide": "Versteckt sich während des Raids (flüstern)",
   "event.idle": "Redet vor sich hin, kein Spieler in Sicht",

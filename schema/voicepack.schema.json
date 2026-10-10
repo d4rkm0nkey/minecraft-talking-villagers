@@ -148,7 +148,9 @@
         "love",
         "greeting_friendly",
         "greeting_unfriendly",
-        "trade_unfriendly"
+        "trade_unfriendly",
+        "cheer",
+        "monster_killed"
       ]
     },
     "profession": {

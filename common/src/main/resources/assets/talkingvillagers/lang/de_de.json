@@ -221,5 +221,7 @@
   "talkingvillagers.gui.download.always": "Von diesem Server immer herunterladen",
   "talkingvillagers.download.started": "Lade %s Voicepack(s) herunter",
   "talkingvillagers.download.done": "Voicepack heruntergeladen",
-  "talkingvillagers.download.failed": "Download des Voicepacks fehlgeschlagen"
+  "talkingvillagers.download.failed": "Download des Voicepacks fehlgeschlagen",
+  "talkingvillagers.event.cheer": "Feuert einen Spieler an, der gegen ein Monster kämpft",
+  "talkingvillagers.event.monster_killed": "Ein Spieler hat ein Monster getötet"
 }

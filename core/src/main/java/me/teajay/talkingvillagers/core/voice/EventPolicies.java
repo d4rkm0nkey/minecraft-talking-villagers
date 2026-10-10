@@ -36,6 +36,9 @@ public final class EventPolicies {
         put(EventCatalog.SPOT_RAIDER, new EventPolicy(200, 1.0, true));
         put(EventCatalog.PRE_RAID, new EventPolicy(0, 1.0, true));
         put(EventCatalog.VILLAGER_DIED, new EventPolicy(200, 0.8, true));
+        put(EventCatalog.CHEER, new EventPolicy(300, 0.6, false));
+        // interrupts a cheer that is still playing when the monster dies
+        put(EventCatalog.MONSTER_KILLED, new EventPolicy(200, 1.0, true));
         put(EventCatalog.CURED, new EventPolicy(0, 1.0, true));
         put(EventCatalog.LOVE, new EventPolicy(200, 0.5, false));
         put(EventCatalog.HERO, new EventPolicy(2000, 0.5, false));

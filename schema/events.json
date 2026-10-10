@@ -491,6 +491,19 @@
         "villager"
       ],
       "parent": "trade"
+    },
+    {
+      "id": "cheer",
+      "entities": [
+        "villager"
+      ]
+    },
+    {
+      "id": "monster_killed",
+      "entities": [
+        "villager"
+      ],
+      "parent": "cheer"
     }
   ]
 }

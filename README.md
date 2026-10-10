@@ -8,7 +8,7 @@ Voices come in **voicepacks**: single `.voicepack` files you drop into the game.
 
 ## Features
 
-- **Voices for villagers, wandering traders, witches, pillagers, vindicators, evokers and illusioners**, 65 situations from `greeting` and `trade` to `panic`, `hide`, `combat`, `patrol` and `wololo`.
+- **Voices for villagers, wandering traders, witches, pillagers, vindicators, evokers and illusioners**, 67 situations from `greeting` and `trade` to `panic`, `hide`, `cheer`, `combat`, `patrol` and `wololo`.
 - **Male, female and child voices.** Babies only get child voices and a new adult voice when they grow up. Every entity keeps its voice and a personal pitch.
 - **Reacts to the situation:** reputation (friendly or cold greetings), raids, zombies, profession, weather, time of day.
 - **Languages:** each pack has a language. Every village can speak its own language, children inherit the language of a parent, villagers keep their language when they move.

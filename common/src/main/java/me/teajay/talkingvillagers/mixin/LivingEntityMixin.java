@@ -3,6 +3,7 @@ package me.teajay.talkingvillagers.mixin;
 import me.teajay.talkingvillagers.core.catalog.EventCatalog;
 import me.teajay.talkingvillagers.voice.EntityVoices;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +19,13 @@ public abstract class LivingEntityMixin {
         LivingEntity self = (LivingEntity) (Object) this;
         if (cir.getReturnValueZ() && !self.level().isClientSide()) {
             EntityVoices.onEvent(self, EventCatalog.SLEEP);
+        }
+    }
+
+    @Inject(method = "hurtServer", at = @At("RETURN"))
+    private void talkingvillagers$hurt(ServerLevel level, DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValueZ()) {
+            EntityVoices.onHurt((LivingEntity) (Object) this, source);
         }
     }
 

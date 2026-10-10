@@ -23,7 +23,7 @@ export const GROUPS: { id: string; events: string[] }[] = [
   { id: "talk", events: ["greeting", "greeting_friendly", "greeting_unfriendly", "random", "gossip", "meet", "work", "play", "good_weather", "bad_weather"] },
   { id: "trade", events: ["trade", "trade_unfriendly", "trade_success", "yes", "no", "level_up"] },
   { id: "life", events: ["sleep", "wake_up", "grow_up", "love", "hero", "hero_gift", "cured"] },
-  { id: "danger", events: ["panic", "panic_loop", "spot_zombie", "spot_raider", "attacked_by_player", "villager_died", "pre_raid", "hide"] },
+  { id: "danger", events: ["panic", "panic_loop", "spot_zombie", "spot_raider", "attacked_by_player", "cheer", "monster_killed", "villager_died", "pre_raid", "hide"] },
   { id: "hostile_idle", events: ["idle", "brew", "patrol", "patrol_leader", "raid_idle"] },
   { id: "combat", events: ["spot_player", "charge_at", "combat", "johnny", "attack", "charge", "retreat", "lost_target", "low_health", "victory", "ally_died", "raid_horn", "laugh"] },
   { id: "magic", events: ["cast_spell", "summon_vex", "fangs", "wololo", "mirror", "blindness", "drink_potion", "heal_self", "drink_other", "throw_potion", "heal_ally", "disappear"] },
@@ -58,6 +58,6 @@ export function groupOf(eventId: string): string {
 /** Recommended number of variants: frequent events need more. */
 export function recommendedVariants(eventId: string): number {
   if (["hurt", "ambient", "random", "idle", "combat", "panic_loop"].includes(eventId)) return 5;
-  if (["greeting", "yes", "no", "trade", "attack", "brew", "patrol"].includes(eventId)) return 3;
+  if (["greeting", "yes", "no", "trade", "attack", "brew", "patrol", "cheer", "monster_killed"].includes(eventId)) return 3;
   return 1;
 }

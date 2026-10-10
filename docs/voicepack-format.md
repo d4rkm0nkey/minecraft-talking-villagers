@@ -166,6 +166,8 @@ When a voice has no line for an event, the event in “Falls back to” is tried
 | `greeting_friendly` | villager | `greeting` | Greeting at reputation ≥ 30 |
 | `greeting_unfriendly` | villager | `greeting` | Greeting at reputation ≤ −30 |
 | `trade_unfriendly` | villager | `trade` | Trade screen opens at reputation ≤ −30 |
+| `cheer` | villager | – | A player hits a monster the villager can see (nearest villager within 16 blocks, at most every 5 s per player) |
+| `monster_killed` | villager | `cheer` | A player killed a monster the villager can see |
 
 Besides these, each voice reacts to its own entity only: a witch voice never says `trade`, even if the pack contains such lines.
 

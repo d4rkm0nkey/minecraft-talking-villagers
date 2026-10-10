@@ -41,6 +41,8 @@ In Panik, Vor-Raid und Versteck ersetzt das Zustands-Event auch den Ambient-Soun
 | `greeting_friendly` | Begrüßung bei Reputation ≥ 30 | `greeting` |
 | `greeting_unfriendly` | Begrüßung bei Reputation ≤ −30 (Golems greifen ab −100 an) | `greeting` |
 | `trade_unfriendly` | Handelsbeginn bei Reputation ≤ −30 | `trade` |
+| `cheer` | ein Spieler schlägt ein Monster (`Enemy`), das der Villager sieht; der nächste im Umkreis von 16 Blöcken, höchstens alle 5 s pro Spieler (nachträglich ergänzt) | – |
+| `monster_killed` | ein Spieler tötet ein Monster, das der Villager sieht (nachträglich ergänzt) | `cheer` |
 
 ## Umsetzung
 - **Katalog und Schema:** 15 neue Villager-Events mit Fallbacks, bestehende Packs funktionieren weiter.

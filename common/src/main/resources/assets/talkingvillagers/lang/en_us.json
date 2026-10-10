@@ -221,5 +221,7 @@
   "talkingvillagers.gui.download.always": "Always download from this server",
   "talkingvillagers.download.started": "Downloading %s voicepack(s)",
   "talkingvillagers.download.done": "Voicepack downloaded",
-  "talkingvillagers.download.failed": "Voicepack download failed"
+  "talkingvillagers.download.failed": "Voicepack download failed",
+  "talkingvillagers.event.cheer": "Cheers on a player fighting a monster",
+  "talkingvillagers.event.monster_killed": "A player killed a monster"
 }
