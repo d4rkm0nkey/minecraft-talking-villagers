@@ -15,18 +15,39 @@
   let playing = $state<"raw" | "processed" | undefined>();
   const villager = $derived(expandEntities(voice.entities).includes("villager"));
 
+  let element: HTMLDivElement | undefined = $state();
+  let visible = $state(false);
+
+  // voices can have hundreds of lines, so the audio is only loaded (and decoded) once a line scrolls near the screen
   $effect(() => {
-    void loadAudio(line.audioId).then((audio) => (raw = audio));
+    if (!element) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        visible = true;
+        observer.disconnect();
+      }
+    }, { rootMargin: "600px 0px" });
+    observer.observe(element);
+    return () => observer.disconnect();
   });
 
+  $effect(() => {
+    if (visible) void ensureLoaded();
+  });
+
+  async function ensureLoaded(): Promise<Audio | undefined> {
+    raw ??= await loadAudio(line.audioId).catch(() => undefined);
+    return raw;
+  }
+
   async function playRaw() {
-    if (!raw) return;
+    if (!(await ensureLoaded()) || !raw) return;
     playing = "raw";
     play(raw, 1, () => (playing = undefined));
   }
 
   async function playProcessed() {
-    if (!raw) return;
+    if (!(await ensureLoaded()) || !raw) return;
     playing = "processed";
     const noise = project.noiseProfileAudioId ? await loadAudio(project.noiseProfileAudioId) : undefined;
     const processed = await processLine(raw, line, $state.snapshot(project.processing), noise ? noiseProfile(noise.data) : undefined, denoise);
@@ -42,7 +63,7 @@
   }
 </script>
 
-<div class="line">
+<div class="line" bind:this={element}>
   <div class="row">
     {#if playing}
       <button class="icon" onclick={() => { stop(); playing = undefined; }} aria-label={t("common.stop")}>■</button>
@@ -55,6 +76,8 @@
   </div>
   {#if raw}
     <Waveform audio={raw} bind:trimStart={line.trimStart} bind:trimEnd={line.trimEnd} onchange={() => touch(project)} />
+  {:else}
+    <div class="placeholder"></div>
   {/if}
   <div class="row small">
     {#if villager}
@@ -83,4 +106,5 @@
 <style>
   .line { border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
   .professions { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 6px 0; }
+  .placeholder { height: 56px; border-radius: 4px; background: var(--bg); }
 </style>

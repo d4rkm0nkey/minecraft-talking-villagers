@@ -5,7 +5,7 @@
   import { touch } from "../lib/store/projects.svelte";
   import { check } from "../lib/pack/manifest";
   import { fileName } from "../lib/pack/export";
-  import { download } from "../lib/audio/browser";
+  import { decodeFile, download } from "../lib/audio/browser";
   import { COMMON_LANGUAGES, languageName } from "../lib/model/languages";
   import Problems from "./Problems.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
@@ -62,6 +62,11 @@
     const worker = new Worker(new URL("../lib/pack/export.worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = (event) => {
       const data = event.data;
+      if (data.type === "decode") {
+        decodeFile(data.ogg.slice().buffer).then(
+          (audio) => worker.postMessage({ type: "decoded", id: data.id, audio }, { transfer: [audio.data.buffer] }),
+          (error) => worker.postMessage({ type: "decoded", id: data.id, error: String(error) }));
+      }
       if (data.type === "progress") exportState = { done: data.done, total: data.total };
       if (data.type === "done") {
         download(data.bytes, fileName(project));
@@ -73,7 +78,7 @@
         worker.terminate();
       }
     };
-    worker.postMessage($state.snapshot(project));
+    worker.postMessage({ type: "export", project: $state.snapshot(project) });
   }
 </script>
 

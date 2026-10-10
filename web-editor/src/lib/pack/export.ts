@@ -4,9 +4,12 @@ import { buildManifest, linePath } from "./manifest";
 import { processLine, type Audio, type Denoiser } from "../audio/process";
 import { encodeVorbis } from "../audio/encode";
 import { noiseProfile } from "../audio/spectralGate";
+import type { Original } from "../store/audio";
 
 export interface ExportOptions {
   loadAudio: (id: string) => Promise<Audio | undefined>;
+  /** The original Ogg file of a line from an opened pack, so unchanged lines need no decoding. */
+  loadOriginal?: (id: string) => Promise<Original | undefined>;
   denoise?: Denoiser;
   onProgress?: (done: number, total: number) => void;
 }
@@ -31,10 +34,17 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
     for (const line of voice.lines) {
       const index = perEvent.get(line.event) ?? 0;
       perEvent.set(line.event, index + 1);
+      const original = isUnchanged(line, project.processing) ? await options.loadOriginal?.(line.audioId) : undefined;
+      if (original) {
+        // lines from an opened pack are copied as they are, so editing a pack does not re-encode (and degrade) them
+        durations.set(line.id, original.duration);
+        files[linePath(voice, line, index)] = original.ogg;
+        options.onProgress?.(++done, total);
+        continue;
+      }
       const raw = await options.loadAudio(line.audioId);
       if (!raw) throw new Error(`Missing audio for line ${line.id}`);
       if (raw.ogg && isUnchanged(line, project.processing)) {
-        // lines from an opened pack are copied as they are, so editing a pack does not re-encode (and degrade) them
         durations.set(line.id, raw.data.length / raw.sampleRate);
         files[linePath(voice, line, index)] = raw.ogg;
         options.onProgress?.(++done, total);
