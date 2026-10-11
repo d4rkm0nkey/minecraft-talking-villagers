@@ -12,7 +12,7 @@ function project(): Project {
   const p = newProject("Mein Pack", "de");
   const anna = newVoice("Anna", []);
   anna.gender = "female";
-  anna.lines = [line("hurt"), line("death"), line("greeting", "Hallo!"), line("greeting", "Moin")];
+  anna.lines = [line("hurt"), line("death"), line("greeting", "Hallo!"), line("greeting", "Moin"), line("yes"), line("no")];
   anna.lines[3].conditions = { professions: ["farmer"], weather: "rain" };
   p.voices = [anna];
   return p;
@@ -56,6 +56,21 @@ describe("manifest", () => {
 
     expect(codes).toEqual(expect.arrayContaining(["missing_basic_event", "child_voice_not_villager", "no_lines"]));
     expect(codes).not.toContain("event_not_used");
+  });
+
+  it("warns about vanilla sounds and trader voices that villagers get too", () => {
+    const p = project();
+    p.voices[0].entities = ["villager", "wandering_trader"];
+    p.voices[0].lines = [line("hurt"), line("death"), line("yes"), line("disappear")];
+
+    const problems = check(p);
+
+    expect(problems.find((problem) => problem.code === "missing_vanilla_events")?.params?.events).toBe("no, drink_potion");
+    expect(problems.map((problem) => problem.code)).toContain("trader_voice_for_villagers");
+
+    p.voices[0].entities = ["witch"];
+    p.voices[0].lines = [line("hurt"), line("death"), line("heal_self"), line("throw_potion")];
+    expect(check(p).map((problem) => problem.code)).not.toContain("missing_vanilla_events");
   });
 
   it("reports schema errors", () => {

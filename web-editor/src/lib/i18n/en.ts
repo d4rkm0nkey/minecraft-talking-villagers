@@ -168,6 +168,8 @@ export const en: Record<string, string> = {
   "problem.duplicate_voice_id": "The voice id \"{id}\" is used twice",
   "problem.no_lines": "\"{voice}\" has no lines yet",
   "problem.missing_basic_event": "\"{voice}\" has no lines for hurt and death, vanilla sounds are played instead",
+  "problem.missing_vanilla_events": "\"{voice}\" has no lines for {events}, Minecraft plays its own sounds instead",
+  "problem.trader_voice_for_villagers": "\"{voice}\" is also set up for villagers. They will say the trader's greetings and trade lines too",
   "problem.child_voice_not_villager": "\"{voice}\" is a child voice, but only villagers have children",
   "problem.event_not_used": "\"{event}\" is not triggered by any entity of \"{voice}\"",
   "problem.no_voices": "The pack needs at least one voice",

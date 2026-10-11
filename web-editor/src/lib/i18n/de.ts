@@ -168,6 +168,8 @@ export const de: Record<string, string> = {
   "problem.duplicate_voice_id": "Die Stimmen-ID „{id}“ gibt es doppelt",
   "problem.no_lines": "„{voice}“ hat noch keine Zeilen",
   "problem.missing_basic_event": "„{voice}“ hat keine Zeilen für Verletzung und Tod, dafür werden Vanilla-Sounds gespielt",
+  "problem.missing_vanilla_events": "„{voice}“ hat keine Zeilen für {events}, dafür spielt Minecraft seine eigenen Laute",
+  "problem.trader_voice_for_villagers": "„{voice}“ ist auch für Dorfbewohner eingestellt. Sie sagen dann auch die Begrüßungen und Handelssätze des Händlers",
   "problem.child_voice_not_villager": "„{voice}“ ist eine Kinderstimme, aber nur Dorfbewohner haben Kinder",
   "problem.event_not_used": "„{event}“ wird von keiner Entity von „{voice}“ ausgelöst",
   "problem.no_voices": "Das Pack braucht mindestens eine Stimme",

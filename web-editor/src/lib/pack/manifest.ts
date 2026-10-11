@@ -109,7 +109,33 @@ export function check(project: Project): Problem[] {
         problems.push({ severity: "warning", code: "event_not_used", path: `${path}.lines.${event}`, params: { voice: voice.name, event } });
       }
     }
+    const missing = [...new Set(kinds.flatMap((kind) => VANILLA_EVENTS[kind] ?? []))].filter((event) => !covers(events, event));
+    if (missing.length > 0) {
+      problems.push({ severity: "warning", code: "missing_vanilla_events", path, params: { voice: voice.name, events: missing.join(", ") } });
+    }
+    const traderOnly = [...events].some((event) => {
+      const known = EVENTS.find((candidate) => candidate.id === event);
+      return known?.entities.includes("wandering_trader") && !known.entities.includes("villager");
+    });
+    if (traderOnly && kinds.includes("villager") && kinds.includes("wandering_trader")) {
+      problems.push({ severity: "warning", code: "trader_voice_for_villagers", path, params: { voice: voice.name } });
+    }
   });
   if (project.voices.length === 0) problems.push({ severity: "error", code: "no_voices", path: "voices" });
   return problems;
+}
+
+/**
+ * Events besides hurt and death that replace a vanilla sound; without lines Minecraft plays its own sound, so the
+ * entity switches between its voice and vanilla noises.
+ */
+const VANILLA_EVENTS: Record<string, string[]> = {
+  villager: ["yes", "no"],
+  wandering_trader: ["yes", "no", "drink_potion", "disappear"],
+  witch: ["drink_potion", "throw_potion"],
+};
+
+/** Whether the voice has lines for the event or for a more specific event that is used instead, e.g. heal_self. */
+function covers(events: Set<string>, event: string): boolean {
+  return events.has(event) || EVENTS.some((candidate) => candidate.parent === event && covers(events, candidate.id));
 }
