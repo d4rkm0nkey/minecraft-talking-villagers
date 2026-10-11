@@ -298,7 +298,11 @@ public final class EntityVoices {
      * Ambient sounds of entities with a voice are rarer than vanilla's, because they are full voice lines.
      */
     public static int ambientInterval(Entity entity, int vanillaInterval) {
-        return hasVoice(entity) ? Math.max(vanillaInterval, EventPolicies.AMBIENT_INTERVAL) : vanillaInterval;
+        if (!hasVoice(entity)) {
+            return vanillaInterval;
+        }
+        boolean hostile = EntityKinds.of(entity).filter(EventCatalog.HOSTILE::contains).isPresent();
+        return Math.max(vanillaInterval, hostile ? EventPolicies.HOSTILE_AMBIENT_INTERVAL : EventPolicies.AMBIENT_INTERVAL);
     }
 
     /**

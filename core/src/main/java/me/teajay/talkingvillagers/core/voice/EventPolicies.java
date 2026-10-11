@@ -12,6 +12,8 @@ import java.util.Map;
 public final class EventPolicies {
     /** Ticks between ambient sounds of entities with a voice; vanilla villagers use 80. */
     public static final int AMBIENT_INTERVAL = 300;
+    /** Ticks between idle lines of witches and illagers, which stand around a lot and talk in whole sentences. */
+    public static final int HOSTILE_AMBIENT_INTERVAL = 600;
     /** Radius for the limit of entities speaking at the same time (config {@code maxConcurrentSpeakers}). */
     public static final double CROWD_RADIUS = 32.0;
     /** Distance in blocks within which villagers greet players. */
