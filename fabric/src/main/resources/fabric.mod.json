@@ -1,0 +1,40 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "sources": "https://github.com/d4rkm0nkey/minecraft-talking-villagers",
+        "issues": "https://github.com/d4rkm0nkey/minecraft-talking-villagers/issues"
+    },
+    "license": "${license}",
+    "icon": "${mod_id}.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "me.teajay.talkingvillagers.TalkingVillagersFabric"
+        ],
+        "client": [
+            "me.teajay.talkingvillagers.client.TalkingVillagersFabricClient"
+        ],
+        "modmenu": [
+            "me.teajay.talkingvillagers.client.TalkingVillagersModMenu"
+        ]
+    },
+    "mixins": [
+        "${mod_id}.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "~${minecraft_version}",
+        "java": ">=${java_version}"
+    },
+    "suggests": {
+        "modmenu": "*"
+    }
+}

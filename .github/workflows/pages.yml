@@ -1,0 +1,61 @@
+name: pages
+# One GitHub Pages site for the repository: the player wiki (pages/, MkDocs) at the root
+# and the web editor (web-editor/) under /editor/.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'pages/**'
+      - 'web-editor/**'
+      - 'schema/**'
+      - 'common/src/main/resources/assets/talkingvillagers/lang/en_us.json'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web-editor/package-lock.json
+      - name: wiki
+        run: |
+          pip install -r pages/requirements.txt
+          mkdocs build --strict -f pages/mkdocs.yml -d ../site
+      - name: web editor
+        working-directory: web-editor
+        run: |
+          npm ci
+          npm test
+          npm run build
+          cp -r dist ../site/editor
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

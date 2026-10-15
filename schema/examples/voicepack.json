@@ -1,0 +1,57 @@
+{
+  "$schema": "../voicepack.schema.json",
+  "format": 2,
+  "id": "example-pack",
+  "name": "Example Pack",
+  "version": "1.0.0",
+  "description": "Shows every feature of the manifest format.",
+  "authors": ["TeaJay"],
+  "language": "de",
+  "voices": [
+    {
+      "id": "anna",
+      "name": "Anna",
+      "entities": ["villager", "wandering_trader"],
+      "gender": "female",
+      "pitch": { "min": 0.9, "max": 1.1 },
+      "weight": 2,
+      "legacyIds": ["anna_v1"],
+      "lines": {
+        "hurt": [{ "file": "sounds/anna/hurt/au.ogg", "duration": 0.5 }],
+        "death": [{ "file": "sounds/anna/death/oh_no.ogg" }],
+        "greeting": [
+          { "file": "sounds/anna/greeting/hallo.ogg", "text": "Hallo, Reisender!" },
+          {
+            "file": "sounds/anna/greeting/felder.ogg",
+            "text": "Schön, dass du die Felder besuchst.",
+            "conditions": { "professions": ["farmer"], "weather": "clear" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "paul-kid",
+      "name": "Paul (Kind)",
+      "entities": ["villager"],
+      "gender": "male",
+      "child": true,
+      "lines": {
+        "hurt": [{ "file": "sounds/paul-kid/hurt/aua.ogg" }],
+        "death": [{ "file": "sounds/paul-kid/death/nein.ogg" }],
+        "grow_up": [{ "file": "sounds/paul-kid/grow_up/endlich.ogg", "text": "Endlich erwachsen!" }]
+      }
+    },
+    {
+      "id": "grimm",
+      "name": "Grimm",
+      "entities": ["illager"],
+      "gender": "neutral",
+      "language": "en",
+      "lines": {
+        "hurt": [{ "file": "sounds/grimm/hurt/argh.ogg" }],
+        "death": [{ "file": "sounds/grimm/death/no.ogg" }],
+        "cast_spell": [{ "file": "sounds/grimm/cast_spell/behold.ogg", "text": "Behold!" }]
+      }
+    }
+  ]
+}

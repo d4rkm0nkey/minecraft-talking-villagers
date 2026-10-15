@@ -1,0 +1,51 @@
+plugins {
+    id 'multiloader-common'
+}
+
+configurations {
+    coreJava {
+        canBeResolved = true
+    }
+    commonJava {
+        canBeResolved = true
+    }
+    commonResources {
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    compileOnly(project(':common')) {
+        def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+        attributes {
+            attribute(loaderAttribute, 'common')
+        }
+    }
+    // core is plain Java without Minecraft; its sources are compiled into every loader jar like common
+    compileOnly(project(':core'))
+    coreJava(project(path: ':core', configuration: 'coreJava'))
+    commonJava(project(path: ':common', configuration: 'commonJava'))
+    commonResources(project(path: ':common', configuration: 'commonResources'))
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn(configurations.coreJava, configurations.commonJava)
+    source(configurations.coreJava, configurations.commonJava)
+}
+
+processResources {
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+tasks.named('javadoc', Javadoc).configure {
+    dependsOn(configurations.coreJava, configurations.commonJava)
+    source(configurations.coreJava, configurations.commonJava)
+}
+
+tasks.named('sourcesJar', Jar) {
+    dependsOn(configurations.coreJava, configurations.commonJava)
+    from(configurations.coreJava, configurations.commonJava)
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}

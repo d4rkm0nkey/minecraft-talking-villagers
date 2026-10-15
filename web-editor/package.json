@@ -1,0 +1,31 @@
+{
+  "name": "talkingvillagers-web-editor",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Create voicepacks for the Talking Villagers Minecraft mod in the browser",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@shiguredo/rnnoise-wasm": "^2025.1.5",
+    "ajv": "^8.20.0",
+    "fflate": "^0.8.3",
+    "idb-keyval": "^6.3.0",
+    "wasm-media-encoders": "^0.7.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tsconfig/svelte": "^5.0.8",
+    "@types/node": "^24.19.2",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.6",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

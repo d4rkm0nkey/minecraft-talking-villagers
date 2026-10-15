@@ -1,0 +1,72 @@
+plugins {
+    id 'java-library'
+    id 'jacoco'
+}
+
+// Plain Java: no Minecraft and no loader classes may be used here.
+// The sources are compiled into the fabric and neoforge jars (see multiloader-loader.gradle).
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Gson ships with Minecraft, so it is only needed at compile time
+    compileOnly("com.google.code.gson:gson:${gson_version}")
+
+    testImplementation("com.google.code.gson:gson:${gson_version}")
+    testImplementation(platform("org.junit:junit-bom:${junit_version}"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+    testImplementation("org.assertj:assertj-core:${assertj_version}")
+    // checks that the shared JSON schema and the Java parser agree
+    testImplementation('com.networknt:json-schema-validator:1.5.9')
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy(jacocoTestReport)
+    // the JSON schema lives at the repository root and is shared with the web editor
+    systemProperty('talkingvillagers.schemaDir', rootProject.file('schema').absolutePath)
+    // written by the web editor's tests (npm test), checked by WebEditorExportTest
+    systemProperty('talkingvillagers.webExport', rootProject.file('web-editor/build/test-export.voicepack').absolutePath)
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+configurations {
+    coreJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+}
+
+artifacts {
+    coreJava sourceSets.main.java.sourceDirectories.singleFile
+}
+
+// regenerates schema/events.json for the web editor
+tasks.register('writeEventCatalog', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'me.teajay.talkingvillagers.core.catalog.EventCatalogJson'
+    args = [rootProject.file('schema/events.json').absolutePath]
+}
+
+// builds the default voicepack from packs-src, distributed separately from the mod jar
+tasks.register('buildDefaultPack', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'me.teajay.talkingvillagers.core.convert.DefaultPackBuilder'
+    def version = rootProject.property('default_pack_version')
+    args = [rootProject.file('packs-src/teajay-default').absolutePath,
+            rootProject.file("build/voicepacks/teajay-default-${version}.voicepack").absolutePath,
+            version]
+}

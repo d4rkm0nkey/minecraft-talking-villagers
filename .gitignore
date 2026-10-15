@@ -1,33 +1,40 @@
 # gradle
-
 .gradle/
 build/
 out/
 classes/
 
 # eclipse
-
 *.launch
+.settings/
+.classpath
+.project
+bin/
 
 # idea
-
 .idea/
 *.iml
 *.ipr
 *.iws
 
 # vscode
-
-.settings/
 .vscode/
-bin/
-.classpath
-.project
 
 # macos
-
 *.DS_Store
 
-# fabric
-
+# minecraft run directories
 run/
+runs/
+logs/
+remappedSrc/
+
+# web editor
+web-editor/node_modules/
+web-editor/dist/
+web-editor/build/
+
+# wiki
+__pycache__/
+/site/
+.venv/

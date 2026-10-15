@@ -1,9 +1,29 @@
 pluginManagement {
     repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
         gradlePluginPortal()
+        mavenCentral()
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'Fabric'
+                    url = uri('https://maven.fabricmc.net')
+                }
+            }
+            filter {
+                includeGroupAndSubgroups('net.fabricmc')
+            }
+        }
     }
 }
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+// Should match the folder name of the project, or IDEA may complain (https://youtrack.jetbrains.com/issue/IDEA-317606)
+rootProject.name = 'minecraft-talking-villagers'
+includeBuild('build-logic')
+include('core')
+include('common')
+include('fabric')
+include('neoforge')
