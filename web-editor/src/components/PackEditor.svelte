@@ -60,6 +60,10 @@
   function startExport() {
     const total = project.voices.reduce((sum, voice) => sum + voice.lines.length, 0);
     exportState = { done: 0, total };
+    // the export uses the project as it is now, even if it is edited while the export runs
+    const snapshot = $state.snapshot(project);
+    const name = fileName(snapshot);
+    const modifiedAtStart = project.modified;
     const worker = new Worker(new URL("../lib/pack/export.worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = (event) => {
       const data = event.data;
@@ -70,7 +74,10 @@
       }
       if (data.type === "progress") exportState = { done: data.done, total: data.total };
       if (data.type === "done") {
-        download(data.bytes, fileName(project));
+        download(data.bytes, name);
+        const changedDuringExport = project.modified > modifiedAtStart;
+        touch(project);
+        project.exported = changedDuringExport ? modifiedAtStart : project.modified;
         exportState = { done: total, total, message: t("pack.exported") };
         worker.terminate();
       }
@@ -79,7 +86,7 @@
         worker.terminate();
       }
     };
-    worker.postMessage({ type: "export", project: $state.snapshot(project) });
+    worker.postMessage({ type: "export", project: snapshot });
   }
 </script>
 

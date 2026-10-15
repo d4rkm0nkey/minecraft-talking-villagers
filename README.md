@@ -4,6 +4,8 @@ Villagers, wandering traders, witches and illagers talk – with real recorded v
 
 Voices come in **voicepacks**: single `.voicepack` files you drop into the game. Anyone can record their own in the browser with the [web editor](https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/).
 
+**Download:** [Modrinth](https://modrinth.com/mod/Z8M6Cpvw) · [CurseForge](https://www.curseforge.com/projects/466752) · [GitHub releases](https://github.com/d4rkm0nkey/minecraft-talking-villagers/releases)
+
 **Player wiki:** <https://d4rkm0nkey.github.io/minecraft-talking-villagers/>
 
 **Minecraft 26.3 · Fabric and NeoForge · Java 25**
@@ -21,7 +23,7 @@ Voices come in **voicepacks**: single `.voicepack` files you drop into the game.
 
 ## Installation
 
-1. Install the mod (Fabric: also [Fabric API](https://modrinth.com/mod/fabric-api); [Mod Menu](https://modrinth.com/mod/modmenu) is recommended for the settings screen).
+1. Install the mod from [Modrinth](https://modrinth.com/mod/Z8M6Cpvw) or [CurseForge](https://www.curseforge.com/projects/466752) (Fabric: also [Fabric API](https://modrinth.com/mod/fabric-api); [Mod Menu](https://modrinth.com/mod/modmenu) is recommended for the settings screen).
 2. Get a voicepack, e.g. the default pack *TeaJay Default* from the releases.
 3. Start Minecraft, open *Mods → Talking Villagers → Configure* and drag the `.voicepack` file into the window. Or copy it into `.minecraft/voicepacks/`.
 
@@ -40,7 +42,7 @@ For large packs you can let clients download from a web server instead of throug
 ### Coming from version 1
 
 - Old voice resource packs can be converted: drag the ZIP into the voicepack screen. You choose language and gender; voices, professions and subtitles are taken over.
-- Villagers in old worlds keep their voice if the new pack lists the old name in `legacyIds` (the converted and default packs do).
+- Villagers in old worlds keep their voice if a voice in the new pack has the old name as id or lists it in `legacyIds` (converted packs do). With the new default pack they get a new voice.
 - The old files in `config/talkingvillagers/` and the resource pack are no longer needed.
 
 ## Configuration

@@ -17,13 +17,31 @@
   import { locale, t } from "../lib/i18n/index.svelte";
   import { GROUP_ITEMS, item, voiceHead } from "../lib/art";
 
-  let { project, voice, onback, onstudio }: { project: Project; voice: Voice; onback: () => void; onstudio: (event: string, profession?: string) => void } = $props();
+  let { project, voice, onback, onstudio, onrename }: {
+    project: Project; voice: Voice; onback: () => void; onstudio: (event: string, profession?: string) => void; onrename: (voiceId: string) => void;
+  } = $props();
   let showEmpty = $state(true);
   /** "" shows every line, "general" the lines without a profession, otherwise the lines for that profession. */
   let profession = $state(untrack(() => filters.get(voice.id) ?? ""));
   $effect(() => {
     filters.set(voice.id, profession);
   });
+
+  /** The id is stored in worlds, so it only changes when the edit is finished and valid. */
+  let idDraft = $state(untrack(() => voice.id));
+  const idError = $derived(!/^[a-z0-9_-]{1,64}$/.test(idDraft) ? t("voice.id.invalid")
+    : project.voices.some((other) => other !== voice && other.id === idDraft) ? t("voice.id.taken") : "");
+
+  function commitId() {
+    if (idError || idDraft === voice.id) return;
+    // App looks the voice up by the id in its view, so after the change `voice` is undefined until onrename
+    const id = idDraft;
+    filters.set(id, profession);
+    filters.delete(voice.id);
+    voice.id = id;
+    touch(project);
+    onrename(id);
+  }
 
   const villager = $derived(expandEntities(voice.entities).includes("villager"));
   const filter = $derived(villager ? profession : "");
@@ -83,6 +101,10 @@
   <h2><img src={item("name_tag")} alt="" />{t("voice.details")}</h2>
   <div class="grid">
     <label>{t("voice.name")}<input type="text" bind:value={voice.name} oninput={() => touch(project)} /></label>
+    <label>{t("voice.id")}
+      <input type="text" bind:value={idDraft} onchange={commitId} spellcheck="false" />
+      {#if idError}<span class="small error">{idError}</span>{:else}<span class="small muted">{t("voice.id.hint")}</span>{/if}
+    </label>
     <label>{t("voice.gender")}
       <select bind:value={voice.gender} onchange={() => touch(project)}>
         {#each ["male", "female", "neutral"] as gender}<option value={gender as Gender}>{t(`gender.${gender}`)}</option>{/each}

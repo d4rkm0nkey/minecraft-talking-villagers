@@ -1,5 +1,6 @@
 <script lang="ts">
   import { addProject, projects, removeProject } from "../lib/store/projects.svelte";
+  import { storage } from "../lib/store/status.svelte";
   import { newProject, type Gender } from "../lib/model/types";
   import { importVersion1, importVoicepack } from "../lib/pack/import";
   import { COMMON_LANGUAGES, LANGUAGE_PATTERN, languageName } from "../lib/model/languages";
@@ -58,7 +59,14 @@
           <span class="muted small">
             {t("start.voices", { count: project.voices.length, lines: lineCount(project) })} ·
             {t("start.modified", { date: new Date(project.modified).toLocaleString(locale.language) })}
-          </span>
+          </span><br />
+          {#if !project.exported}
+            <span class="warning small">⚠ {t("start.never_exported")}</span>
+          {:else if project.modified > project.exported}
+            <span class="warning small">⚠ {t("start.changed_since_export", { date: new Date(project.exported).toLocaleString(locale.language) })}</span>
+          {:else}
+            <span class="muted small">{t("start.exported", { date: new Date(project.exported).toLocaleString(locale.language) })}</span>
+          {/if}
         </span>
       </button>
       <button class="danger" onclick={() => confirm(t("start.delete_confirm", { name: project.name })) && removeProject(project)}>
@@ -66,7 +74,10 @@
       </button>
     </div>
   {/each}
-  <p class="muted small">{t("start.storage")}</p>
+  <p class="small storage">
+    {t("start.storage")}
+    {#if storage.persisted === false}{t("start.storage.not_persisted")}{/if}
+  </p>
 </section>
 
 <section class="panel">
@@ -115,6 +126,7 @@
   .link strong { font-family: var(--pixel); font-size: 1.05rem; font-weight: 600; }
   .icon { border: 2px solid var(--edge); background: var(--panel-deep); }
   .say { margin-bottom: 12px; }
+  .storage { border-left: 4px solid var(--warning); padding-left: 8px; }
   details { margin-top: 12px; }
   details summary { font-weight: 500; }
 </style>

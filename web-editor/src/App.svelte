@@ -6,6 +6,7 @@
   import Studio from "./components/Studio.svelte";
   import { findProject, loadProjects } from "./lib/store/projects.svelte";
   import { locale, setLanguage, t } from "./lib/i18n/index.svelte";
+  import { storage } from "./lib/store/status.svelte";
 
   type View =
     | { name: "start" }
@@ -52,6 +53,13 @@
 </header>
 
 <main>
+  {#if storage.error}
+    <div class="panel storage-error" role="alert">
+      <strong class="error">⚠ {t("storage.failed")}</strong>
+      {storage.error === "quota" ? t("storage.quota") : storage.error}
+      <button onclick={() => (storage.error = "")}>{t("common.close")}</button>
+    </div>
+  {/if}
   {#if view.name === "start" || !project}
     <Start onopen={(id) => (view = { name: "pack", projectId: id })} />
   {:else if view.name === "pack"}
@@ -66,6 +74,7 @@
       {voice}
       onback={() => (view = { name: "pack", projectId: project.id })}
       onstudio={(event, profession) => (view = { name: "studio", projectId: project.id, voiceId: voice.id, event, profession })}
+      onrename={(voiceId) => (view = { name: "voice", projectId: project.id, voiceId })}
     />
   {:else if view.name === "studio" && voice}
     <Studio {project} {voice} initialEvent={view.event} profession={view.profession} onback={() => (view = { name: "voice", projectId: project.id, voiceId: voice.id })} />
@@ -73,3 +82,8 @@
 </main>
 
 <footer class="bottom">{t("app.notice")}</footer>
+
+<style>
+  .storage-error { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-color: var(--danger); }
+  .storage-error button { margin-left: auto; }
+</style>

@@ -1,6 +1,6 @@
 name: publish
 # Runs when a tag like v2.0.0 or v2.0.0-beta.1 is pushed. Needs the repository secrets
-# MODRINTH_TOKEN and CURSEFORGE_TOKEN and the project ids below.
+# MODRINTH_TOKEN and CURSEFORGE_TOKEN.
 on:
   push:
     tags: ['v*']
@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 env:
-  MODRINTH_ID: talking-villagers   # TODO: Modrinth project id
-  CURSEFORGE_ID: '000000'          # TODO: CurseForge project id
+  MODRINTH_ID: Z8M6Cpvw
+  CURSEFORGE_ID: '466752'
 
 jobs:
   publish:
