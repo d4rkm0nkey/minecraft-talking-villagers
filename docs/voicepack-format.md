@@ -10,7 +10,7 @@ my-pack.voicepack
     └── anna/greeting/hello.ogg
 ```
 
-The [web editor](https://d4rkm0nkey.github.io/minecraft-talking-villagers/) writes this format for you, see [creating-voicepacks.md](creating-voicepacks.md). This page is for people who build packs by hand or with their own tools. The JSON schema in [`schema/voicepack.schema.json`](../schema/voicepack.schema.json) is the reference; editors like VS Code validate the manifest when it starts with `"$schema"`.
+The [web editor](https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/) writes this format for you, see [creating-voicepacks.md](creating-voicepacks.md). This page is for people who build packs by hand or with their own tools. The JSON schema in [`schema/voicepack.schema.json`](../schema/voicepack.schema.json) is the reference; editors like VS Code validate the manifest when it starts with `"$schema"`.
 
 ## Manifest
 

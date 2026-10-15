@@ -40,7 +40,7 @@ import java.util.Map;
  * The voicepack manager: lists installed packs, installs dropped files, enables, disables and deletes packs.
  */
 public class VoicepacksScreen extends Screen {
-    public static final URI WEB_EDITOR = URI.create("https://d4rkm0nkey.github.io/minecraft-talking-villagers/");
+    public static final URI WEB_EDITOR = URI.create("https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/");
     private static final int RED = 0xFFFF5555;
     private final @Nullable Screen parent;
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 56, 33);

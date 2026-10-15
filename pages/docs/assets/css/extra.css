@@ -1,0 +1,949 @@
+/* Talking Villagers wiki: Minecraft look on top of Material for MkDocs.
+   Pictures in ../mc/ come from tools/generate_wiki_assets.py. */
+@import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap");
+
+/* ---------------------------------------------------------------- tokens */
+:root {
+  --tv-pixel: "Pixelify Sans", "Nunito Sans", sans-serif;
+
+  --tv-emerald: #17a24a;
+  --tv-emerald-bright: #41e07f;
+  --tv-wood: #5b3d25;
+  --tv-wood-dark: #3a2716;
+  --tv-wood-light: #8a6340;
+
+  --tv-paper: #f6eed6;
+  --tv-paper-deep: #ece0ba;
+  --tv-paper-edge: #baa070;
+  --tv-paper-ink: #3d3122;
+
+  --tv-sky-top: #79a6ff;
+  --tv-sky-bottom: #c4dcff;
+
+  --tv-gui: #c6c6c6;
+  --tv-gui-text: #404040;
+  --tv-slot: #8b8b8b;
+  --tv-slot-dark: #373737;
+
+  --tv-shadow: rgba(40, 26, 15, 0.18);
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--tv-wood);
+  --md-primary-fg-color--light: var(--tv-wood-light);
+  --md-primary-fg-color--dark: var(--tv-wood-dark);
+  --md-primary-bg-color: #fffaf0;
+  --md-accent-fg-color: #0f8a3c;
+  --md-accent-fg-color--transparent: rgba(15, 138, 60, 0.1);
+
+  --md-default-bg-color: #fdfaf2;
+  --md-default-fg-color: rgba(43, 33, 22, 0.92);
+  --md-default-fg-color--light: rgba(43, 33, 22, 0.66);
+  --md-default-fg-color--lighter: rgba(43, 33, 22, 0.36);
+  --md-default-fg-color--lightest: rgba(43, 33, 22, 0.1);
+  --md-typeset-color: rgba(43, 33, 22, 0.92);
+  --md-typeset-a-color: #0d7a35;
+  --md-code-bg-color: #f3ecd9;
+  --md-code-fg-color: #4a3826;
+  --md-footer-bg-color: #241910;
+  --md-footer-bg-color--dark: #1a120b;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 30;
+  --md-primary-fg-color: var(--tv-wood);
+  --md-primary-fg-color--light: var(--tv-wood-light);
+  --md-primary-fg-color--dark: var(--tv-wood-dark);
+  --md-primary-bg-color: #fffaf0;
+  --md-accent-fg-color: var(--tv-emerald-bright);
+  --md-accent-fg-color--transparent: rgba(65, 224, 127, 0.1);
+
+  --md-default-bg-color: #1c1915;
+  --md-default-fg-color: rgba(240, 232, 216, 0.9);
+  --md-default-fg-color--light: rgba(240, 232, 216, 0.64);
+  --md-default-fg-color--lighter: rgba(240, 232, 216, 0.34);
+  --md-default-fg-color--lightest: rgba(240, 232, 216, 0.1);
+  --md-typeset-color: rgba(240, 232, 216, 0.88);
+  --md-typeset-a-color: #5fe08f;
+  --md-code-bg-color: #26221d;
+  --md-code-fg-color: #e9dcc4;
+  --md-footer-bg-color: #14100c;
+  --md-footer-bg-color--dark: #0e0b08;
+
+  --tv-paper: #2a241b;
+  --tv-paper-deep: #352d21;
+  --tv-paper-edge: #6e5a3a;
+  --tv-paper-ink: #efe3c8;
+  --tv-sky-top: #0b1330;
+  --tv-sky-bottom: #2a3f6e;
+  --tv-shadow: rgba(0, 0, 0, 0.45);
+}
+
+/* -------------------------------------------------------------- pixels */
+.mc-item,
+.tv-pixel {
+  image-rendering: pixelated;
+}
+
+/* ------------------------------------------------------------ headings */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: var(--tv-pixel);
+  letter-spacing: 0.01em;
+}
+.md-typeset h1 {
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  text-shadow: 3px 3px 0 var(--md-default-fg-color--lightest);
+  margin-bottom: 1rem;
+}
+.md-typeset h2 {
+  display: flow-root;
+  font-weight: 600;
+  padding-bottom: 0.3rem;
+  border-bottom: 4px solid transparent;
+  border-image: repeating-linear-gradient(90deg,
+      var(--md-default-fg-color--lightest) 0 8px, transparent 8px 12px) 4;
+}
+.md-typeset h3 {
+  font-weight: 500;
+}
+.md-typeset h2 .headerlink,
+.md-typeset h3 .headerlink {
+  font-family: var(--md-text-font-family);
+}
+
+/* Square emerald bullets. */
+.md-typeset ul:not(.task-list) > li::marker {
+  content: "■  ";
+  color: var(--md-accent-fg-color);
+  font-size: 0.75em;
+}
+.md-typeset ol > li::marker {
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  color: var(--md-accent-fg-color);
+}
+
+/* -------------------------------------------------------------- header */
+.md-header,
+.md-tabs {
+  background-color: var(--tv-wood-dark);
+  background-image:
+    linear-gradient(rgba(34, 22, 12, 0.62), rgba(34, 22, 12, 0.62)),
+    url("../mc/ui/spruce_planks.png");
+  background-size: auto, 64px 64px;
+  image-rendering: pixelated;
+}
+.md-header {
+  box-shadow: none;
+}
+.md-header--shadow {
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+}
+.md-header__title,
+.md-header__topic,
+.md-tabs__link,
+.md-source__repository {
+  font-family: var(--tv-pixel);
+}
+.md-header__topic:first-child {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+.md-header__button.md-logo img {
+  image-rendering: pixelated;
+  height: 1.8rem;
+}
+
+.md-tabs {
+  position: relative;
+  padding-bottom: 12px;
+}
+.md-tabs__link {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+.md-tabs__item--active .md-tabs__link {
+  color: #fff6a0;
+  opacity: 1;
+}
+.md-tabs__link:hover {
+  color: #fff6a0;
+}
+
+/* A strip of grass under the tabs (or under the header on small screens). */
+.md-tabs::after,
+.tv-grass-edge::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  background: url("../mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px;
+  image-rendering: pixelated;
+}
+@media screen and (max-width: 76.234375em) {
+  .md-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    height: 10px;
+    background: url("../mc/ui/grass_strip.png") repeat-x 0 -2px / 32px 12px;
+    image-rendering: pixelated;
+  }
+}
+
+/* -------------------------------------------------------------- sidebar */
+.md-nav {
+  font-family: var(--tv-pixel);
+  font-size: 0.74rem;
+}
+.md-nav__title {
+  font-weight: 600;
+}
+.md-nav--primary .md-nav__item--section > .md-nav__link {
+  color: var(--md-default-fg-color--light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+}
+.md-nav__link .md-icon svg,
+.md-nav__link > svg,
+.md-nav__link .twemoji svg {
+  width: 1rem;
+  height: 1rem;
+}
+.md-nav__link--active {
+  color: var(--md-accent-fg-color);
+  font-weight: 600;
+}
+.md-search__input {
+  font-family: var(--tv-pixel);
+}
+
+/* -------------------------------------------------------------- buttons */
+.md-typeset .md-button {
+  font-family: var(--tv-pixel);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 #3f3f3f;
+  padding: 0.35rem 1.4rem;
+  border-style: solid;
+  border-width: 6px;
+  border-radius: 0;
+  border-image: url("../mc/ui/button.png") 3 fill / 6px stretch;
+  background: none;
+  image-rendering: pixelated;
+  transition: none;
+}
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus-visible {
+  color: #ffffa0;
+  background: none;
+  border-image-source: url("../mc/ui/button_highlighted.png");
+}
+.md-typeset .md-button--primary {
+  border-image-source: url("../mc/ui/button_green.png");
+}
+.md-typeset .md-button--primary:hover,
+.md-typeset .md-button--primary:focus-visible {
+  border-image-source: url("../mc/ui/button_highlighted_green.png");
+}
+
+/* --------------------------------------------------------------- icons */
+.mc-icon {
+  position: relative;
+  display: inline-block;
+  width: 1.45em;
+  height: 1.45em;
+  vertical-align: -0.38em;
+  margin: 0 0.06em;
+}
+.mc-icon img {
+  width: 100%;
+  height: 100%;
+}
+
+/* Minecraft tooltip: dark violet box with a purple frame. */
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  padding: 3px 7px 4px;
+  white-space: nowrap;
+  font-family: var(--tv-pixel);
+  font-size: 0.7rem;
+  font-weight: 400;
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 2px 2px 0 #3e3e3e;
+  background: rgba(16, 0, 16, 0.94);
+  border: 2px solid #3b0a8a;
+  border-image: linear-gradient(#5000ff, #28007f) 1;
+  outline: 2px solid rgba(16, 0, 16, 0.94);
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------- infobox */
+.md-typeset .tv-infobox {
+  float: right;
+  clear: right;
+  width: 15.5rem;
+  margin: 0 0 1.2rem 1.6rem;
+  font-size: 0.68rem;
+  background: var(--tv-paper);
+  border: 2px solid var(--tv-paper-edge);
+  box-shadow: 5px 5px 0 var(--tv-shadow);
+}
+.tv-infobox__title {
+  padding: 0.35rem 0.7rem;
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+  background:
+    linear-gradient(rgba(34, 22, 12, 0.45), rgba(34, 22, 12, 0.45)),
+    url("../mc/ui/oak_planks.png") 0 0 / 48px 48px;
+  image-rendering: pixelated;
+}
+.tv-infobox__art,
+.tv-card__art {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.2rem;
+  padding: 0.6rem 0.5rem 14px;
+  background: linear-gradient(var(--tv-sky-top), var(--tv-sky-bottom));
+}
+.tv-infobox__art::after,
+.tv-card__art::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  background:
+    url("../mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px,
+    url("../mc/ui/dirt.png") repeat-x 0 0 / 32px 32px;
+  image-rendering: pixelated;
+}
+.tv-infobox__art img,
+.tv-card__art img {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.25));
+}
+.tv-infobox__head {
+  width: 6rem;
+}
+.tv-infobox__station {
+  width: 4.4rem;
+}
+.md-typeset .tv-infobox dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.6rem;
+  margin: 0;
+  padding: 0.7rem;
+}
+.md-typeset .tv-infobox dt {
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  color: var(--tv-paper-ink);
+  opacity: 0.75;
+}
+.md-typeset .tv-infobox dd {
+  margin: 0;
+  color: var(--tv-paper-ink);
+}
+@media screen and (max-width: 44.984375em) {
+  .md-typeset .tv-infobox {
+    float: none;
+    width: auto;
+    margin: 0 0 1.4rem;
+  }
+}
+
+/* ----------------------------------------------------------- admonitions */
+.md-typeset .admonition,
+.md-typeset details {
+  font-size: 0.74rem;
+  color: var(--tv-paper-ink);
+  background: var(--tv-paper);
+  border: 2px solid var(--tv-paper-edge);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--tv-shadow);
+}
+.md-typeset .admonition-title,
+.md-typeset summary {
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  font-size: 0.78rem;
+  background: var(--tv-paper-deep) !important;
+  border: none;
+  padding-left: 2.6rem !important;
+}
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  background: url("../mc/items/book.png") center / contain no-repeat !important;
+  image-rendering: pixelated;
+  width: 1.2rem;
+  height: 1.2rem;
+  left: 0.7rem;
+  top: 0.55rem;
+}
+.md-typeset .tip > .admonition-title::before,
+.md-typeset .tip > summary::before {
+  background-image: url("../mc/items/emerald.png") !important;
+}
+.md-typeset .info > .admonition-title::before,
+.md-typeset .info > summary::before {
+  background-image: url("../mc/items/map.png") !important;
+}
+.md-typeset .warning > .admonition-title::before,
+.md-typeset .warning > summary::before,
+.md-typeset .danger > .admonition-title::before,
+.md-typeset .danger > summary::before {
+  background-image: url("../mc/items/barrier.png") !important;
+}
+.md-typeset .admonition.tip, .md-typeset details.tip { border-color: var(--tv-paper-edge); border-left: 6px solid var(--tv-emerald); }
+.md-typeset .admonition.info, .md-typeset details.info { border-color: var(--tv-paper-edge); border-left: 6px solid #3b78c4; }
+.md-typeset .admonition.note, .md-typeset details.note { border-color: var(--tv-paper-edge); border-left: 6px solid var(--tv-wood-light); }
+.md-typeset .admonition.warning, .md-typeset details.warning,
+.md-typeset .admonition.danger, .md-typeset details.danger { border-color: var(--tv-paper-edge); border-left: 6px solid #c43b3b; }
+.md-typeset .admonition-title,
+.md-typeset summary {
+  color: var(--tv-paper-ink);
+}
+
+/* --------------------------------------------------------------- tables */
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+  border: 2px solid var(--md-default-fg-color--lightest);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--md-default-fg-color--lightest);
+}
+.md-typeset table:not([class]) th {
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  background:
+    linear-gradient(rgba(34, 22, 12, 0.5), rgba(34, 22, 12, 0.5)),
+    url("../mc/ui/oak_planks.png") 0 0 / 48px 48px;
+  image-rendering: pixelated;
+}
+.md-typeset table:not([class]) tbody tr:nth-child(even) {
+  background: var(--md-default-fg-color--lightest);
+}
+.md-typeset table:not([class]) tbody tr:hover {
+  background: var(--md-accent-fg-color--transparent);
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------- content tabs */
+.md-typeset .tabbed-labels > label {
+  font-family: var(--tv-pixel);
+  font-size: 0.78rem;
+}
+
+/* ------------------------------------------------------------------ home */
+/* Evening in the village: the villagers meet at the bell and talk. (The Working Villagers
+   wiki shows the day, when they work.) */
+.tv-hero {
+  position: relative;
+  overflow: hidden;
+  margin: -0.4rem 0 2.4rem;
+  padding: 2.6rem 1.6rem 0;
+  text-align: center;
+  border: 2px solid #000;
+  box-shadow: 6px 6px 0 var(--tv-shadow);
+  background: linear-gradient(#4a3f8f, #8e5aa6 30%, #e07a7a 62%, #f7b267 88%);
+}
+[data-md-color-scheme="slate"] .tv-hero {
+  background:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 40%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 44% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 66% 34%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 74% 8%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 92% 46%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 6% 52%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 56% 58%, #fff 50%, transparent 51%),
+    linear-gradient(#070b1f, #1b2552 70%, #34305e);
+}
+/* The setting sun, half behind the hills; at night the moon, high up. */
+.tv-hero__sun {
+  position: absolute;
+  bottom: 1.4rem;
+  left: 9%;
+  width: 7rem;
+  height: 7rem;
+  background: #ffcf5a;
+  box-shadow:
+    0 0 0 0.7rem rgba(255, 190, 90, 0.35),
+    0 0 0 1.5rem rgba(255, 170, 90, 0.18);
+}
+[data-md-color-scheme="slate"] .tv-hero__sun {
+  top: 1.4rem;
+  bottom: auto;
+  left: auto;
+  right: 9%;
+  width: 3.2rem;
+  height: 3.2rem;
+  background: #e8ecf4;
+  box-shadow: inset -0.9rem 0 0 #c7cdd9, 0 0 0 0.5rem rgba(232, 236, 244, 0.12);
+}
+.tv-hero__cloud {
+  position: absolute;
+  height: 1.2rem;
+  background: rgba(255, 214, 220, 0.75);
+  box-shadow: 1.2rem -1.2rem 0 rgba(255, 214, 220, 0.75);
+}
+[data-md-color-scheme="slate"] .tv-hero__cloud {
+  opacity: 0.12;
+}
+.tv-hero__logo {
+  width: 6rem;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.3));
+}
+.md-typeset .tv-hero__title {
+  margin: 0.6rem 0 0.2rem;
+  font-family: var(--tv-pixel);
+  font-weight: 700;
+  font-size: 2.6rem;
+  line-height: 1.1;
+  color: #fff;
+  text-shadow: 4px 4px 0 #3f3f3f;
+}
+.md-typeset .tv-hero__tagline {
+  margin: 0 auto 1.4rem;
+  max-width: 30rem;
+  font-family: var(--tv-pixel);
+  font-size: 1rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+.tv-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1rem;
+}
+.md-typeset .tv-hero__actions .md-button {
+  margin: 0;
+  min-width: 11rem;
+}
+@media screen and (max-width: 44.984375em) {
+  .md-typeset .tv-hero__title {
+    font-size: 1.9rem;
+  }
+  .tv-hero__sun {
+    width: 4rem;
+    height: 4rem;
+  }
+}
+
+/* Entity cards. */
+.tv-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2rem;
+}
+.md-typeset .tv-card {
+  display: flex;
+  flex-direction: column;
+  color: var(--md-default-fg-color);
+  background: var(--tv-paper);
+  border: 2px solid var(--tv-paper-edge);
+  box-shadow: 4px 4px 0 var(--tv-shadow);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.md-typeset a.tv-card:hover,
+.md-typeset a.tv-card:focus-visible {
+  color: var(--md-default-fg-color);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--tv-shadow);
+  border-color: var(--md-accent-fg-color);
+}
+.tv-card__head {
+  width: 5rem;
+}
+.tv-card__station {
+  width: 3.8rem;
+}
+.tv-card__name {
+  padding: 0.6rem 0.8rem 0.1rem;
+  font-family: var(--tv-pixel);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--tv-paper-ink);
+}
+.tv-card__text {
+  padding: 0 0.8rem 0.8rem;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--tv-paper-ink);
+  opacity: 0.85;
+}
+
+/* Steps: numbered tiles with an item in a slot. */
+.md-typeset ol.tv-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0 2rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.md-typeset .tv-steps > li {
+  position: relative;
+  margin: 0;
+  padding: 0.9rem 0.8rem 0.8rem;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  background: var(--md-code-bg-color);
+  border: 2px solid var(--md-default-fg-color--lightest);
+  counter-increment: step;
+}
+.md-typeset .tv-steps > li::marker {
+  content: none;
+}
+.md-typeset .tv-steps > li::before {
+  content: counter(step);
+  position: absolute;
+  top: 0.5rem;
+  right: 0.7rem;
+  font-family: var(--tv-pixel);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--md-default-fg-color--lighter);
+}
+.tv-steps .mc-slot {
+  margin-bottom: 0.5rem;
+}
+.tv-steps strong {
+  display: block;
+  font-family: var(--tv-pixel);
+  font-size: 0.82rem;
+}
+
+/* --------------------------------------------------------------- footer */
+.md-footer {
+  position: relative;
+  margin-top: 14px;
+  background-color: #241910;
+  background-image:
+    linear-gradient(rgba(20, 13, 7, 0.72), rgba(20, 13, 7, 0.72)),
+    url("../mc/ui/dirt.png");
+  background-size: auto, 48px 48px;
+  image-rendering: pixelated;
+}
+.md-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+  background: url("../mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px;
+  image-rendering: pixelated;
+}
+.md-footer-meta {
+  background: rgba(0, 0, 0, 0.35);
+}
+.md-footer__title,
+.md-footer__direction {
+  font-family: var(--tv-pixel);
+}
+.md-copyright {
+  font-size: 0.6rem;
+}
+
+/* -------------------------------------------------------- speech bubbles */
+/* A white chat bubble with a pixel tail, the way the mod's subtitles read. */
+.tv-bubble,
+.tv-say__bubble {
+  position: relative;
+  display: inline-block;
+  max-width: 11rem;
+  padding: 0.3rem 0.55rem 0.35rem;
+  font-family: var(--tv-pixel);
+  font-size: 0.66rem;
+  line-height: 1.3;
+  text-align: center;
+  color: #2b2116;
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.25);
+}
+.tv-bubble::after,
+.tv-say__bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border-style: solid;
+  border-width: 7px 6px 0;
+  border-color: #000 transparent transparent;
+}
+
+/* [[say: head | text]]: a head with a bubble next to it. */
+.tv-say {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+.tv-say__head {
+  width: 4rem;
+  flex: none;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.2));
+}
+.tv-say__bubble {
+  max-width: 28rem;
+  font-size: 0.75rem;
+  text-align: left;
+}
+.tv-say__bubble::after {
+  left: -9px;
+  top: 50%;
+  bottom: auto;
+  margin: -6px 0 0;
+  border-width: 6px 7px 6px 0;
+  border-color: transparent #000 transparent transparent;
+}
+
+/* The witch's picture includes her tall hat, so it is drawn smaller; this evens it out. */
+.tv-head--witch {
+  transform: scale(1.32);
+  transform-origin: 50% 70%;
+}
+
+/* Cards and infoboxes carry a quote above the head. */
+.tv-card__art,
+.tv-infobox__art {
+  flex-wrap: wrap;
+  padding-top: 0.7rem;
+}
+.tv-card__art .tv-bubble,
+.tv-infobox__art .tv-bubble {
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 90%;
+  margin: 0 5% 0.4rem;
+  order: -1;
+}
+.tv-card__art .tv-bubble {
+  flex-basis: 100%;
+  width: auto;
+}
+.tv-infobox__art .tv-bubble {
+  flex-basis: 100%;
+}
+
+/* ------------------------------------------------------- hero villagers */
+.tv-hero__village {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.4rem;
+  margin: 0.6rem -1.6rem 0;
+  padding: 0 1rem 26px;
+  min-height: 8rem;
+}
+.tv-hero__village::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  background:
+    url("../mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px,
+    url("../mc/ui/dirt.png") repeat 0 0 / 32px 32px;
+  image-rendering: pixelated;
+}
+.tv-talker {
+  position: relative;
+  z-index: 1;
+  flex: 0 1 auto;
+  min-width: 2.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 4.8rem;
+}
+.tv-talker > img {
+  width: 100%;
+  margin-bottom: -0.4rem;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.25));
+  animation: tv-bob 2.4s ease-in-out infinite;
+  animation-delay: var(--bob, 0s);
+}
+.tv-talker > .tv-head--witch {
+  animation-name: tv-bob-witch;
+}
+/* One after the other, every talker says its line for a moment. */
+.tv-talker .tv-bubble {
+  position: absolute;
+  bottom: calc(100% - 0.2rem);
+  left: 50%;
+  width: max-content;
+  max-width: 10rem;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: tv-talk 24s steps(1, end) infinite;
+  animation-delay: var(--delay, 0s);
+}
+.tv-talker:nth-of-type(1) .tv-bubble {
+  left: -0.4rem;
+  transform: none;
+}
+.tv-talker:nth-of-type(8) .tv-bubble {
+  left: auto;
+  right: -0.4rem;
+  transform: none;
+}
+@keyframes tv-talk {
+  0% { opacity: 1; }
+  11% { opacity: 0; }
+}
+@keyframes tv-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes tv-bob-witch {
+  0%, 100% { transform: scale(1.32) translateY(0); }
+  50% { transform: scale(1.32) translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-talker > img {
+    animation: none;
+  }
+  .tv-talker .tv-bubble {
+    animation: none;
+  }
+  .tv-talker:nth-of-type(1) .tv-bubble {
+    opacity: 1;
+  }
+}
+@media screen and (max-width: 44.984375em) {
+  .tv-talker:nth-of-type(3),
+  .tv-talker:nth-of-type(4),
+  .tv-talker:nth-of-type(n + 7) {
+    display: none;
+  }
+  .tv-hero__village {
+    gap: 0.3rem;
+  }
+  .tv-talker {
+    width: 3rem;
+  }
+}
+
+/* Event tables are long: keep the event names on one line. */
+.md-typeset td:first-child code {
+  white-space: nowrap;
+}
+.tv-infobox__head--small {
+  width: 3.4rem;
+}
+
+/* On phones the outer talkers' bubbles would leave the hero: anchor them at its edges. */
+@media screen and (max-width: 44.984375em) {
+  .tv-talker:nth-of-type(1) .tv-bubble {
+    left: -0.4rem;
+    transform: none;
+  }
+  .tv-talker:nth-of-type(6) .tv-bubble {
+    left: auto;
+    right: -0.4rem;
+    transform: none;
+  }
+  .tv-talker .tv-bubble {
+    max-width: 8rem;
+  }
+}
+
+/* The meeting point: a bell under a dark oak frame, lanterns at the sides. */
+.tv-bell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: none;
+  width: 4.4rem;
+  height: 6.2rem;
+  margin: 0 0.4rem -0.4rem;
+  border: 0.55rem solid #4a321f;
+  border-bottom: none;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.12), 3px 3px 0 rgba(0, 0, 0, 0.25);
+}
+.tv-bell img {
+  width: 2.8rem;
+  margin-top: 0.1rem;
+  image-rendering: pixelated;
+  transform-origin: 50% 0;
+  animation: tv-ring 4s ease-in-out infinite;
+}
+@keyframes tv-ring {
+  0%, 70%, 100% { transform: rotate(0); }
+  76% { transform: rotate(12deg); }
+  84% { transform: rotate(-9deg); }
+  92% { transform: rotate(4deg); }
+}
+.tv-lantern {
+  position: relative;
+  z-index: 1;
+  flex: 0 1 auto;
+  min-width: 1.6rem;
+  width: 3rem;
+  margin-bottom: -0.3rem;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 0.6rem rgba(255, 200, 90, 0.9));
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-bell img {
+    animation: none;
+  }
+}
+@media screen and (max-width: 44.984375em) {
+  .tv-lantern {
+    display: none;
+  }
+  .tv-bell {
+    width: 2.8rem;
+    height: 4rem;
+    border-width: 0.4rem;
+    border-bottom: none;
+  }
+  .tv-bell img {
+    width: 1.8rem;
+  }
+}

@@ -1,6 +1,6 @@
 # Creating voicepacks
 
-The easiest way is the **web editor**: <https://d4rkm0nkey.github.io/minecraft-talking-villagers/>. It runs completely in your browser – recordings never leave your computer – and works in current Firefox, Chrome and Edge.
+The easiest way is the **web editor**: <https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/>. It runs completely in your browser – recordings never leave your computer – and works in current Firefox, Chrome and Edge.
 
 ## 1. Create a pack
 

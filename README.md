@@ -2,7 +2,9 @@
 
 Villagers, wandering traders, witches and illagers talk – with real recorded voices instead of “hmm”. They greet you, gossip, complain about the rain, scream for help when zombies come, whisper while hiding from a raid, and illagers taunt you in battle.
 
-Voices come in **voicepacks**: single `.voicepack` files you drop into the game. Anyone can record their own in the browser with the [web editor](https://d4rkm0nkey.github.io/minecraft-talking-villagers/).
+Voices come in **voicepacks**: single `.voicepack` files you drop into the game. Anyone can record their own in the browser with the [web editor](https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/).
+
+**Player wiki:** <https://d4rkm0nkey.github.io/minecraft-talking-villagers/>
 
 **Minecraft 26.3 · Fabric and NeoForge · Java 25**
 
@@ -105,9 +107,13 @@ In game: *Voicepacks → Settings*. Files:
 ./gradlew build                 # mod jars in fabric/build/libs and neoforge/build/libs
 ./gradlew :core:buildDefaultPack  # default pack from packs-src/ into core/build/voicepacks
 cd web-editor && npm ci && npm run dev
+python3 -m venv .venv && .venv/bin/pip install -r pages/requirements.txt   # player wiki
+.venv/bin/mkdocs serve -f pages/mkdocs.yml
 ```
 
-Layout: `core` (plain Java: pack format, selection logic, tests), `common` (Minecraft code shared by both loaders), `fabric`, `neoforge`, `web-editor`, `schema`.
+The wiki pictures come from `python3 tools/generate_wiki_assets.py <minecraft client jar>`. The workflow `pages.yml` publishes the wiki at the root of GitHub Pages and the web editor under `/editor/`.
+
+Layout: `core` (plain Java: pack format, selection logic, tests), `common` (Minecraft code shared by both loaders), `fabric`, `neoforge`, `web-editor`, `schema`, `pages` (player wiki).
 
 ## License
 

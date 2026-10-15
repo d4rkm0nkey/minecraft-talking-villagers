@@ -1,0 +1,94 @@
+# The entities that talk, for the cards on the home page and the infoboxes on the entity
+# pages (see hooks/minecraft.py). Values may use :mc-<name>: icons. The events come from
+# schema/events.json, so they are not listed here.
+villager:
+  name: Villager
+  page: entities/villagers.md
+  head: librarian
+  station: lectern
+  summary: Greets you, gossips, talks about work and weather, panics, hides from raids and cheers you on.
+  quote: Hello, traveller!
+  facts:
+    Voices: "male, female, neutral, child"
+    Reacts to: "reputation, profession, weather, time of day, raids, zombies"
+    Language: "per pack, voice or village"
+
+wandering_trader:
+  name: Wandering trader
+  page: entities/wandering-trader.md
+  head: wandering_trader
+  station: hay_block
+  summary: Greets you, haggles over trades and says goodbye before it drinks its invisibility potion.
+  quote: Do you want to buy something?
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "trades, potions"
+    Language: "random or nearest village"
+
+witch:
+  name: Witch
+  page: entities/witch.md
+  head: witch
+  station: cauldron
+  summary: Mutters over her brew, taunts you in battle, heals herself and laughs when she wins.
+  quote: Who will I torture today?
+  facts:
+    Voices: "female by default"
+    Reacts to: "potions, combat, raids, fallen allies"
+    Share of women: "witchFemaleChance"
+
+pillager:
+  name: Pillager
+  page: entities/illagers.md
+  head: pillager
+  station: crossbow
+  summary: Shouts orders on patrol, spots you from afar and loads its crossbow with a threat.
+  quote: There! Get them!
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "patrols, raids, combat"
+
+vindicator:
+  name: Vindicator
+  page: entities/illagers.md
+  head: vindicator
+  station: iron_axe
+  summary: Storms towards you with its axe. Name one "Johnny" and it gets its own lines.
+  quote: Here's Johnny!
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "combat, raids, its name"
+
+evoker:
+  name: Evoker
+  page: entities/illagers.md
+  head: evoker
+  station: totem_of_undying
+  summary: Casts spells, summons vexes and fangs, backs away from you and says "wololo" to blue sheep.
+  quote: Wololo!
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "spells, combat, blue sheep"
+
+illusioner:
+  name: Illusioner
+  page: entities/illagers.md
+  head: illusioner
+  station: bow
+  summary: Creates mirror images, blinds you and mocks you while you look for the real one.
+  quote: Which one of us is real?
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "spells, combat"
+
+# The infobox of the illager page, for all four at once. Not shown as a card.
+illagers:
+  name: Illagers
+  card: false
+  heads: [pillager, vindicator, evoker, illusioner]
+  kinds: [pillager, vindicator, evoker, illusioner]
+  quote: For the raid!
+  facts:
+    Voices: "male, female, neutral"
+    Reacts to: "patrols, raids, combat, spells"
+    In a pack: "illager or each one"

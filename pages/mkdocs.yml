@@ -1,0 +1,111 @@
+site_name: Talking Villagers
+site_description: Villagers, witches, wandering traders and illagers talk with real recorded voices.
+site_url: https://d4rkm0nkey.github.io/minecraft-talking-villagers/
+repo_url: https://github.com/d4rkm0nkey/minecraft-talking-villagers
+repo_name: Talking Villagers
+docs_dir: docs
+copyright: >-
+  Talking Villagers is not an official Minecraft product. Not approved by or associated
+  with Mojang or Microsoft. Minecraft textures © Mojang.
+
+theme:
+  name: material
+  custom_dir: overrides
+  favicon: assets/img/icon.png
+  logo: assets/img/icon.png
+  font:
+    text: Nunito Sans
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Night
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Day
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - toc.follow
+
+hooks:
+  - hooks/minecraft.py
+
+extra_css:
+  - assets/css/extra.css
+
+extra:
+  generator: false
+  social:
+    - icon: material/microphone
+      link: https://d4rkm0nkey.github.io/minecraft-talking-villagers/editor/
+      name: Web editor
+    - icon: fontawesome/brands/github
+      link: https://github.com/d4rkm0nkey/minecraft-talking-villagers
+      name: Source code and issues
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: installation.md
+      - Your first voices: getting-started.md
+  - Who talks:
+      - Voices and personalities: talking/voices.md
+      - Villagers: entities/villagers.md
+      - Wandering trader: entities/wandering-trader.md
+      - Witch: entities/witch.md
+      - Illagers: entities/illagers.md
+      - Languages and villages: talking/languages.md
+  - Playing:
+      - The voicepack screen: playing/voicepack-screen.md
+      - Servers and multiplayer: playing/servers.md
+      - Coming from version 1: playing/version-1.md
+      - No voices?: playing/troubleshooting.md
+  - Making voicepacks:
+      - The web editor: making/web-editor.md
+      - Recording good voices: making/recording.md
+      - All events: making/events.md
+      - Voicepack format: making/format.md
+  - Reference:
+      - Configuration: configuration.md
+      - Commands: commands.md
+      - Beta notes: beta.md

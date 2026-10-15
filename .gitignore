@@ -33,3 +33,8 @@ remappedSrc/
 web-editor/node_modules/
 web-editor/dist/
 web-editor/build/
+
+# wiki
+__pycache__/
+/site/
+.venv/
