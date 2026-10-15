@@ -9,7 +9,12 @@
 </div>
 
 <style>
-  .meter { height: 10px; border-radius: 5px; background: var(--bg); border: 1px solid var(--border); overflow: hidden; }
-  .bar { height: 100%; background: var(--accent); transition: width 60ms linear; }
-  .clipping .bar { background: var(--record); }
+  /* Like the experience bar: green segments in a dark frame. */
+  .meter { position: relative; height: 12px; background: #1f1f1f; border: 2px solid #000; overflow: hidden; }
+  .meter::after {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 calc(5% - 2px), #000 calc(5% - 2px) 5%);
+  }
+  .bar { height: 100%; background: linear-gradient(#b4ff6e, #6ccf2e 50%, #3c8f12); transition: width 60ms linear; }
+  .clipping .bar { background: linear-gradient(#ff8a80, #e53935 50%, #9b1c1c); }
 </style>

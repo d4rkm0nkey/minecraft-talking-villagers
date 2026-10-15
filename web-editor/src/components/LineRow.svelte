@@ -104,7 +104,9 @@
 </div>
 
 <style>
-  .line { border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
+  .line { background: var(--bg); border: 2px solid var(--border); padding: 8px; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
+  .line:hover { border-color: var(--edge); }
+  summary { font-family: inherit; }
   .professions { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 6px 0; }
-  .placeholder { height: 56px; border-radius: 4px; background: var(--bg); }
+  .placeholder { height: 56px; background: var(--panel); }
 </style>

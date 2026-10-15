@@ -10,6 +10,7 @@
   import Problems from "./Problems.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
   import { locale, t } from "../lib/i18n/index.svelte";
+  import { item, voiceHead } from "../lib/art";
 
   let { project, onback, onvoice }: { project: Project; onback: () => void; onvoice: (voiceId: string) => void } = $props();
   let voiceName = $state("");
@@ -82,14 +83,14 @@
   }
 </script>
 
-<div class="row spread" style="margin-bottom: 12px">
+<div class="title-bar">
   <button onclick={onback}>← {t("common.back")}</button>
-  <h2 style="margin: 0">{project.name}</h2>
+  <h2>{#if project.icon}<img src={project.icon} alt="" />{/if}{project.name}</h2>
   <span></span>
 </div>
 
 <section class="panel">
-  <h2>{t("pack.details")}</h2>
+  <h2><img src={item("name_tag")} alt="" />{t("pack.details")}</h2>
   <div class="grid">
     <label>{t("start.name")}<input type="text" bind:value={project.name} oninput={() => touch(project)} /></label>
     <label>{t("pack.id")}<input type="text" bind:value={project.packId} oninput={() => touch(project)} /></label>
@@ -112,27 +113,30 @@
       <input type="text" value={project.authors.join(", ")}
              oninput={(e) => { project.authors = e.currentTarget.value.split(",").map((a) => a.trim()).filter(Boolean); touch(project); }} />
     </label>
-    <label>
+    <div class="field">
       {t("pack.icon")}
       <span class="row">
         {#if project.icon}<img src={project.icon} alt="" width="40" height="40" />{/if}
-        <input type="file" accept="image/*" onchange={chooseIcon} />
+        <label class="file"><input type="file" accept="image/*" onchange={chooseIcon} /><span class="button">{t("pack.icon.choose")}</span></label>
       </span>
-    </label>
+    </div>
   </div>
   <label style="margin-top: 8px">{t("pack.description")}<input type="text" bind:value={project.description} oninput={() => touch(project)} /></label>
 </section>
 
 <section class="panel">
-  <h2>{t("pack.voices")}</h2>
+  <h2><img src={item("goat_horn")} alt="" />{t("pack.voices")}</h2>
   {#if project.voices.length === 0}<p class="muted">{t("pack.no_voices")}</p>{/if}
   {#each project.voices as voice, index (voice.id)}
-    <div class="row spread voice">
-      <span>
-        <strong>{voice.name}</strong>
-        <span class="muted">· {t(`gender.${voice.gender}`)}{voice.child ? ` · ${t("voice.child")}` : ""} ·
-          {voice.entities.map((entity) => t(`entity.${entity}`)).join(", ")} · {voice.lines.length} ♪</span>
-      </span>
+    <div class="row spread list-item">
+      <button class="plain voice" onclick={() => onvoice(voice.id)}>
+        <img class="head" class:witch={voice.entities[0] === "witch"} src={voiceHead(voice.entities)} alt="" width="56" height="56" />
+        <span>
+          <strong>{voice.name}</strong> <span class="chip">{voice.lines.length} ♪</span><br />
+          <span class="muted small">{t(`gender.${voice.gender}`)}{voice.child ? ` · ${t("voice.child")}` : ""} ·
+            {voice.entities.map((entity) => t(`entity.${entity}`)).join(", ")}</span>
+        </span>
+      </button>
       <span class="row">
         <button onclick={() => onvoice(voice.id)}>{t("pack.open_voice")}</button>
         <button class="danger icon" onclick={() => removeVoice(index)} aria-label={t("common.delete")}>✕</button>
@@ -151,12 +155,12 @@
 </section>
 
 <section class="panel">
-  <h2>{t("pack.processing")}</h2>
+  <h2><img src={item("redstone")} alt="" />{t("pack.processing")}</h2>
   <ProcessingSettings {project} />
 </section>
 
 <section class="panel">
-  <h2>{t("pack.check")}</h2>
+  <h2><img src={item("spyglass")} alt="" />{t("pack.check")}</h2>
   <Problems {problems} />
   <div class="row" style="margin-top: 12px">
     <button class="primary" disabled={errors > 0 || (exportState && !exportState.message && !exportState.error)} onclick={startExport}>
@@ -172,5 +176,9 @@
 </section>
 
 <style>
-  .voice { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .voice { display: flex; gap: 14px; align-items: center; flex: 1; }
+  .voice strong { font-family: var(--pixel); font-size: 1.05rem; font-weight: 600; }
+  progress { width: 200px; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+  .field img { border: 2px solid var(--edge); }
 </style>

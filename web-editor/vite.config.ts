@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       $schema: fileURLToPath(new URL("../schema", import.meta.url)),
+      // textures of the wiki (tools/generate_wiki_assets.py), shared so both look alike
+      $mc: fileURLToPath(new URL("../pages/docs/assets/mc", import.meta.url)),
     },
   },
   server: {
