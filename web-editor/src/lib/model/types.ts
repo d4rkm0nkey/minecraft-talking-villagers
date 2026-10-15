@@ -71,6 +71,8 @@ export interface Project {
   noiseProfileAudioId?: string;
   created: number;
   modified: number;
+  /** When the project was last exported as .voicepack; until then it exists only in this browser. */
+  exported?: number;
 }
 
 export const DEFAULT_PROCESSING: Processing = {

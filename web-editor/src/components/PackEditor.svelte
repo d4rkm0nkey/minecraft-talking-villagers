@@ -71,6 +71,8 @@
       if (data.type === "progress") exportState = { done: data.done, total: data.total };
       if (data.type === "done") {
         download(data.bytes, fileName(project));
+        touch(project);
+        project.exported = project.modified;
         exportState = { done: total, total, message: t("pack.exported") };
         worker.terminate();
       }

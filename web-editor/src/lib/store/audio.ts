@@ -1,6 +1,7 @@
 import { del, get, set, setMany } from "idb-keyval";
 import type { Audio } from "../audio/process";
 import { oggDuration } from "../audio/ogg";
+import { reportError } from "./status.svelte";
 
 /**
  * Raw recordings in IndexedDB, kept separate from the project JSON. Recordings are never changed after saving.
@@ -32,12 +33,12 @@ export function setDecoder(value: Decoder): void {
 
 export async function saveAudio(id: string, audio: Audio): Promise<void> {
   cache.set(id, Promise.resolve(audio));
-  await set(key(id), { sampleRate: audio.sampleRate, data: audio.data, ogg: audio.ogg } satisfies Stored);
+  await set(key(id), { sampleRate: audio.sampleRate, data: audio.data, ogg: audio.ogg } satisfies Stored).catch(reportError);
 }
 
 /** Stores original Ogg files in one transaction, without decoding them. */
 export async function saveOriginals(entries: { id: string; ogg: Uint8Array }[]): Promise<void> {
-  await setMany(entries.map(({ id, ogg }) => [key(id), { ogg, duration: oggDuration(ogg) } satisfies Stored]));
+  await setMany(entries.map(({ id, ogg }) => [key(id), { ogg, duration: oggDuration(ogg) } satisfies Stored])).catch(reportError);
 }
 
 export function loadAudio(id: string): Promise<Audio | undefined> {
