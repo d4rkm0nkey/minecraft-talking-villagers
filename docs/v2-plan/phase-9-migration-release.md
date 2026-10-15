@@ -35,7 +35,7 @@ Umgesetzt auf Branch `v2/phase-9` (abgeleitet von `v2/phase-8`).
 **Doku und Release**
 - README ist neu geschrieben. Neu sind `docs/voicepack-format.md` (Event-Tabelle aus dem `EventCatalog` erzeugt), `docs/creating-voicepacks.md` und `CHANGELOG.md`.
 - Die Version ist jetzt `2.0.0-beta.1`. Der Build hängt `+mc26.3` an, die JARs heißen `talkingvillagers-<loader>-<version>.jar`.
-- `.github/workflows/publish.yml` (mc-publish für Modrinth, CurseForge und GitHub) läuft bei Tags `v*`. Die Projekt-IDs sind Platzhalter, die Secrets `MODRINTH_TOKEN` und `CURSEFORGE_TOKEN` müssen noch angelegt werden.
+- `.github/workflows/publish.yml` (mc-publish für Modrinth, CurseForge und GitHub) läuft bei Tags `v*`. Projekt-IDs: Modrinth `Z8M6Cpvw`, CurseForge `466752`. Die Secrets `MODRINTH_TOKEN` und `CURSEFORGE_TOKEN` sind angelegt.
 - `DownloadClientGameTest` läuft nur mit `TV_TEST_SERVER=localhost:25565` gegen einen laufenden Dev-Server. Er bricht einen Download per Verbindungsabbruch ab und prüft, dass der Cache leer bleibt. Danach lädt er vollständig herunter und prüft, dass das Pack nicht aktiv wird.
 
 **Offen:** Beta auf Modrinth, Testmatrix unten, Aufnahmen für das Default-Pack.

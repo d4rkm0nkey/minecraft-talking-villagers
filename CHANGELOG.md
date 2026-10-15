@@ -1,8 +1,10 @@
 # Changelog
 
-## 2.0.0 – unreleased
+## 2.0.0-beta.1 – 2026-10-15
 
-Complete rewrite for Minecraft 26.3 on Fabric and NeoForge.
+Complete rewrite for Minecraft 26.3 on Fabric and NeoForge. First beta: please report bugs on GitHub.
+
+The default voicepack *TeaJay Default* 0.1.0 is a separate download, attached to this release.
 
 ### Added
 - **Voicepacks** as single `.voicepack` files in `.minecraft/voicepacks/`, with a JSON schema. No resource pack or config file per voice any more.
@@ -15,7 +17,7 @@ Complete rewrite for Minecraft 26.3 on Fabric and NeoForge.
 - **Languages:** one language per pack or voice; optional language per village; children inherit a parent's language, villagers keep theirs when they move; settings for traders and raids.
 - **Commands** `/talkingvillagers` (`/tv`): show and change voices, genders and languages, let entities speak, watch spoken lines.
 - **Multiplayer:** the server is authoritative. Players without the server's packs are offered a download (through the game connection with a bandwidth limit, or from a web server). Players without the mod hear vanilla sounds.
-- **Migration:** version 1 resource packs can be converted in game and in the web editor; villagers in old worlds keep their voice through `legacyIds`.
+- **Migration:** version 1 resource packs can be converted in game and in the web editor; villagers in old worlds keep their voice through `legacyIds`. With the new default pack they get a new voice.
 - Subtitles with the spoken text, client volume setting, limit for entities talking at the same time.
 
 ### Changed

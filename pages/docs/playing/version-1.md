@@ -23,8 +23,9 @@ add lines or fix them before you convert.
 
 ## Old worlds
 
-Villagers in old worlds keep their voice if the new pack lists the old voice name in
-`legacyIds`. The converted packs and the default pack do.
+Villagers in old worlds keep their voice if a voice in the new pack has the old voice
+name as id or lists it in `legacyIds`. Converted packs do. With the new default pack,
+old villagers get a new voice the first time they are loaded.
 
 ## What you can delete
 

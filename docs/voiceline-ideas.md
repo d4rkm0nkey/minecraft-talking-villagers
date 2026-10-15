@@ -157,18 +157,21 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] (yawns) Finally.
 - [ ] Don't let the phantoms bite.
 - [ ] Nobody touch my bed. Ever.
+- [ ] Bed. My one true love.
 
 **`wake_up`** – wacht auf · 1 Variante
 - [ ] (yawn) Already?
 - [ ] Good morning, world!
 - [ ] Five more minutes…
 - [ ] Who moved my workstation?
+- [ ] I dreamed I was a chicken. It was great.
 
 **`love`** – Villager bekommen ein Kind · 1 Variante
 - [ ] A baby! We have a baby!
 - [ ] I'm going to be the best parent ever.
 - [ ] We need more beds.
 - [ ] It has my nose!
+- [ ] Another mouth to feed. Totally worth it.
 
 **`grow_up`** – ein Kind ist gerade erwachsen geworden und sagt das schon mit dieser Stimme · 1 · Ideen siehe [Villager-Kind](#villager-kind)
 
@@ -195,6 +198,7 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] Run!
 - [ ] Aaaah!
 - [ ] Not again!
+- [ ] Everybody stay calm! AAAAH!
 
 **`panic_loop`** – wiederholt, solange die Panik anhält · 5+ Varianten · sonst `panic`
 - [ ] Help! Help!
@@ -203,28 +207,37 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] I'm too young to die!
 - [ ] (panicked screaming)
 - [ ] Get away from me!
+- [ ] Why is it always our village?!
+- [ ] I left the furnace on!
+- [ ] Run! No, the other way!
 
 **`spot_zombie`** – Panik wegen eines Zombies · sonst `panic`
 - [ ] Zombie! Zombie!
 - [ ] It's one of the green ones!
 - [ ] Don't bite me, I taste terrible!
 - [ ] Uncle Bob? Is that you?
+- [ ] It wants my brain! Joke's on it.
 
 **`spot_raider`** – Panik wegen Illagern · sonst `panic`
 - [ ] Pillagers! Hide!
 - [ ] It's those grumpy guys again!
 - [ ] Lock the doors!
+- [ ] The grey guys are back!
+- [ ] Crossbows! Why do they always have crossbows?
 
 **`pre_raid`** – die Glocke läutet wegen eines Raids · sonst `panic`
 - [ ] Raid! Everybody, get inside!
 - [ ] They're coming! Ring the bell!
 - [ ] Hide the emeralds!
+- [ ] That's not the dinner bell!
 
 **`hide`** – im Versteck, wird geflüstert · 1–3 Varianten
 - [ ] (whispering) Shh… they'll hear us.
 - [ ] (whispering) Is it over yet?
 - [ ] (whispering) I can hear them outside…
 - [ ] (whispering) Please don't open the door.
+- [ ] (whispering) I'm not here. I'm a cupboard.
+- [ ] (whispering) Who invited the guy with the axe?
 
 **`attacked_by_player`** – ein Spieler schlägt zu · sonst `hurt`
 - [ ] Hey! What was that for?
@@ -237,6 +250,9 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] He still owed me three emeralds…
 - [ ] Rest in peace, friend.
 - [ ] Who's going to do his job now?
+- [ ] No! Not my neighbour!
+- [ ] Who's going to water the potatoes now?
+- [ ] (sobbing) They were the only one who liked my jokes.
 
 **`cheer`** – Spieler kämpft in der Nähe gegen ein Monster · 3 Varianten
 - [ ] Get him!
@@ -245,6 +261,7 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] You can do it!
 - [ ] Show it who's boss!
 - [ ] Watch out, behind you! No, the other behind!
+- [ ] Bonk it on the head!
 
 **`monster_killed`** – Spieler hat das Monster getötet · 3 Varianten · sonst `cheer`
 - [ ] Well done!
@@ -253,6 +270,7 @@ Eine Stimme für erwachsene Villager. Gilt für männliche und weibliche Stimmen
 - [ ] And stay dead!
 - [ ] That's what you get!
 - [ ] I could have done that. Probably.
+- [ ] Can I have its stuff?
 
 ---
 
@@ -267,13 +285,14 @@ Bei V1 sind viele Berufszeilen aufgenommen, aber ohne Text. Die Namen in Klammer
 - [x] Toolsmith: (garden project) · (lock chest) · (sword) · (tools) · (tools are weapons)
 - [x] Weaponsmith: (dangerous world) · (quarrel) · (right weapon) · (sharp sword) · (throw axe)
 - [ ] Hot! Hot! Hot!
-- [ ] Iron, iron, always iron. Nobody wants copper.
+- [ ] Iron, iron, always iron. Nobody wants a good copper axe.
 
 **Metzger** – [x] (do it for you) · (fresh meat) · (sharp) · (solution)
 - [ ] I name all my pigs. That's my mistake.
 
 **Kartograf** – [x] (compass) · (directions) · (don't get lost)
 - [ ] There's a whole world out there. I've drawn most of it. Badly.
+- [ ] I don't understand this map. This island looks like a horse. Wait. This is the picture my child has drawn.
 
 **Kleriker** – [x] (deceiving desires) · (faith protects) · (good heart) · (greed) · (pray for you) · (redstone) · (sinner) · (trust faith) · (truthful)
 - [ ] Rotten flesh is good for you. Spiritually.
@@ -363,6 +382,8 @@ Eine eigene Stimme mit „Kinderstimme“ angehakt. Kinder sagen dieselben Event
 - [ ] Finally! I can get a job!
 - [ ] Did my voice just change?
 - [ ] I feel… responsible. I don't like it.
+- [ ] I'm a grown-up! Do I have to work now?
+- [ ] Finally tall enough to reach the top shelf.
 
 ---
 
@@ -630,6 +651,41 @@ Zusätzlich zu den allgemeinen Illager-Events.
 - [ ] All work and no play makes Johnny a dull boy!
 - [ ] Everything must go! With my axe!
 
+Eigene Zeilen für Events aus [Illager allgemein](#illager-allgemein). Brutal und wortkarg, alles dreht sich um die Axt.
+
+**`spot_player`**
+- [ ] Oh, a visitor. My axe loves visitors.
+- [ ] You! Stand still, I need to measure you for chopping.
+
+**`attack`**
+- [ ] Chop!
+- [ ] Timber!
+- [ ] (grunt) Hyah!
+
+**`celebrate`**
+- [ ] Hahaha! Smash everything!
+- [ ] Good raid. Good axe.
+
+**`raid_horn`**
+- [ ] Axes up!
+- [ ] Finally! Chopping time!
+
+**`victory`**
+- [ ] Chopped.
+- [ ] Next!
+
+**`lost_target`**
+- [ ] Come back! I just want to talk! With my axe.
+- [ ] Run, then. My axe is patient.
+
+**`low_health`**
+- [ ] Just… a scratch…
+- [ ] Axe… getting… heavy…
+
+**`ally_died`**
+- [ ] I'll chop them for that!
+- [ ] He was a good axe man.
+
 ---
 
 ## Evoker
@@ -655,6 +711,28 @@ Zusätzlich zu den allgemeinen Illager-Events.
 - [ ] Wololooo!
 - [ ] Red is much better.
 
+Eigene Zeilen für Events aus [Illager allgemein](#illager-allgemein). Arroganter Zauberer, hält alle anderen für Handlanger.
+
+**`raid_horn`**
+- [ ] Let the ritual begin!
+- [ ] Bring me their emeralds!
+
+**`lost_target`**
+- [ ] Run, little one. My vexes will find you.
+- [ ] Fled? How predictable.
+
+**`low_health`**
+- [ ] You dare… wound ME?
+- [ ] Fall back! My robe is ruined!
+
+**`victory`**
+- [ ] Pathetic.
+- [ ] Exactly as I foresaw.
+
+**`ally_died`**
+- [ ] Fool. I told him to stay behind me.
+- [ ] Another one? I'm running out of minions.
+
 ---
 
 ## Illusioner
@@ -671,3 +749,62 @@ Zusätzlich zu den allgemeinen Illager-Events.
 **`blindness`** – Blindheitszauber · sonst `cast_spell`
 - [ ] Lights out!
 - [ ] Can you see me now? No? Good.
+
+Eigene Zeilen für Events aus [Illager allgemein](#illager-allgemein). Bühnenzauberer, behandelt den Kampf als Show.
+
+**`ambient`**
+- [ ] (mysterious humming)
+- [ ] Hm-hm-hm… abracadabra…
+- [ ] (snaps fingers)
+
+**`idle`**
+- [ ] Nobody appreciates real magic anymore.
+- [ ] I've been practising this trick for weeks.
+- [ ] Is anyone even watching?
+
+**`patrol`**
+- [ ] Why am I walking? I'm a magician!
+- [ ] My feet hurt. Magicians don't walk.
+
+**`patrol_leader`**
+- [ ] Follow the cape!
+- [ ] Stay close. And don't touch the hat.
+
+**`spot_player`**
+- [ ] Ah, a volunteer from the audience!
+- [ ] Ladies and gentlemen, our next victim!
+
+**`attack`**
+- [ ] Pick an arrow! Any arrow!
+- [ ] Hah!
+
+**`combat`**
+- [ ] Now you see me…
+- [ ] Keep your eyes on me! All of me!
+- [ ] Tough crowd.
+
+**`raid_horn`**
+- [ ] Showtime!
+- [ ] Places, everyone! The show begins!
+
+**`raid_idle`**
+- [ ] Come out, come out! The show must go on!
+- [ ] Knock knock. It's magic.
+
+**`lost_target`**
+- [ ] He vanished! That's MY trick!
+
+**`low_health`**
+- [ ] This was not part of the act…
+- [ ] Intermission! Intermission!
+
+**`victory`**
+- [ ] Ta-daa!
+- [ ] And he's gone! Applause, please.
+
+**`ally_died`**
+- [ ] That's not how the disappearing trick works!
+
+**`celebrate`**
+- [ ] Thank you, thank you! I'm here all week!
+- [ ] And for my final trick: the village disappears!
