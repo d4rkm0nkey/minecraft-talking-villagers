@@ -74,6 +74,7 @@
       {voice}
       onback={() => (view = { name: "pack", projectId: project.id })}
       onstudio={(event, profession) => (view = { name: "studio", projectId: project.id, voiceId: voice.id, event, profession })}
+      onrename={(voiceId) => (view = { name: "voice", projectId: project.id, voiceId })}
     />
   {:else if view.name === "studio" && voice}
     <Studio {project} {voice} initialEvent={view.event} profession={view.profession} onback={() => (view = { name: "voice", projectId: project.id, voiceId: voice.id })} />
