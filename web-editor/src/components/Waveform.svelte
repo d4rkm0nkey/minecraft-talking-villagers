@@ -78,6 +78,9 @@
 </div>
 
 <style>
-  .wave { width: 100%; cursor: ew-resize; touch-action: none; }
-  canvas { display: block; border-radius: 4px; background: var(--bg); }
+  .wave {
+    width: 100%; cursor: ew-resize; touch-action: none; background: var(--panel);
+    border: 2px solid; border-color: var(--slot-dark) var(--slot-light) var(--slot-light) var(--slot-dark);
+  }
+  canvas { display: block; }
 </style>

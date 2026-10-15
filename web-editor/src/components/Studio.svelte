@@ -15,6 +15,7 @@
   import { processLine } from "../lib/audio/process";
   import { noiseProfile } from "../lib/audio/spectralGate";
   import { t } from "../lib/i18n/index.svelte";
+  import { item, voiceHead } from "../lib/art";
 
   /** @param profession new lines are only for villagers with this profession */
   let { project, voice, initialEvent, profession, onback }: { project: Project; voice: Voice; initialEvent: string; profession?: string; onback: () => void } = $props();
@@ -263,13 +264,14 @@
 
 <svelte:window onkeydown={keydown} />
 
-<div class="row spread" style="margin-bottom: 12px">
+<div class="title-bar">
   <button onclick={onback}>← {voice.name}</button>
-  <h2 style="margin: 0">{t("studio.title", { voice: voice.name })}</h2>
+  <h2>{t("studio.title", { voice: voice.name })}</h2>
   <span class="muted">{#if profession}<span class="chip">{t(`profession.${profession}`)}</span> {/if}{recorded} ♪</span>
 </div>
 
 <section class="panel">
+  <h2><img src={item("goat_horn")} alt="" />{t("studio.setup")}</h2>
   <div class="row">
     <label style="flex: 1">{t("studio.microphone")}
       <select bind:value={microphone} onchange={() => micReady && enableMicrophone()}>
@@ -296,13 +298,13 @@
 </section>
 
 <details class="panel">
-  <summary><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
+  <summary><img src={item("redstone")} alt="" /><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
   <ProcessingSettings {project} compact />
 </details>
 
 {#if phase === "setup"}
   <section class="panel">
-    <h2>{t("studio.script")}</h2>
+    <h2><img src={item("writable_book")} alt="" />{t("studio.script")}</h2>
     <p class="muted small">{t("studio.script.hint", { event: initialEvent })}</p>
     <p class="muted small">{t("studio.script.events")} {allowed.join(", ")}</p>
     <textarea bind:value={script} placeholder={`${initialEvent}: …\n${initialEvent}: …\nhurt:\nhurt:`}></textarea>
@@ -325,12 +327,15 @@
       {/if}
       <span class="muted">{t("studio.current", { index: index + 1, total: queue.length })}</span>
     </div>
-    <div class="text">
-      {#if phase === "countdown"}
-        <span class="countdown">{countdown}</span>
-      {:else}
-        {current?.text || t(`event.${current?.event}`)}
-      {/if}
+    <div class="say">
+      <img class="head" class:witch={voice.entities[0] === "witch"} src={voiceHead(voice.entities, profession)} alt="" width="128" height="128" />
+      <div class="bubble text">
+        {#if phase === "countdown"}
+          <span class="countdown">{countdown}</span>
+        {:else}
+          {current?.text || t(`event.${current?.event}`)}
+        {/if}
+      </div>
     </div>
     {#if next}<div class="muted small">{t("studio.next", { text: next.text || next.event })}</div>{/if}
     <div class="status">
@@ -367,12 +372,22 @@
   .prompter { text-align: center; }
   .prompter .row { justify-content: center; }
   .prompter .row.spread { justify-content: space-between; }
-  .prompter.recording { border-color: var(--record); box-shadow: 0 0 0 2px var(--record) inset; }
-  .text { font-size: 2rem; line-height: 1.3; margin: 24px 0 12px; min-height: 2.6em; }
+  .prompter.recording { border-color: var(--record); box-shadow: 0 0 0 2px var(--record) inset, 4px 4px 0 var(--shadow); }
+  .say { justify-content: center; margin: 28px 0 16px; }
+  .say .head { flex-shrink: 0; }
+  .text { font-size: 1.9rem; line-height: 1.3; min-height: 2.6em; display: flex; align-items: center; justify-content: center; max-width: 640px; }
+  .recording .bubble { border-color: var(--record); }
+  .recording .bubble::after { border-right-color: var(--record); }
   .event { width: auto; }
   .trim { margin-bottom: 12px; }
   .trim p { margin: 4px 0 0; }
   .countdown { font-size: 3rem; font-weight: bold; }
   .status { margin: 12px 0; min-height: 1.5em; }
-  .rec { color: var(--record); font-weight: bold; }
+  .rec { color: var(--record); font-family: var(--pixel); font-weight: 600; animation: blink 1s steps(1, end) infinite; }
+  @keyframes blink { 50% { opacity: 0.35; } }
+  @media (prefers-reduced-motion: reduce) { .rec { animation: none; } }
+  @media (max-width: 600px) {
+    .say .head { width: 72px; height: 72px; }
+    .text { font-size: 1.3rem; }
+  }
 </style>

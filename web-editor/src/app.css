@@ -1,66 +1,246 @@
+/* Minecraft look shared with the wiki (pages/docs/assets/css/extra.css). */
 :root {
-  --bg: #f6f3ee;
-  --panel: #ffffff;
-  --text: #2b2620;
-  --muted: #6f665c;
-  --border: #ddd5ca;
-  --accent: #3f7d3a;
-  --accent-text: #ffffff;
+  --pixel: "Pixelify Sans", "Nunito Sans", system-ui, sans-serif;
+
+  --bg: #fdfaf2;
+  --panel: #f6eed6;
+  --panel-deep: #ece0ba;
+  --edge: #baa070;
+  --text: #2b2116;
+  --muted: #6f5f49;
+  --border: #d9cba5;
+  --field: #fffdf6;
+  --slot-dark: #8b7a5c;
+  --slot-light: #fffaf0;
+  --shadow: rgba(40, 26, 15, 0.18);
+  --accent: #0d7a35;
+  --accent-soft: rgba(15, 138, 60, 0.12);
   --danger: #b3352f;
   --warning: #9a6a00;
-  --wave: #3f7d3a;
-  --wave-trim: rgba(0, 0, 0, 0.08);
+  --wave: #17a24a;
+  --wave-trim: rgba(43, 33, 22, 0.1);
   --record: #c62828;
-  color-scheme: light dark;
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1d1b18;
-    --panel: #282521;
-    --text: #ede6dc;
-    --muted: #a99f92;
-    --border: #3d3832;
-    --accent: #6fb267;
-    --accent-text: #10200e;
+    --bg: #1c1915;
+    --panel: #2a241b;
+    --panel-deep: #352d21;
+    --edge: #6e5a3a;
+    --text: #efe3c8;
+    --muted: #b3a488;
+    --border: #4a3e2c;
+    --field: #15120e;
+    --slot-dark: #0b0907;
+    --slot-light: #5a4a33;
+    --shadow: rgba(0, 0, 0, 0.45);
+    --accent: #5fe08f;
+    --accent-soft: rgba(65, 224, 127, 0.12);
     --danger: #ef6f68;
     --warning: #e3b341;
-    --wave: #6fb267;
-    --wave-trim: rgba(255, 255, 255, 0.08);
+    --wave: #41e07f;
+    --wave-trim: rgba(240, 232, 216, 0.1);
+    color-scheme: dark;
   }
 }
+
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
-main { max-width: 1000px; margin: 0 auto; padding: 16px; }
-h1 { font-size: 1.5rem; margin: 0; }
-h2 { font-size: 1.15rem; margin: 0 0 8px; }
-h3 { font-size: 1rem; margin: 0; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 "Nunito Sans", system-ui, sans-serif; }
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 24px 16px 40px; }
+h1, h2, h3, summary, .pixel { font-family: var(--pixel); letter-spacing: 0.01em; }
+h1 { font-size: 1.5rem; margin: 0; font-weight: 600; }
+h2 { font-size: 1.2rem; margin: 0 0 10px; font-weight: 600; }
+h3 { font-size: 1rem; margin: 0; font-weight: 500; }
 a { color: var(--accent); }
+img.pixelated, .pixelated img { image-rendering: pixelated; }
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .spread { justify-content: space-between; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
-label.inline { flex-direction: row; align-items: center; gap: 6px; }
-input[type="text"], input[type="number"], select, textarea {
-  font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; width: 100%;
-}
-textarea { min-height: 140px; resize: vertical; }
-button {
-  font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--panel); color: var(--text);
-  border-radius: 6px; padding: 6px 12px;
-}
-button:hover:not(:disabled) { border-color: var(--accent); }
-button:disabled { opacity: 0.5; cursor: default; }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-button.danger { color: var(--danger); }
-button.icon { padding: 4px 8px; min-width: 34px; }
 .error { color: var(--danger); }
 .warning { color: var(--warning); }
-.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.8rem; }
-header.top .brand { display: flex; align-items: center; gap: 12px; }
-header.top .brand img { border-radius: 10px; flex-shrink: 0; }
-header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 details > summary { cursor: pointer; }
-@media (max-width: 600px) { main { padding: 12px; } }
+
+/* ---------------------------------------------------------------- panels */
+.panel {
+  background: var(--panel);
+  border: 2px solid var(--edge);
+  box-shadow: 4px 4px 0 var(--shadow);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+/* A panel title on a strip of oak planks, like the wiki's infoboxes and tables. */
+.panel > h2:first-child,
+.panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -16px -16px 14px;
+  padding: 6px 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+  background:
+    linear-gradient(rgba(34, 22, 12, 0.45), rgba(34, 22, 12, 0.45)),
+    url("$mc/ui/oak_planks.png") 0 0 / 48px 48px;
+  image-rendering: pixelated;
+}
+.panel > summary { list-style: none; margin-bottom: 0; }
+.panel > summary::-webkit-details-marker { display: none; }
+.panel > summary::before { content: "▶"; font-size: 0.7em; transition: transform 0.1s; }
+.panel[open] > summary { margin-bottom: 14px; }
+details.panel:not([open]) > summary { margin-bottom: -16px; }
+.panel[open] > summary::before { transform: rotate(90deg); }
+.panel > summary .muted { color: rgba(255, 255, 255, 0.75); font-family: "Nunito Sans", sans-serif; text-shadow: none; }
+.panel > h2 img, .panel > summary img { width: 22px; height: 22px; image-rendering: pixelated; }
+
+/* ---------------------------------------------------------------- fields */
+label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+label.inline { flex-direction: row; align-items: center; gap: 6px; }
+/* Sunken like an inventory slot. */
+input[type="text"], input[type="number"], select, textarea {
+  font: inherit; color: inherit; width: 100%;
+  background: var(--field);
+  border: 2px solid;
+  border-color: var(--slot-dark) var(--slot-light) var(--slot-light) var(--slot-dark);
+  border-radius: 0;
+  padding: 5px 8px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+textarea { min-height: 140px; resize: vertical; }
+input[type="checkbox"], input[type="range"], progress { accent-color: var(--wave); }
+input[type="checkbox"] { width: 16px; height: 16px; margin: 0; }
+
+/* --------------------------------------------------------------- buttons */
+/* Minecraft buttons: the GUI texture as a border image, white text with a shadow. */
+button, .button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--pixel); font-size: 0.95rem; font-weight: 500; line-height: 1.2;
+  color: #fff; text-shadow: 2px 2px 0 #3f3f3f;
+  cursor: pointer;
+  padding: 3px 12px;
+  background: none;
+  border-style: solid;
+  border-width: 5px;
+  border-radius: 0;
+  border-image: url("$mc/ui/button.png") 3 fill / 5px stretch;
+  image-rendering: pixelated;
+}
+button:hover:not(:disabled), button:focus-visible, .button:hover, .file input:focus-visible + .button {
+  color: #ffffa0;
+  border-image-source: url("$mc/ui/button_highlighted.png");
+  outline: none;
+}
+button:disabled { color: #a0a0a0; text-shadow: none; cursor: default; opacity: 0.6; }
+button.primary { border-image-source: url("$mc/ui/button_green.png"); }
+button.primary:hover:not(:disabled), button.primary:focus-visible { border-image-source: url("$mc/ui/button_highlighted_green.png"); }
+button.danger { color: #ffb4ad; }
+button.danger:hover:not(:disabled) { color: #ff8a80; }
+button.icon { padding: 3px 6px; min-width: 34px; }
+/* Buttons without a frame: list entries that open something. */
+button.plain {
+  border: none; border-image: none; background: none; padding: 0;
+  font: inherit; color: inherit; text-shadow: none; text-align: left; justify-content: flex-start;
+}
+button.plain:hover:not(:disabled) { color: var(--accent); border-image: none; }
+/* <label class="file"><input type="file"><span class="button">…</span></label> */
+.file { flex-direction: row; }
+.file input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+/* ------------------------------------------------------------ small bits */
+.chip {
+  display: inline-block; padding: 0 7px;
+  font-family: var(--pixel); font-size: 0.8rem;
+  background: var(--panel-deep); border: 2px solid var(--edge);
+}
+.chip.warning { border-color: var(--warning); }
+.chip.done { color: #fff; background: #17a24a; border-color: #0d6b30; text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35); }
+.list-item { padding: 10px 0; border-bottom: 2px dashed var(--border); }
+.list-item:last-of-type { border-bottom: none; }
+.head { image-rendering: pixelated; filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.25)); flex-shrink: 0; }
+/* The witch's picture includes her hat, so it is drawn smaller; this evens it out. */
+.head.witch { transform: scale(1.3); transform-origin: 50% 70%; }
+
+/* A page title with a back button left and actions right. */
+.title-bar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+.title-bar h2 { margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+.title-bar h2 img { width: 48px; height: 48px; }
+
+/* ---------------------------------------------------------------- header */
+header.top {
+  position: relative;
+  padding: 12px 16px 24px;
+  color: #fff;
+  background-color: #3a2716;
+  background-image:
+    linear-gradient(rgba(34, 22, 12, 0.62), rgba(34, 22, 12, 0.62)),
+    url("$mc/ui/spruce_planks.png");
+  background-size: auto, 64px 64px;
+  image-rendering: pixelated;
+}
+header.top::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 12px;
+  background: url("$mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px;
+}
+header.top .inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+header.top .brand { display: flex; align-items: center; gap: 12px; }
+header.top .brand img { image-rendering: pixelated; filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.35)); flex-shrink: 0; }
+header.top h1 { text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); }
+header.top .subtitle { font-size: 0.85rem; opacity: 0.8; }
+header.top .links { display: flex; gap: 12px; align-items: center; }
+header.top .links a { color: #fff; font-family: var(--pixel); text-decoration: none; text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); opacity: 0.85; }
+header.top .links a:hover { color: #fff6a0; opacity: 1; }
+header.top select { width: auto; background: rgba(0, 0, 0, 0.35); color: #fff; border-color: #1a120b #8a6340 #8a6340 #1a120b; font-family: var(--pixel); }
+header.top select option { color: var(--text); background: var(--bg); }
+
+footer.bottom {
+  position: relative;
+  margin-top: 12px;
+  padding: 18px 16px 14px;
+  font-size: 0.75rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  background-color: #241910;
+  background-image:
+    linear-gradient(rgba(20, 13, 7, 0.72), rgba(20, 13, 7, 0.72)),
+    url("$mc/ui/dirt.png");
+  background-size: auto, 48px 48px;
+  image-rendering: pixelated;
+}
+footer.bottom::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: -12px; height: 12px;
+  background: url("$mc/ui/grass_strip.png") repeat-x 0 0 / 32px 12px;
+}
+footer.bottom a { color: #fff; }
+
+/* -------------------------------------------------------- speech bubble */
+/* A head with a white chat bubble next to it, like [[say: …]] in the wiki. */
+.say { display: flex; align-items: center; gap: 16px; }
+.bubble {
+  position: relative;
+  padding: 10px 16px;
+  font-family: var(--pixel);
+  color: #2b2116;
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+.bubble::after {
+  content: "";
+  position: absolute; left: -11px; top: 50%; margin-top: -8px;
+  border-style: solid; border-width: 8px 9px 8px 0;
+  border-color: transparent #000 transparent transparent;
+}
+
+@media (max-width: 600px) {
+  main { padding: 16px 12px 32px; }
+  header.top .subtitle { display: none; }
+  header.top h1 { font-size: 1.2rem; }
+  .title-bar h2 { font-size: 1.2rem; }
+}

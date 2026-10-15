@@ -15,6 +15,7 @@
   import LineRow from "./LineRow.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
   import { locale, t } from "../lib/i18n/index.svelte";
+  import { GROUP_ITEMS, item, voiceHead } from "../lib/art";
 
   let { project, voice, onback, onstudio }: { project: Project; voice: Voice; onback: () => void; onstudio: (event: string, profession?: string) => void } = $props();
   let showEmpty = $state(true);
@@ -72,13 +73,14 @@
   }
 </script>
 
-<div class="row spread" style="margin-bottom: 12px">
+<div class="title-bar">
   <button onclick={onback}>← {project.name}</button>
-  <h2 style="margin: 0">{voice.name}</h2>
+  <h2><img class="head" class:witch={voice.entities[0] === "witch"} src={voiceHead(voice.entities, newProfession)} alt="" />{voice.name}</h2>
   <button class="primary" onclick={() => onstudio(events[0]?.id ?? "ambient", newProfession)}>🎙 {t("voice.studio")}</button>
 </div>
 
 <section class="panel">
+  <h2><img src={item("name_tag")} alt="" />{t("voice.details")}</h2>
   <div class="grid">
     <label>{t("voice.name")}<input type="text" bind:value={voice.name} oninput={() => touch(project)} /></label>
     <label>{t("voice.gender")}
@@ -114,7 +116,7 @@
 </section>
 
 <details class="panel">
-  <summary><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
+  <summary><img src={item("redstone")} alt="" /><strong>{t("pack.processing")}</strong> <span class="muted small">– {t("processing.for_pack")}</span></summary>
   <ProcessingSettings {project} compact />
 </details>
 
@@ -131,14 +133,14 @@
   </section>
 {/if}
 
-<div class="row spread">
-  <strong>{t("voice.progress", { done: events.filter((event) => used.has(event.id)).length, total: events.length })}</strong>
+<div class="row spread progress">
+  <strong class="pixel">{t("voice.progress", { done: events.filter((event) => used.has(event.id)).length, total: events.length })}</strong>
   <label class="inline small"><input type="checkbox" bind:checked={showEmpty} />{t("voice.show_all")}</label>
 </div>
 
 {#if unusedLines.length > 0}
   <section class="panel unused">
-    <h2>{t("voice.unused")}</h2>
+    <h2><img src={item("barrier")} alt="" />{t("voice.unused")}</h2>
     <p class="small muted">{t("voice.unused.hint")}</p>
     {#each unusedLines as line (line.id)}
       <div class="small"><strong>{line.event}</strong></div>
@@ -149,7 +151,7 @@
 
 {#each groups as group (group.id)}
   <section class="panel">
-    <h2>{t(`group.${group.id}`)}</h2>
+    <h2><img src={item(GROUP_ITEMS[group.id])} alt="" />{t(`group.${group.id}`)}</h2>
     {#each group.events.filter((event) => showEmpty || used.has(event.id)) as event (event.id)}
       {@const lines = visibleLines.filter((line) => line.event === event.id)}
       {@const recommended = recommendedVariants(event.id)}
@@ -158,7 +160,7 @@
           <span class="row spread" style="display: inline-flex; width: calc(100% - 20px)">
             <span><strong>{event.id}</strong> <span class="muted small">– {t(`event.${event.id}`)}</span></span>
             <span class="row small">
-              <span class="chip" class:warning={lines.length > 0 && lines.length < recommended}>{lines.length}/{recommended}</span>
+              <span class="chip" class:warning={lines.length > 0 && lines.length < recommended} class:done={lines.length >= recommended}>{lines.length}/{recommended}</span>
               {#if event.parent && lines.length === 0}<span class="muted">{t("voice.fallback", { event: event.parent })}</span>{/if}
             </span>
           </span>
@@ -168,7 +170,7 @@
         {/each}
         <div class="row" style="margin: 6px 0 10px">
           <button onclick={() => onstudio(event.id, newProfession)}>🎙 {t("voice.record")}</button>
-          <label class="file"><input type="file" accept="audio/*" multiple onchange={(e) => addFiles(event.id, e.currentTarget)} /><span>📁 {t("voice.add_files")}</span></label>
+          <label class="file"><input type="file" accept="audio/*" multiple onchange={(e) => addFiles(event.id, e.currentTarget)} /><span class="button">📁 {t("voice.add_files")}</span></label>
           <span class="muted small">{t("voice.recommended", { count: recommended })}</span>
         </div>
       </details>
@@ -179,8 +181,10 @@
 <style>
   .unused { border-color: var(--warning); }
   .filter p { margin: 6px 0 0; }
-  .event { border-top: 1px solid var(--border); padding: 6px 0; }
-  .file { flex-direction: row; }
-  .file input { display: none; }
-  .file span { border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; background: var(--panel); }
+  .progress { margin-bottom: 12px; }
+  .event { border-top: 2px dashed var(--border); padding: 6px 0; }
+  .event:first-of-type { border-top: none; }
+  .event > summary { font-family: inherit; padding: 4px 0; }
+  .event > summary strong { font-family: var(--pixel); font-weight: 600; }
+  .event > summary:hover strong { color: var(--accent); }
 </style>

@@ -4,6 +4,7 @@
   import { importVersion1, importVoicepack } from "../lib/pack/import";
   import { COMMON_LANGUAGES, LANGUAGE_PATTERN, languageName } from "../lib/model/languages";
   import { locale, t } from "../lib/i18n/index.svelte";
+  import { head, item } from "../lib/art";
 
   let { onopen }: { onopen: (id: string) => void } = $props();
   let name = $state("");
@@ -44,14 +45,14 @@
 </script>
 
 <section class="panel">
-  <h2>{t("start.projects")}</h2>
+  <h2><img src={item("book")} alt="" />{t("start.projects")}</h2>
   {#if projects.loaded && projects.list.length === 0}
-    <p class="muted">{t("start.none")}</p>
+    <div class="say"><img class="head" src={head("librarian")} alt="" width="56" height="56" /><span class="bubble">{t("start.none")}</span></div>
   {/if}
   {#each projects.list as project (project.id)}
-    <div class="row spread project">
-      <button class="link" onclick={() => onopen(project.id)}>
-        {#if project.icon}<img src={project.icon} alt="" width="32" height="32" />{/if}
+    <div class="row spread list-item">
+      <button class="plain link" onclick={() => onopen(project.id)}>
+        <img class="icon" class:pixelated={!project.icon} src={project.icon ?? head("villager")} alt="" width="40" height="40" />
         <span>
           <strong>{project.name}</strong> <span class="muted">{project.version} · {project.language}</span><br />
           <span class="muted small">
@@ -69,7 +70,7 @@
 </section>
 
 <section class="panel">
-  <h2>{t("start.new")}</h2>
+  <h2><img src={item("writable_book")} alt="" />{t("start.new")}</h2>
   <div class="grid">
     <label>{t("start.name")}<input type="text" bind:value={name} placeholder="Mein Dorf" /></label>
     <label>
@@ -84,11 +85,11 @@
     <button class="primary" disabled={!valid} onclick={create}>{t("start.create")}</button>
     <label class="file">
       <input type="file" accept=".voicepack,.zip" onchange={(e) => importFile(e, false)} disabled={busy} />
-      <span>{t("start.open")}</span>
+      <span class="button">{t("start.open")}</span>
     </label>
   </div>
   <p class="muted small">{t("start.open.hint")}</p>
-  <details style="margin-top: 12px">
+  <details>
     <summary>{t("start.import_v1")}</summary>
     <div class="row" style="margin-top: 8px">
       <label>
@@ -101,7 +102,7 @@
       </label>
       <label class="file">
         <input type="file" accept=".zip" onchange={(e) => importFile(e, true)} disabled={busy || !LANGUAGE_PATTERN.test(language)} />
-        <span>{t("start.import_v1")}</span>
+        <span class="button">{t("start.import_v1")}</span>
       </label>
     </div>
   </details>
@@ -110,9 +111,10 @@
 </section>
 
 <style>
-  .project { padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .link { display: flex; gap: 10px; align-items: center; text-align: left; border: none; background: none; padding: 0; flex: 1; }
-  .file { flex-direction: row; }
-  .file input { display: none; }
-  .file span { border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; background: var(--panel); }
+  .link { display: flex; gap: 12px; align-items: center; flex: 1; }
+  .link strong { font-family: var(--pixel); font-size: 1.05rem; font-weight: 600; }
+  .icon { border: 2px solid var(--edge); background: var(--panel-deep); }
+  .say { margin-bottom: 12px; }
+  details { margin-top: 12px; }
+  details summary { font-weight: 500; }
 </style>

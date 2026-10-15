@@ -21,6 +21,9 @@
     "paths": {
       "$schema/*": [
         "../schema/*"
+      ],
+      "$mc/*": [
+        "../pages/docs/assets/mc/*"
       ]
     }
   },

@@ -32,21 +32,26 @@
   });
 </script>
 
-<main>
-  <header class="top">
+<header class="top">
+  <div class="inner">
     <div class="brand">
       <img src="{import.meta.env.BASE_URL}logo.png" alt="" width="56" height="56" />
       <div>
         <h1>{t("app.title")}</h1>
-        <div class="muted small">{t("app.subtitle")}</div>
+        <div class="subtitle">{t("app.subtitle")}</div>
       </div>
     </div>
-    <select value={locale.language} onchange={(e) => setLanguage(e.currentTarget.value)} aria-label="Language" style="width: auto">
-      <option value="de">Deutsch</option>
-      <option value="en">English</option>
-    </select>
-  </header>
+    <div class="links">
+      <a href="../">{t("app.wiki")}</a>
+      <select value={locale.language} onchange={(e) => setLanguage(e.currentTarget.value)} aria-label="Language">
+        <option value="de">Deutsch</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+</header>
 
+<main>
   {#if view.name === "start" || !project}
     <Start onopen={(id) => (view = { name: "pack", projectId: id })} />
   {:else if view.name === "pack"}
@@ -66,3 +71,5 @@
     <Studio {project} {voice} initialEvent={view.event} profession={view.profession} onback={() => (view = { name: "voice", projectId: project.id, voiceId: voice.id })} />
   {/if}
 </main>
+
+<footer class="bottom">{t("app.notice")}</footer>
