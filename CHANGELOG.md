@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-beta.2 – unreleased
+## 2.0.0-beta.2 – 2026-10-19
 
 ### Security
 - The client only accepts SHA-256 checksums from a server. Before, a server could make the client write and delete `.part` files outside the download cache.
