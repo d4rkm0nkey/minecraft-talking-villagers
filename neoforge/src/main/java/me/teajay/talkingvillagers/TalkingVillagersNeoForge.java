@@ -8,6 +8,7 @@ import me.teajay.talkingvillagers.network.PackChunkPayload;
 import me.teajay.talkingvillagers.network.RequestPackPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.network.SpeakPayload;
+import me.teajay.talkingvillagers.network.VoiceIdentityPayload;
 import me.teajay.talkingvillagers.platform.NeoForgePlatformAttachments;
 import me.teajay.talkingvillagers.server.ServerVoices;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +41,11 @@ public class TalkingVillagersNeoForge {
                 ServerVoices.onPlayerJoin(player);
             }
         });
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.StartTracking event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                NeoForgePlatformAttachments.onStartTracking(event.getTarget(), player);
+            }
+        });
         NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedOutEvent event) -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 ServerVoices.onPlayerLeave(player);
@@ -53,6 +59,7 @@ public class TalkingVillagersNeoForge {
         // the client handlers only run on the client, so the client classes are never loaded on a dedicated server
         registrar.playToClient(SpeakPayload.TYPE, SpeakPayload.STREAM_CODEC, (payload, context) -> ClientVoices.onSpeak(payload));
         registrar.playToClient(ServerPacksPayload.TYPE, ServerPacksPayload.STREAM_CODEC, (payload, context) -> ClientVoices.onServerPacks(payload));
+        registrar.playToClient(VoiceIdentityPayload.TYPE, VoiceIdentityPayload.STREAM_CODEC, (payload, context) -> ClientVoices.onIdentity(payload));
         registrar.playToClient(PackChunkPayload.TYPE, PackChunkPayload.STREAM_CODEC, (payload, context) -> PackDownloads.onChunk(payload));
         registrar.playToServer(RequestPackPayload.TYPE, RequestPackPayload.STREAM_CODEC, (payload, context) -> {
             if (context.player() instanceof ServerPlayer player) {

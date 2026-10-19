@@ -13,8 +13,10 @@ import me.teajay.talkingvillagers.core.voice.VoiceIdentity;
 import me.teajay.talkingvillagers.network.ClientPacksPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload;
 import me.teajay.talkingvillagers.network.SpeakPayload;
+import me.teajay.talkingvillagers.network.VoiceIdentityPayload;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
+import me.teajay.talkingvillagers.voice.EntityKinds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -112,7 +114,8 @@ public final class ClientVoices {
      * own must be skipped.
      */
     public static boolean isVoiced(Entity entity) {
-        return Services.ATTACHMENTS.getIdentity(entity).flatMap(VoiceIdentity::voice).filter(ClientVoices::canPlay).isPresent();
+        // zombie villagers carry the voice data of the villager they were, but sound like zombies
+        return EntityKinds.of(entity).isPresent() && Services.ATTACHMENTS.getIdentity(entity).flatMap(VoiceIdentity::voice).filter(ClientVoices::canPlay).isPresent();
     }
 
     /**
@@ -132,6 +135,15 @@ public final class ClientVoices {
     public static boolean isSpeaking(int entityId) {
         VoiceSoundInstance instance = PLAYING.get(entityId);
         return instance != null && Minecraft.getInstance().getSoundManager().isActive(instance);
+    }
+
+    /** NeoForge only, see {@link VoiceIdentityPayload}. */
+    public static void onIdentity(VoiceIdentityPayload payload) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Entity entity = minecraft.level == null ? null : minecraft.level.getEntity(payload.entityId());
+        if (entity != null) {
+            Services.ATTACHMENTS.setIdentity(entity, payload.identity());
+        }
     }
 
     public static void onSpeak(SpeakPayload payload) {

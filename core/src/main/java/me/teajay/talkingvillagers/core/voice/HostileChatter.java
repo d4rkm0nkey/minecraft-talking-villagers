@@ -64,16 +64,22 @@ public final class HostileChatter {
      * elsewhere ({@code spot_player}), when the target is set.
      */
     public static Optional<VoiceEvent> tick(EntityKind kind, SpeakerState state, Situation situation, RandomGenerator random) {
-        long now = situation.gameTime();
-        boolean wasFighting = state.inCombat();
-        state.setInCombat(situation.fighting());
-
+        boolean lowHealth = false;
         if (situation.healthFraction() > RECOVERED_HEALTH) {
             state.setLowHealthSaid(false);
         } else if (situation.healthFraction() < LOW_HEALTH && !state.lowHealthSaid()) {
             state.setLowHealthSaid(true);
-            return Optional.of(EventCatalog.LOW_HEALTH);
+            lowHealth = true;
         }
+        // the fight state is updated in any case, so a fight starting at low health still schedules its first taunt
+        Optional<VoiceEvent> fight = fightEvent(kind, state, situation, random);
+        return lowHealth ? Optional.of(EventCatalog.LOW_HEALTH) : fight;
+    }
+
+    private static Optional<VoiceEvent> fightEvent(EntityKind kind, SpeakerState state, Situation situation, RandomGenerator random) {
+        long now = situation.gameTime();
+        boolean wasFighting = state.inCombat();
+        state.setInCombat(situation.fighting());
 
         if (wasFighting && !situation.fighting()) {
             boolean won = now - state.lastVictory() < VICTORY_GRACE_TICKS;

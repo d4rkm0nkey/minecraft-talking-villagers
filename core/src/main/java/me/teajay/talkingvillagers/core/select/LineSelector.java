@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
 /**
@@ -21,12 +22,14 @@ public final class LineSelector {
     }
 
     /**
-     * @param avoidIndex index of the line said last time for this event, not repeated if there is another choice
+     * @param lastLine index of the line said last time per event id; not repeated if there is another choice. Looked up
+     *                 for the event whose lines are used, which is a parent if the event has no lines of its own
      * @return empty if the voice has nothing to say, also not via the event's parents
      */
-    public static Optional<PickedLine> pick(Voice voice, VoiceEvent event, LineContext context, OptionalInt avoidIndex, RandomGenerator random) {
+    public static Optional<PickedLine> pick(Voice voice, VoiceEvent event, LineContext context, Function<String, OptionalInt> lastLine,
+                                            RandomGenerator random) {
         for (Optional<VoiceEvent> current = Optional.of(event); current.isPresent(); current = current.get().parent()) {
-            Optional<PickedLine> picked = pickFrom(voice, current.get(), context, current.get() == event ? avoidIndex : OptionalInt.empty(), random);
+            Optional<PickedLine> picked = pickFrom(voice, current.get(), context, lastLine.apply(current.get().id()), random);
             if (picked.isPresent()) {
                 return picked;
             }

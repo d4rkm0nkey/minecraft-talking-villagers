@@ -46,7 +46,8 @@ public abstract class VillagerMixin {
     @Inject(method = "getBreedOffspring", at = @At("RETURN"))
     private void talkingvillagers$birth(ServerLevel level, AgeableMob partner, CallbackInfoReturnable<Villager> cir) {
         Villager child = cir.getReturnValue();
-        if (child != null) {
+        // spawn eggs used on a villager ask it for a child of itself; that is no love story
+        if (child != null && partner != talkingvillagers$self()) {
             EntityVoices.onBirth(child, talkingvillagers$self(), partner);
         }
     }
@@ -70,7 +71,7 @@ public abstract class VillagerMixin {
     @Inject(method = "onReputationEventFrom", at = @At("TAIL"))
     private void talkingvillagers$reputationEvent(ReputationEventType type, Entity source, CallbackInfo ci) {
         if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
-            EntityVoices.onEvent(talkingvillagers$self(), EventCatalog.CURED);
+            EntityVoices.onCured(talkingvillagers$self());
         }
     }
 

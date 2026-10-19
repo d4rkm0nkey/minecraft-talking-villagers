@@ -35,6 +35,16 @@ public final class SpeechWatchers {
         return true;
     }
 
+    public static void onPlayerLeave(ServerPlayer player) {
+        PLAYERS.remove(player.getUUID());
+    }
+
+    /** The next world starts without watchers, e.g. in singleplayer. */
+    public static void onServerStopped() {
+        PLAYERS.clear();
+        console = false;
+    }
+
     public static boolean toggleConsole() {
         console = !console;
         return console;

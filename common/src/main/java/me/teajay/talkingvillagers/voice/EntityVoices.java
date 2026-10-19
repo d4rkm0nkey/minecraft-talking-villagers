@@ -72,6 +72,11 @@ public final class EntityVoices {
     private static final int CHEER_INTERVAL = 100;
     private static final Map<Player, Long> LAST_CHEER = new WeakHashMap<>();
     private static final Map<Entity, SpeakerState> STATES = new WeakHashMap<>();
+    /** Cured villagers by the game time from which they say their line; they are not in the world yet when cured. */
+    private static final Map<Entity, Long> PENDING_CURED = new WeakHashMap<>();
+    private static final int CURED_DELAY = 20;
+    /** How long a cured villager may wait for its voice, e.g. while it looks for its village to get its language. */
+    private static final int CURED_TIMEOUT = LanguageResolver.MAX_WAIT_FOR_VILLAGE_TICKS + 100;
     private static final SplittableRandom RANDOM = new SplittableRandom();
 
     private EntityVoices() {
@@ -109,7 +114,7 @@ public final class EntityVoices {
         PackIndex index = Voicepacks.index();
         Optional<VoiceIdentity> current = Services.ATTACHMENTS.getIdentity(entity);
         boolean child = entity.isBaby();
-        if (!VoiceAssigner.needsAssignment(current, child, ref -> enabledVoice(index, ref))) {
+        if (!VoiceAssigner.needsAssignment(current, kind.get(), child, ref -> enabledVoice(index, ref))) {
             return current.flatMap(VoiceIdentity::voice).flatMap(index::voice);
         }
         SpeakerState state = state(entity);
@@ -165,7 +170,8 @@ public final class EntityVoices {
      * Whether the entity speaks with a voice, without assigning one. Cheap enough to call every tick.
      */
     public static boolean hasVoice(Entity entity) {
-        return Services.ATTACHMENTS.getIdentity(entity).flatMap(VoiceIdentity::voice).isPresent();
+        // zombie villagers keep the voice data of the villager they were, so it is back after curing
+        return EntityKinds.of(entity).isPresent() && Services.ATTACHMENTS.getIdentity(entity).flatMap(VoiceIdentity::voice).isPresent();
     }
 
     // --- events ------------------------------------------------------------------------------------------------------
@@ -316,6 +322,9 @@ public final class EntityVoices {
     }
 
     public static void tickChatter(LivingEntity entity, ServerLevel level) {
+        if (!PENDING_CURED.isEmpty()) {
+            sayPendingCured(entity, level);
+        }
         if ((level.getGameTime() + entity.getId()) % Chatter.INTERVAL != 0 || !entity.isAlive() || !isHeard(entity, level)) {
             return;
         }
@@ -351,6 +360,31 @@ public final class EntityVoices {
                     false);
         }
         Chatter.decide(state, situation, RANDOM).ifPresent(event -> speak(entity, voice.get(), event, null));
+    }
+
+    /**
+     * A zombie villager was cured. The villager is not in the world yet, so clients would not know it; it says its
+     * line a moment later.
+     */
+    public static void onCured(Villager villager) {
+        PENDING_CURED.put(villager, villager.level().getGameTime() + CURED_DELAY);
+    }
+
+    private static void sayPendingCured(LivingEntity entity, ServerLevel level) {
+        Long due = PENDING_CURED.get(entity);
+        long now = level.getGameTime();
+        if (due == null || now < due) {
+            return;
+        }
+        if (now > due + CURED_TIMEOUT || !entity.isAlive()) {
+            PENDING_CURED.remove(entity);
+            return;
+        }
+        // without a voice yet, e.g. while the language is pending, try again next tick
+        if (voice(entity).isPresent()) {
+            PENDING_CURED.remove(entity);
+            onEvent(entity, EventCatalog.CURED);
+        }
     }
 
     private static VillagerActivity activity(Villager villager) {

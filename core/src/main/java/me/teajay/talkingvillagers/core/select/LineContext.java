@@ -23,6 +23,11 @@ public record LineContext(Optional<String> profession, Optional<Weather> weather
                 && profession.map(id -> !conditions.professions().contains(id)).orElse(true)) {
             return false;
         }
-        return conditions.weather().isEmpty() || conditions.weather().equals(weather);
+        if (conditions.weather().isEmpty()) {
+            return true;
+        }
+        // it also rains during a thunderstorm
+        Weather wanted = conditions.weather().get();
+        return weather.filter(now -> now == wanted || (wanted == Weather.RAIN && now == Weather.THUNDER)).isPresent();
     }
 }

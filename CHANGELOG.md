@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.0.0-beta.3 – unreleased
+
+### Fixed
+- NeoForge: players whose client has NeoForge but not this mod can join again. The voice data was a synced attachment, which NeoForge treats as a synced registry entry; it now goes through an optional payload.
+- Villagers keep their voice data when they turn into a zombie villager and are cured, also voices set with `/tv voice set`. A villager struck by lightning keeps its gender and language and gets a witch voice. Zombie villagers sound like zombies.
+- Cured villagers say their `cured` line. It was sent before the villager was in the world, so nobody heard it.
+- Lines of a parent event (e.g. `random` for `work`, `ambient` for `combat`) are no longer repeated twice in a row.
+- Witches and illagers that start a fight at low health wait for their first taunt as usual.
+- Using a spawn egg on a villager no longer makes it say its `love` line.
+- Death reactions no longer play twice when another mod kills an entity that is already dead.
+- `/tv debug watch` is switched off when the player leaves and when the world is closed.
+
+### Changed
+- Lines with `"weather": "rain"` are also used during thunderstorms.
+
 ## 2.0.0-beta.2 – 2026-10-19
 
 ### Security

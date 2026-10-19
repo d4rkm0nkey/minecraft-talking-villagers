@@ -14,6 +14,8 @@ import java.util.Optional;
 public class FabricPlatformAttachments implements PlatformAttachments {
     public static final AttachmentType<VoiceIdentity> VOICE = AttachmentRegistry.create(TalkingVillagers.id("voice"), builder -> builder
             .persistent(VoiceIdentityCodecs.CODEC)
+            // also copied when a villager turns into a zombie villager and back, or into a witch
+            .copyOnDeath()
             .syncWith(VoiceIdentityCodecs.STREAM_CODEC, AttachmentSyncPredicate.all()));
 
     @Override
