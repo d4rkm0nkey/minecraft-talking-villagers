@@ -52,6 +52,17 @@ class PackReaderTest {
     }
 
     @Test
+    void recognisesHashesOnly() throws Exception {
+        LoadedPack loaded = read(TestPacks.create().manifest(manifest("", BASIC_LINES)).sounds(BASIC_FILES));
+
+        assertThat(LoadedPack.isSha256(loaded.sha256())).isTrue();
+        assertThat(LoadedPack.isSha256(loaded.sha256().toUpperCase())).isFalse();
+        for (String value : new String[]{"", "../../config/foo", "/home/u/x", "C:\\x", "a".repeat(63), "a".repeat(65), "../" + "a".repeat(61)}) {
+            assertThat(LoadedPack.isSha256(value)).as(value).isFalse();
+        }
+    }
+
+    @Test
     void reportsMissingManifest() throws Exception {
         LoadedPack loaded = read(TestPacks.create().sounds(BASIC_FILES));
 

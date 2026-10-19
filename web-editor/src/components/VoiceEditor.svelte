@@ -75,8 +75,10 @@
   async function addFiles(event: string, input: HTMLInputElement) {
     for (const file of Array.from(input.files ?? [])) {
       const audioId = newId();
-      await saveAudio(audioId, await decodeFile(await file.arrayBuffer()));
-      voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, conditions: { professions: newProfession ? [newProfession] : [] } });
+      const audio = await decodeFile(await file.arrayBuffer());
+      await saveAudio(audioId, audio);
+      voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, length: audio.data.length / audio.sampleRate,
+        conditions: { professions: newProfession ? [newProfession] : [] } });
     }
     input.value = "";
     touch(project);

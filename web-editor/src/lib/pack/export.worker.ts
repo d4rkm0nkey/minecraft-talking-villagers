@@ -1,4 +1,5 @@
-import { exportPack } from "./export";
+import { exportPack, LineTooLongError } from "./export";
+import { MAX_LINE_SECONDS } from "./manifest";
 import { loadAudio, loadOriginal, setDecoder } from "../store/audio";
 import { denoise } from "../audio/browser";
 import type { Audio } from "../audio/process";
@@ -34,6 +35,9 @@ self.onmessage = async (event: MessageEvent<ToWorker>) => {
     });
     self.postMessage({ type: "done", bytes }, { transfer: [bytes.buffer] });
   } catch (error) {
-    self.postMessage({ type: "error", message: String(error) });
+    const problem = error instanceof LineTooLongError
+      ? { key: "problem.line_too_long", params: { voice: error.voice, event: error.event, seconds: Math.round(error.seconds), max: MAX_LINE_SECONDS } }
+      : {};
+    self.postMessage({ type: "error", message: String(error), ...problem });
   }
 };

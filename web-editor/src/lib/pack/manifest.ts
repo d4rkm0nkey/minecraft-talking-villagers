@@ -8,6 +8,8 @@ import { EVENTS, expandEntities } from "../model/catalog";
  */
 
 export const FORMAT = 2;
+/** The mod rejects the whole pack if a line is longer. */
+export const MAX_LINE_SECONDS = 60;
 
 export interface ManifestLine {
   file: string;
@@ -42,7 +44,9 @@ export function buildManifest(project: Project, durations: Map<string, number> =
         const entry: ManifestLine = { file: linePath(voice, line, index) };
         if (line.text.trim()) entry.text = line.text.trim();
         const duration = durations.get(line.id);
-        if (duration !== undefined) entry.duration = Math.round(duration * 100) / 100;
+        // 0 is not a valid duration; the mod measures the file itself if it is missing
+        const rounded = duration === undefined ? 0 : Math.round(duration * 100) / 100;
+        if (rounded > 0) entry.duration = rounded;
         if (line.conditions.professions.length || line.conditions.weather) {
           entry.conditions = {
             ...(line.conditions.professions.length ? { professions: line.conditions.professions } : {}),
@@ -91,6 +95,13 @@ export function check(project: Project): Problem[] {
     const path = `voices[${v}]`;
     if (ids.has(voice.id)) problems.push({ severity: "error", code: "duplicate_voice_id", path, params: { id: voice.id } });
     ids.add(voice.id);
+    voice.lines.forEach((line, l) => {
+      const seconds = (line.length ?? 0) - line.trimStart - line.trimEnd;
+      if (seconds > MAX_LINE_SECONDS) {
+        problems.push({ severity: "error", code: "line_too_long", path: `${path}.lines[${l}]`,
+          params: { voice: voice.name, event: line.event, seconds: Math.round(seconds), max: MAX_LINE_SECONDS } });
+      }
+    });
     if (voice.lines.length === 0) {
       problems.push({ severity: "warning", code: "no_lines", path, params: { voice: voice.name } });
       return;

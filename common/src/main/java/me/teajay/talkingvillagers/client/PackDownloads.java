@@ -101,7 +101,8 @@ public final class PackDownloads {
     }
 
     public static boolean canDownload(PackInfo pack) {
-        return (pack.downloadable() || isHttp(pack.url())) && pack.size() <= MAX_PACK_BYTES;
+        // the hash names the file in the cache, anything else could point outside of it
+        return LoadedPack.isSha256(pack.sha256()) && (pack.downloadable() || isHttp(pack.url())) && pack.size() <= MAX_PACK_BYTES;
     }
 
     private static boolean isHttp(String url) {
@@ -148,7 +149,12 @@ public final class PackDownloads {
             if (ACTIVE.containsKey(pack.sha256()) || Voicepacks.index().byHash(pack.sha256()).isPresent()) {
                 continue;
             }
-            Download download = new Download(pack, cache.resolve(pack.sha256() + ".part"));
+            Path part = cache.resolve(pack.sha256() + ".part").normalize();
+            if (!LoadedPack.isSha256(pack.sha256()) || !cache.normalize().equals(part.getParent())) {
+                TalkingVillagers.LOG.warn("Not downloading {}, invalid checksum from the server", pack.name());
+                continue;
+            }
+            Download download = new Download(pack, part);
             ACTIVE.put(pack.sha256(), download);
             if (isHttp(pack.url())) {
                 startHttp(download);

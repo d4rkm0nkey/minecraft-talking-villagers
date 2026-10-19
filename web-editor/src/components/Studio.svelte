@@ -170,7 +170,8 @@
   async function addLine(audio: Audio, item: Item, trimStart = 0, trimEnd = 0) {
     const audioId = newId();
     await saveAudio(audioId, audio);
-    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart, trimEnd, conditions: { professions: profession ? [profession] : [] } });
+    voice.lines.push({ id: newId(), event: item.event, audioId, text: item.text, trimStart, trimEnd, length: audio.data.length / audio.sampleRate,
+      conditions: { professions: profession ? [profession] : [] } });
     recorded++;
     touch(project);
   }

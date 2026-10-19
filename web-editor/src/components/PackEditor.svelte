@@ -82,7 +82,8 @@
         worker.terminate();
       }
       if (data.type === "error") {
-        exportState = { done: 0, total, error: t("pack.export_failed", { message: data.message }) };
+        const message = data.key ? t(data.key, data.params) : data.message;
+        exportState = { done: 0, total, error: t("pack.export_failed", { message }) };
         worker.terminate();
       }
     };

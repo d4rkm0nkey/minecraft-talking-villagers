@@ -64,7 +64,7 @@ A complete example is [`schema/examples/voicepack.json`](https://github.com/d4rk
 | `format` | yes | Always `2`. |
 | `id` | yes | Unique pack id, `a-z`, `0-9`, `_`, `-`, at most 64 characters. Two files with the same id are versions of the same pack; the newest version wins. |
 | `name` | yes | Display name, at most 64 characters. |
-| `version` | yes | e.g. `1.2.0`. Compared like semantic versions. |
+| `version` | yes | e.g. `1.2.0`. Compared like semantic versions. At most 32 characters of `A-Z`, `a-z`, `0-9`, `.`, `_`, `+` and `-`, starting with a letter or digit. |
 | `description` | no | At most 1024 characters. |
 | `authors` | no | List of names. |
 | `language` | yes | Language of the voices as a BCP 47 tag: `en`, `de`, `en-GB`, … |
@@ -75,7 +75,7 @@ A complete example is [`schema/examples/voicepack.json`](https://github.com/d4rk
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | Unique within the pack. Entities remember their voice as `<pack id>:<voice id>`, so do not rename voices in updates. |
-| `name` | yes | Display name. |
+| `name` | yes | Display name, at most 64 characters. |
 | `entities` | yes | Any of `villager`, `wandering_trader`, `witch`, `pillager`, `vindicator`, `evoker`, `illusioner`. `illager` is short for the four illagers. |
 | `gender` | yes | `male`, `female` or `neutral`. Neutral voices fit everyone. |
 | `child` | no | `true` for child voices. Baby villagers only get child voices and get a new adult voice when they grow up. Default `false`. |

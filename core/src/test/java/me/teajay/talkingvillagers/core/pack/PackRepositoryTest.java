@@ -3,12 +3,17 @@ package me.teajay.talkingvillagers.core.pack;
 import me.teajay.talkingvillagers.core.TestPacks;
 import me.teajay.talkingvillagers.core.catalog.EntityKind;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
+import me.teajay.talkingvillagers.core.model.VoicePack;
 import me.teajay.talkingvillagers.core.model.VoiceRef;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static me.teajay.talkingvillagers.core.TestPacks.BASIC_FILES;
 import static me.teajay.talkingvillagers.core.TestPacks.BASIC_LINES;
@@ -98,6 +103,23 @@ class PackRepositoryTest {
         assertThat(installed.getFileName().toString()).isEqualTo("server-1.0.0.voicepack");
         assertThat(repository.reload().active()).containsOnlyKeys("server");
         assertThat(Files.exists(cached)).isTrue();
+    }
+
+    @Test
+    void installCachedNeverWritesOutsideTheFolder() throws Exception {
+        PackRepository repository = new PackRepository(dir.resolve("voicepacks"));
+        Files.createDirectories(repository.cacheDirectory());
+        Path cached = pack("server", "1.0.0").write(repository.cacheDirectory(), "abc.voicepack");
+        VoicePack valid = repository.reload().cached().getFirst().pack().orElseThrow();
+        // a pack that got past validation must still not escape, e.g. if the patterns are ever loosened
+        VoicePack hostile = new VoicePack(valid.format(), valid.id(), valid.name(), "x/../../../evil", valid.description(),
+                valid.authors(), valid.language(), valid.voices());
+
+        assertThatThrownBy(() -> repository.installCached(new LoadedPack(cached, "abc", Optional.of(hostile), List.of(), false)))
+                .isInstanceOf(IOException.class);
+        try (Stream<Path> files = Files.walk(dir)) {
+            assertThat(files.filter(file -> file.getFileName().toString().startsWith("evil"))).isEmpty();
+        }
     }
 
     @Test

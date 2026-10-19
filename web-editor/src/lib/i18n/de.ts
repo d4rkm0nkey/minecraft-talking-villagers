@@ -188,6 +188,7 @@ export const de: Record<string, string> = {
   "problem.child_voice_not_villager": "„{voice}“ ist eine Kinderstimme, aber nur Dorfbewohner haben Kinder",
   "problem.event_not_used": "„{event}“ wird von keiner Entity von „{voice}“ ausgelöst",
   "problem.no_voices": "Das Pack braucht mindestens eine Stimme",
+  "problem.line_too_long": "„{voice}“ hat eine Zeile für {event}, die {seconds} s lang ist. Kürze sie auf höchstens {max} s, sonst lehnt die Mod das ganze Pack ab",
   "event.ambient": "Allgemeines Gemurmel zwischendurch",
   "event.hurt": "Wird verletzt (kurz, viele Varianten)",
   "event.death": "Stirbt",
