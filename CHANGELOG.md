@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.0-beta.2 – unreleased
+
+### Security
+- The client only accepts SHA-256 checksums from a server. Before, a server could make the client write and delete `.part` files outside the download cache.
+- Pack versions may only contain `A-Z`, `a-z`, `0-9`, `.`, `_`, `+` and `-`. Keeping a pack downloaded from a server can no longer write outside the voicepacks folder.
+
+### Fixed
+- Villagers say their `sleep` line when they go to bed. It never played before.
+- A pack with a very long name or version no longer disconnects every player with the mod. Packs now follow the length limits of the schema (name 64, version 32, description 1024, subtitle 256 characters); longer values are an error.
+- Web editor: lines longer than 60 seconds are reported and can't be exported, and very short lines no longer get a duration of 0. Both made the mod reject the whole pack.
+- Web editor: checks pack versions and blank names like the mod.
+
 ## 2.0.0-beta.1 – 2026-10-15
 
 Complete rewrite for Minecraft 26.3 on Fabric and NeoForge. First beta: please report bugs on GitHub.

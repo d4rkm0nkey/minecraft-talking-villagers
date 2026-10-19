@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin {
-    @Inject(method = "startSleeping", at = @At("TAIL"))
+    @Inject(method = "startSleeping", at = @At("RETURN"))
     private void talkingvillagers$sleep(BlockPos bedPosition, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (cir.getReturnValueZ() && !self.level().isClientSide()) {

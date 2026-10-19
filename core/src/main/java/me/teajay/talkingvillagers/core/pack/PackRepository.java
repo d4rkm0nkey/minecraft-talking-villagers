@@ -78,7 +78,12 @@ public final class PackRepository {
      */
     public Path installCached(LoadedPack cached) throws IOException {
         VoicePack pack = cached.pack().orElseThrow(() -> new IOException("Broken pack " + cached.source()));
-        Path target = directory.resolve(pack.id() + "-" + pack.version() + VoicePack.FILE_EXTENSION);
+        // id and version come from a server; the manifest patterns rule out separators, this check keeps it that way
+        Path folder = directory.toAbsolutePath().normalize();
+        Path target = folder.resolve(pack.id() + "-" + pack.version() + VoicePack.FILE_EXTENSION).normalize();
+        if (!folder.equals(target.getParent())) {
+            throw new IOException("Invalid file name for pack " + pack.id() + " " + pack.version());
+        }
         Files.copy(cached.source(), target, StandardCopyOption.REPLACE_EXISTING);
         return target;
     }

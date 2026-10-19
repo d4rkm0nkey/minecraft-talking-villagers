@@ -1,10 +1,17 @@
 import { zipSync, strToU8 } from "fflate";
 import type { Line, Processing, Project } from "../model/types";
-import { buildManifest, linePath } from "./manifest";
+import { buildManifest, linePath, MAX_LINE_SECONDS } from "./manifest";
 import { processLine, type Audio, type Denoiser } from "../audio/process";
 import { encodeVorbis } from "../audio/encode";
 import { noiseProfile } from "../audio/spectralGate";
 import type { Original } from "../store/audio";
+
+/** A line is longer than the mod allows; also checked here for lines whose length was not known before. */
+export class LineTooLongError extends Error {
+  constructor(readonly voice: string, readonly event: string, readonly seconds: number) {
+    super(`"${voice}" has a line for ${event} that is ${Math.round(seconds)} s long, at most ${MAX_LINE_SECONDS} s are allowed`);
+  }
+}
 
 export interface ExportOptions {
   loadAudio: (id: string) => Promise<Audio | undefined>;
@@ -54,6 +61,13 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
       durations.set(line.id, processed.data.length / processed.sampleRate);
       files[linePath(voice, line, index)] = await encodeVorbis(processed.data, processed.sampleRate, project.processing.quality);
       options.onProgress?.(++done, total);
+    }
+  }
+
+  for (const voice of project.voices) {
+    for (const line of voice.lines) {
+      const seconds = durations.get(line.id) ?? 0;
+      if (seconds > MAX_LINE_SECONDS) throw new LineTooLongError(voice.name, line.event, seconds);
     }
   }
 

@@ -17,6 +17,12 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ## 2.0.0-beta.2: kritische Fehler
 
+**Status:** umgesetzt in `fix/beta-2`. Abweichungen vom Plan:
+- K1 nur am Bytecode geprüft (`TAIL` = `return false` bei Offset 122). Die Dev-Packs haben keine `sleep`-Lines, und im Test hat kein Dorfbewohner ein Bett beansprucht.
+- K2: Die Hash-Prüfung (`LoadedPack.isSha256`) steht in `PackDownloads.canDownload` und vor dem Anlegen der `.part`-Datei, nicht in den Codecs. So führt ein ungültiger Hash nicht zum Verbindungsabbruch.
+- K4: `ServerVoices` schickt höchstens `MAX_PACKS` Packs und lässt eine zu lange Download-URL weg.
+- K5: Lines merken sich ihre Länge (`Line.length`). Für ältere Projekte prüft zusätzlich der Export und bricht mit einer übersetzten Meldung ab.
+
 ### K1 Sleep-Line spielt nie
 - `common/.../mixin/LivingEntityMixin.java:17`: `@At("TAIL")` trifft in `startSleeping` nur das letzte `return false`. Auf `@At("RETURN")` umstellen.
 - Prüfen: Dorfbewohner nachts per RCON/`/tv debug watch` beobachten, `sleep` muss im Log erscheinen.

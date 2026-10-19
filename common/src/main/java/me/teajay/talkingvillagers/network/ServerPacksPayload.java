@@ -13,6 +13,9 @@ import java.util.List;
  */
 public record ServerPacksPayload(List<PackInfo> packs) implements CustomPacketPayload {
     public static final int MAX_PACKS = 1024;
+    public static final int MAX_NAME = 256;
+    public static final int MAX_VERSION = 64;
+    public static final int MAX_URL = 2048;
     public static final Type<ServerPacksPayload> TYPE = new Type<>(TalkingVillagers.id("server_packs"));
     public static final StreamCodec<ByteBuf, ServerPacksPayload> STREAM_CODEC = PackInfo.STREAM_CODEC
             .apply(ByteBufCodecs.list(MAX_PACKS))
@@ -30,12 +33,12 @@ public record ServerPacksPayload(List<PackInfo> packs) implements CustomPacketPa
     public record PackInfo(String id, String name, String version, String sha256, long size, boolean downloadable, String url) {
         public static final StreamCodec<ByteBuf, PackInfo> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.stringUtf8(64), PackInfo::id,
-                ByteBufCodecs.stringUtf8(256), PackInfo::name,
-                ByteBufCodecs.stringUtf8(64), PackInfo::version,
+                ByteBufCodecs.stringUtf8(MAX_NAME), PackInfo::name,
+                ByteBufCodecs.stringUtf8(MAX_VERSION), PackInfo::version,
                 ByteBufCodecs.stringUtf8(64), PackInfo::sha256,
                 ByteBufCodecs.VAR_LONG, PackInfo::size,
                 ByteBufCodecs.BOOL, PackInfo::downloadable,
-                ByteBufCodecs.stringUtf8(2048), PackInfo::url,
+                ByteBufCodecs.stringUtf8(MAX_URL), PackInfo::url,
                 PackInfo::new);
     }
 

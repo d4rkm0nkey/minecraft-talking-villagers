@@ -38,6 +38,12 @@ import java.util.regex.Pattern;
 public final class ManifestCodec {
     private static final Pattern ID = Pattern.compile("^[a-z0-9_-]{1,64}$");
     /** Minecraft resource paths only allow lower case; segments must not start with a dot to rule out {@code ..}. */
+    /** Also used in file names of installed packs, so no path separators. */
+    private static final Pattern VERSION = Pattern.compile("^[0-9A-Za-z][0-9A-Za-z._+-]{0,31}$");
+    // length limits of the schema; the server sends name and version to clients, which must fit into the packet
+    private static final int MAX_NAME = 64;
+    private static final int MAX_DESCRIPTION = 1024;
+    private static final int MAX_TEXT = 256;
     private static final Pattern FILE = Pattern.compile("^sounds/([a-z0-9_-][a-z0-9_.-]*/)*[a-z0-9_-][a-z0-9_.-]*\\.ogg$");
     private static final Set<String> PACK_KEYS = Set.of("$schema", "format", "id", "name", "version", "description", "authors", "language", "voices");
     private static final Set<String> VOICE_KEYS = Set.of("id", "name", "entities", "gender", "child", "language", "pitch", "weight", "lines", "legacyIds");
@@ -85,10 +91,10 @@ public final class ManifestCodec {
                 return Optional.empty();
             }
             Optional<String> id = id(json, "id", "");
-            Optional<String> name = nonEmptyString(json, "name", "");
-            Optional<String> version = nonEmptyString(json, "version", "");
-            Optional<String> description = string(json, "description", "", false);
-            List<String> authors = stringList(json, "authors", "", false, Function.identity());
+            Optional<String> name = nonEmptyString(json, "name", "", MAX_NAME);
+            Optional<String> version = version(json, "version", "");
+            Optional<String> description = string(json, "description", "", false, MAX_DESCRIPTION);
+            List<String> authors = nonEmptyStrings(json, "authors", "");
             Optional<String> language = language(json, "language", "", true);
             List<Voice> voices = voices(json);
 
@@ -129,7 +135,7 @@ public final class ManifestCodec {
         private Optional<Voice> voice(JsonObject json, String path) {
             unknownKeys(json, VOICE_KEYS, path);
             Optional<String> id = id(json, "id", path);
-            Optional<String> name = nonEmptyString(json, "name", path);
+            Optional<String> name = nonEmptyString(json, "name", path, MAX_NAME);
             Set<EntityKind> entities = entities(json, path);
             Optional<Gender> gender = enumValue(json, "gender", path, true, Gender::byId);
             boolean child = bool(json, "child", path).orElse(false);
@@ -142,7 +148,7 @@ public final class ManifestCodec {
                 report(ProblemCode.INVALID_VALUE, join(path, "weight"), "Weight must be between 1 and 100");
             }
             Map<String, List<VoiceLine>> lines = lines(json, path);
-            List<String> legacyIds = stringList(json, "legacyIds", path, false, Function.identity());
+            List<String> legacyIds = nonEmptyStrings(json, "legacyIds", path);
 
             if (id.isEmpty() || name.isEmpty() || entities.isEmpty() || gender.isEmpty()) {
                 return Optional.empty();
@@ -232,7 +238,7 @@ public final class ManifestCodec {
                         "'" + file.get() + "' must be a lower case .ogg path inside the sounds/ folder");
                 file = Optional.empty();
             }
-            Optional<String> text = string(json, "text", path, false);
+            Optional<String> text = string(json, "text", path, false, MAX_TEXT);
             Optional<Float> duration = number(json, "duration", path, false);
             if (duration.isPresent() && (duration.get() <= 0 || duration.get() > 60)) {
                 report(ProblemCode.INVALID_VALUE, join(path, "duration"), "Duration must be between 0 and 60 seconds");
@@ -292,13 +298,43 @@ public final class ManifestCodec {
             return Optional.of(primitive.getAsString());
         }
 
-        private Optional<String> nonEmptyString(JsonObject json, String key, String path) {
-            Optional<String> value = string(json, key, path, true);
+        /** Like the schema's {@code maxLength}, counted in code points. */
+        private Optional<String> string(JsonObject json, String key, String path, boolean required, int maxLength) {
+            Optional<String> value = string(json, key, path, required);
+            if (value.isPresent() && value.get().codePointCount(0, value.get().length()) > maxLength) {
+                report(ProblemCode.INVALID_VALUE, join(path, key), "Must not be longer than " + maxLength + " characters");
+                return Optional.empty();
+            }
+            return value;
+        }
+
+        private Optional<String> nonEmptyString(JsonObject json, String key, String path, int maxLength) {
+            Optional<String> value = string(json, key, path, true, maxLength);
             if (value.isPresent() && value.get().isBlank()) {
                 report(ProblemCode.INVALID_VALUE, join(path, key), "Must not be empty");
                 return Optional.empty();
             }
             return value;
+        }
+
+        private Optional<String> version(JsonObject json, String key, String path) {
+            Optional<String> value = string(json, key, path, true);
+            if (value.isPresent() && !VERSION.matcher(value.get()).matches()) {
+                report(ProblemCode.INVALID_VALUE, join(path, key),
+                        "'" + value.get() + "' must be at most 32 characters of A-Z, a-z, 0-9, '.', '_', '+' and '-', like '1.2.0'");
+                return Optional.empty();
+            }
+            return value;
+        }
+
+        private List<String> nonEmptyStrings(JsonObject json, String key, String path) {
+            List<String> values = stringList(json, key, path, false, Function.identity());
+            for (int i = 0; i < values.size(); i++) {
+                if (values.get(i).isEmpty()) {
+                    report(ProblemCode.INVALID_VALUE, join(path, key) + "[" + i + "]", "Must not be empty");
+                }
+            }
+            return values.stream().filter(value -> !value.isEmpty()).toList();
         }
 
         private Optional<String> id(JsonObject json, String key, String path) {

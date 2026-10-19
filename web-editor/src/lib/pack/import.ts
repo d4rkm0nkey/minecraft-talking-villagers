@@ -1,5 +1,6 @@
 import { strFromU8, unzipSync } from "fflate";
 import { saveOriginals } from "../store/audio";
+import { oggDuration } from "../audio/ogg";
 import { DEFAULT_PROCESSING, newId, newVoice, slugify, type Gender, type Line, type Project, type Voice } from "../model/types";
 
 /**
@@ -29,7 +30,7 @@ class Originals {
   line(bytes: Uint8Array, event: string, text: string, conditions: Line["conditions"]): Line {
     const audioId = newId();
     this.entries.push({ id: audioId, ogg: bytes.slice() });
-    return { id: newId(), event, audioId, text, trimStart: 0, trimEnd: 0, conditions };
+    return { id: newId(), event, audioId, text, trimStart: 0, trimEnd: 0, length: oggDuration(bytes), conditions };
   }
 }
 

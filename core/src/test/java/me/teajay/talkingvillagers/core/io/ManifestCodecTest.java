@@ -173,6 +173,39 @@ class ManifestCodecTest {
     }
 
     @Test
+    void rejectsVersionsThatAreNoFileNamePart() {
+        for (String version : new String[]{"x/../../../evil", "..", "1.0 beta", "C:1", "a\\\\b", "", "123456789012345678901234567890123"}) {
+            ManifestCodec.Result result = ManifestCodec.parse(manifest("", BASIC_LINES).replace("\"1.0.0\"", "\"" + version + "\""));
+            assertThat(result.pack()).as(version).isEmpty();
+            assertThat(result.problems()).as(version).extracting(Problem::path).containsExactly("version");
+        }
+        for (String version : new String[]{"1", "2.0.0-beta.1", "1.0.0+mc26.3", "v2_final", "12345678901234567890123456789012"}) {
+            assertThat(ManifestCodec.parse(manifest("", BASIC_LINES).replace("\"1.0.0\"", "\"" + version + "\"")).problems())
+                    .as(version).isEmpty();
+        }
+    }
+
+    @Test
+    void enforcesLengthLimitsOfTheSchema() {
+        String json = manifest("\"legacyIds\": [\"\"],", "\"hurt\": [{ \"file\": \"sounds/anna/hurt/au.ogg\", \"text\": \"" + "a".repeat(257) + "\" }]")
+                .replace("\"name\": \"Test\"", "\"name\": \"" + "n".repeat(65) + "\", \"description\": \"" + "d".repeat(1025) + "\", \"authors\": [\"\"]")
+                .replace("\"name\": \"Anna\"", "\"name\": \" \"");
+
+        ManifestCodec.Result result = ManifestCodec.parse(json);
+
+        assertThat(result.pack()).isEmpty();
+        assertThat(result.problems()).filteredOn(Problem::isError).extracting(Problem::path).containsExactlyInAnyOrder(
+                "name", "description", "authors[0]", "voices[0].name", "voices[0].legacyIds[0]", "voices[0].lines.hurt[0].text");
+    }
+
+    @Test
+    void countsLengthInCharactersNotUtf16Units() {
+        String name = "🙂".repeat(64);
+        assertThat(ManifestCodec.parse(manifest("", BASIC_LINES).replace("\"name\": \"Test\"", "\"name\": \"" + name + "\"")).problems())
+                .isEmpty();
+    }
+
+    @Test
     void testManifestIsValid() {
         assertThat(ManifestCodec.parse(manifest("", BASIC_LINES)).problems()).isEmpty();
     }

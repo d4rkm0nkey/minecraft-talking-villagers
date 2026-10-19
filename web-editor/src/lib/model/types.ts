@@ -19,6 +19,8 @@ export interface Line {
   /** Trim in seconds from the start and before the end of the recording. */
   trimStart: number;
   trimEnd: number;
+  /** Length of the recording in seconds, before trimming. Missing in projects from before 2.0.0-beta.2. */
+  length?: number;
   conditions: LineConditions;
 }
 

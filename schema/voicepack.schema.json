@@ -28,12 +28,13 @@
     "name": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 64
+      "maxLength": 64,
+      "pattern": "\\S"
     },
     "version": {
+      "description": "Version of the pack, also part of the file name when a player keeps a pack downloaded from a server.",
       "type": "string",
-      "minLength": 1,
-      "maxLength": 32
+      "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]{0,31}$"
     },
     "description": {
       "type": "string",
@@ -199,7 +200,8 @@
         "name": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 64
+          "maxLength": 64,
+          "pattern": "\\S"
         },
         "entities": {
           "type": "array",

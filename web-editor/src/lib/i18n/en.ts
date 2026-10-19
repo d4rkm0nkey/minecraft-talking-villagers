@@ -188,6 +188,7 @@ export const en: Record<string, string> = {
   "problem.child_voice_not_villager": "\"{voice}\" is a child voice, but only villagers have children",
   "problem.event_not_used": "\"{event}\" is not triggered by any entity of \"{voice}\"",
   "problem.no_voices": "The pack needs at least one voice",
+  "problem.line_too_long": "\"{voice}\" has a line for {event} that is {seconds} s long. Trim it to at most {max} s, longer lines make the mod reject the whole pack",
   "event.ambient": "General mumbling now and then",
   "event.hurt": "Gets hurt (short, many variants)",
   "event.death": "Dies",

@@ -80,7 +80,8 @@ public final class ServerVoices {
         if (!Services.NETWORK.canSend(player, ServerPacksPayload.TYPE)) {
             return;
         }
-        var packs = Voicepacks.index().activePacks().stream().map(ServerVoices::info).toList();
+        // more packs than fit into the payload would make sending fail and disconnect the player
+        var packs = Voicepacks.index().activePacks().stream().limit(ServerPacksPayload.MAX_PACKS).map(ServerVoices::info).toList();
         Services.NETWORK.sendToPlayer(player, new ServerPacksPayload(packs));
     }
 
@@ -89,7 +90,16 @@ public final class ServerVoices {
         long size = PackTransfers.size(loaded);
         String base = Configs.server().packDownload().url().trim();
         String url = base.isEmpty() ? "" : (base.endsWith("/") ? base : base + "/") + loaded.source().getFileName();
-        return new ServerPacksPayload.PackInfo(pack.id(), pack.name(), pack.version(), loaded.sha256(), size,
-                PackTransfers.isDownloadable(loaded.sha256()), url);
+        if (url.length() > ServerPacksPayload.MAX_URL) {
+            TalkingVillagers.LOG.warn("Download address for {} is longer than {} characters, players can't download it from there", url, ServerPacksPayload.MAX_URL);
+            url = "";
+        }
+        // the manifest limits are smaller than the payload's, this only guards against them drifting apart
+        return new ServerPacksPayload.PackInfo(pack.id(), fit(pack.name(), ServerPacksPayload.MAX_NAME),
+                fit(pack.version(), ServerPacksPayload.MAX_VERSION), loaded.sha256(), size, PackTransfers.isDownloadable(loaded.sha256()), url);
+    }
+
+    private static String fit(String value, int maxLength) {
+        return value.length() <= maxLength ? value : value.substring(0, maxLength);
     }
 }

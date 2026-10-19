@@ -81,6 +81,32 @@ describe("manifest", () => {
     expect(check(p).filter((problem) => problem.severity === "error").length).toBeGreaterThan(0);
     expect(check({ ...project(), voices: [] }).map((problem) => problem.code)).toContain("no_voices");
   });
+
+  it("rejects what the mod rejects: versions that are no file name part, blank names, long texts", () => {
+    for (const version of ["x/../evil", "1.0 beta", "", "a".repeat(33)]) {
+      expect(check({ ...project(), version }).some((problem) => problem.severity === "error"), version).toBe(true);
+    }
+    expect(check({ ...project(), version: "2.0.0-beta.1+mc26.3" })).toEqual([]);
+    expect(check({ ...project(), name: "  " }).some((problem) => problem.severity === "error")).toBe(true);
+    const p = project();
+    p.voices[0].lines[0].text = "a".repeat(257);
+    expect(check(p).some((problem) => problem.severity === "error")).toBe(true);
+  });
+
+  it("reports lines longer than the mod allows, after trimming", () => {
+    const p = project();
+    p.voices[0].lines[0].length = 75;
+    expect(check(p).map((problem) => problem.code)).toContain("line_too_long");
+
+    p.voices[0].lines[0].trimEnd = 20;
+    expect(check(p)).toEqual([]);
+  });
+
+  it("leaves out durations that would round to 0", () => {
+    const p = project();
+    const manifest = buildManifest(p, new Map([[p.voices[0].lines[0].id, 0.004]])) as any;
+    expect(manifest.voices[0].lines.hurt[0]).not.toHaveProperty("duration");
+  });
 });
 
 describe("catalog", () => {

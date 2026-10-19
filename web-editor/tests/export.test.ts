@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { unzipSync, strFromU8 } from "fflate";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { exportPack } from "../src/lib/pack/export";
+import { exportPack, LineTooLongError } from "../src/lib/pack/export";
 import { newProject, newVoice, type Line } from "../src/lib/model/types";
 import type { Audio } from "../src/lib/audio/process";
 import { add, concat, noise, sine } from "./helpers";
@@ -41,5 +41,16 @@ describe("export", () => {
     // the Java test WebEditorExportTest validates this file with the mod's PackReader
     mkdirSync("build", { recursive: true });
     writeFileSync("build/test-export.voicepack", bytes);
+  });
+
+  it("refuses lines the mod would reject, also when their length was not known", async () => {
+    const long: Audio = { sampleRate: 8000, data: sine(61, 8000, 220, 0.3) };
+    const project = newProject("Too Long", "de");
+    const voice = newVoice("Anna", []);
+    voice.lines = [{ id: "l", event: "hurt", audioId: "long", text: "", trimStart: 0, trimEnd: 0, conditions: { professions: [] } }];
+    project.voices = [voice];
+    project.processing = { ...project.processing, denoise: false, trim: false, sampleRate: 22050, quality: 0 };
+
+    await expect(exportPack(project, { loadAudio: async () => long })).rejects.toBeInstanceOf(LineTooLongError);
   });
 });
