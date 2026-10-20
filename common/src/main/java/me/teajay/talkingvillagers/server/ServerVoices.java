@@ -35,6 +35,7 @@ public final class ServerVoices {
     public static void onServerStopped() {
         server = null;
         CLIENT_PACKS.clear();
+        SpeechWatchers.onServerStopped();
     }
 
     /**
@@ -54,6 +55,7 @@ public final class ServerVoices {
     public static void onPlayerLeave(ServerPlayer player) {
         CLIENT_PACKS.remove(player.getUUID());
         PackTransfers.onPlayerLeave(player);
+        SpeechWatchers.onPlayerLeave(player);
     }
 
     public static void onServerTick(MinecraftServer minecraftServer) {

@@ -52,7 +52,7 @@ public final class SpeechService {
         if (!interrupt && state.isSpeaking(gameTime)) {
             return false;
         }
-        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, state.lastLine(event.id()), RANDOM);
+        Optional<PickedLine> picked = LineSelector.pick(voice.voice(), event, context, state::lastLine, RANDOM);
         return picked.isPresent() && send(entity, level, state, voice, event, picked.get(), pitch, volume, fallback);
     }
 

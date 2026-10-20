@@ -8,6 +8,7 @@ import me.teajay.talkingvillagers.core.model.PitchRange;
 import me.teajay.talkingvillagers.core.model.Voice;
 import me.teajay.talkingvillagers.core.model.VoiceLine;
 import me.teajay.talkingvillagers.core.model.Weather;
+import me.teajay.talkingvillagers.core.voice.SpeakerState;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -35,7 +36,7 @@ class LineSelectorTest {
     private Set<String> pickMany(Voice voice, LineContext context) {
         Set<String> files = new HashSet<>();
         for (int i = 0; i < 200; i++) {
-            LineSelector.pick(voice, EventCatalog.RANDOM, context, OptionalInt.empty(), random).ifPresent(picked -> files.add(picked.line().file()));
+            LineSelector.pick(voice, EventCatalog.RANDOM, context, id -> OptionalInt.empty(), random).ifPresent(picked -> files.add(picked.line().file()));
         }
         return files;
     }
@@ -60,11 +61,19 @@ class LineSelectorTest {
     }
 
     @Test
+    void rainLinesAreAlsoUsedDuringThunderstorms() {
+        Voice voice = voice(Map.of("random", List.of(line("rain", Set.of(), Weather.RAIN), line("thunder", Set.of(), Weather.THUNDER))));
+
+        assertThat(pickMany(voice, new LineContext(Optional.empty(), Optional.of(Weather.THUNDER)))).containsExactlyInAnyOrder("rain", "thunder");
+        assertThat(pickMany(voice, new LineContext(Optional.empty(), Optional.of(Weather.RAIN)))).containsExactly("rain");
+    }
+
+    @Test
     void doesNotRepeatTheLastLine() {
         Voice voice = voice(Map.of("random", List.of(VoiceLine.of("a"), VoiceLine.of("b"))));
 
         for (int i = 0; i < 50; i++) {
-            PickedLine picked = LineSelector.pick(voice, EventCatalog.RANDOM, LineContext.NONE, OptionalInt.of(0), random).orElseThrow();
+            PickedLine picked = LineSelector.pick(voice, EventCatalog.RANDOM, LineContext.NONE, id -> OptionalInt.of(0), random).orElseThrow();
             assertThat(picked.index()).isEqualTo(1);
         }
     }
@@ -73,21 +82,36 @@ class LineSelectorTest {
     void repeatsTheOnlyLine() {
         Voice voice = voice(Map.of("random", List.of(VoiceLine.of("a"))));
 
-        assertThat(LineSelector.pick(voice, EventCatalog.RANDOM, LineContext.NONE, OptionalInt.of(0), random)).isPresent();
+        assertThat(LineSelector.pick(voice, EventCatalog.RANDOM, LineContext.NONE, id -> OptionalInt.of(0), random)).isPresent();
     }
 
     @Test
     void fallsBackToParentEvent() {
         Voice voice = voice(Map.of("cast_spell", List.of(VoiceLine.of("spell"))));
 
-        PickedLine picked = LineSelector.pick(voice, EventCatalog.SUMMON_VEX, LineContext.NONE, OptionalInt.empty(), random).orElseThrow();
+        PickedLine picked = LineSelector.pick(voice, EventCatalog.SUMMON_VEX, LineContext.NONE, id -> OptionalInt.empty(), random).orElseThrow();
 
         assertThat(picked.event()).isEqualTo(EventCatalog.CAST_SPELL);
         assertThat(picked.line().file()).isEqualTo("spell");
     }
 
     @Test
+    void doesNotRepeatTheLastLineOfAParentEvent() {
+        // e.g. work falls back to random: the last random line is remembered under "random"
+        Voice voice = voice(Map.of("random", List.of(VoiceLine.of("a"), VoiceLine.of("b"))));
+        SpeakerState state = new SpeakerState();
+
+        for (int i = 0; i < 50; i++) {
+            PickedLine picked = LineSelector.pick(voice, EventCatalog.WORK, LineContext.NONE, state::lastLine, random).orElseThrow();
+            if (i > 0) {
+                assertThat(picked.index()).isNotEqualTo(state.lastLine("random").getAsInt());
+            }
+            state.spoke(EventCatalog.WORK, picked.event().id(), picked.index(), i * 1000L, 20);
+        }
+    }
+
+    @Test
     void returnsNothingWithoutLines() {
-        assertThat(LineSelector.pick(voice(Map.of()), EventCatalog.HURT, LineContext.NONE, OptionalInt.empty(), random)).isEmpty();
+        assertThat(LineSelector.pick(voice(Map.of()), EventCatalog.HURT, LineContext.NONE, id -> OptionalInt.empty(), random)).isEmpty();
     }
 }

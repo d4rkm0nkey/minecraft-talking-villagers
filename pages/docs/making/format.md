@@ -93,7 +93,7 @@ A complete example is [`schema/examples/voicepack.json`](https://github.com/d4rk
 | `text` | no | Transcript, shown as subtitle. At most 256 characters. |
 | `duration` | no | Length in seconds. Filled in automatically when the pack is loaded. |
 | `conditions.professions` | no | Only for villagers with one of these professions, e.g. `["farmer", "librarian"]`. Vanilla professions without namespace, modded ones as `modid:profession`; `none` and `nitwit` work too. |
-| `conditions.weather` | no | `clear`, `rain` or `thunder`. |
+| `conditions.weather` | no | `clear`, `rain` or `thunder`. `rain` lines are also used during thunderstorms, `thunder` lines only then. |
 
 Lines with conditions are only said when all conditions match. If both matching conditional lines and lines without conditions exist, each group is picked half of the time.
 

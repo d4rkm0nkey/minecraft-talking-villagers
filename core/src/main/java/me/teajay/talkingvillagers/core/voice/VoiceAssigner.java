@@ -23,10 +23,11 @@ public final class VoiceAssigner {
     }
 
     /**
+     * @param kind   what the entity is now; differs from the voice's entities after a villager turned into a witch
      * @param child  whether the entity is a child now
      * @param lookup finds an installed voice
      */
-    public static boolean needsAssignment(Optional<VoiceIdentity> current, boolean child, Function<VoiceRef, Optional<ResolvedVoice>> lookup) {
+    public static boolean needsAssignment(Optional<VoiceIdentity> current, EntityKind kind, boolean child, Function<VoiceRef, Optional<ResolvedVoice>> lookup) {
         if (current.isPresent() && current.get().muted()) {
             return false;
         }
@@ -34,8 +35,14 @@ public final class VoiceAssigner {
             return true;
         }
         VoiceIdentity identity = current.get();
-        if (lookup.apply(identity.voice().get()).isEmpty()) {
+        Optional<ResolvedVoice> voice = lookup.apply(identity.voice().get());
+        if (voice.isEmpty()) {
             // the pack was removed
+            return true;
+        }
+        if (!identity.manual() && !voice.get().voice().entities().contains(kind)) {
+            // the voice came along when the entity was converted, e.g. from a villager to a witch; voices an admin
+            // picked are kept, they may be meant for another kind on purpose
             return true;
         }
         // children get a new voice when they grow up, unless an admin picked the voice

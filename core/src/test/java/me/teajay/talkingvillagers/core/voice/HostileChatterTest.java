@@ -81,6 +81,17 @@ class HostileChatterTest {
     }
 
     @Test
+    void fightStartingAtLowHealthStillWaitsForTheFirstTaunt() {
+        SpeakerState state = new SpeakerState();
+        HostileChatter.Situation start = new HostileChatter.Situation(0, true, OptionalDouble.of(12), false, false, false, 0.2f, false);
+
+        assertThat(HostileChatter.tick(EntityKind.PILLAGER, state, start, random)).contains(EventCatalog.LOW_HEALTH);
+        assertThat(state.inCombat()).isTrue();
+        assertThat(HostileChatter.tick(EntityKind.PILLAGER, state,
+                new HostileChatter.Situation(20, true, OptionalDouble.of(12), false, false, false, 0.2f, false), random)).isEmpty();
+    }
+
+    @Test
     void lowHealthIsSaidOnceUntilRecovered() {
         SpeakerState state = new SpeakerState();
         HostileChatter.Situation hurt = new HostileChatter.Situation(0, false, OptionalDouble.empty(), false, false, false, 0.2f, false);
@@ -116,9 +127,9 @@ class HostileChatterTest {
                 Map.of("ambient", List.of(VoiceLine.of("sounds/v/ambient/a.ogg"))));
 
         for (VoiceEvent event : List.of(EventCatalog.IDLE, EventCatalog.COMBAT, EventCatalog.RAID_IDLE, EventCatalog.PATROL_LEADER)) {
-            assertThat(LineSelector.pick(voice, event, LineContext.NONE, OptionalInt.empty(), random))
+            assertThat(LineSelector.pick(voice, event, LineContext.NONE, id -> OptionalInt.empty(), random))
                     .as(event.id()).hasValueSatisfying(picked -> assertThat(picked.event()).isEqualTo(EventCatalog.AMBIENT));
         }
-        assertThat(LineSelector.pick(voice, EventCatalog.WOLOLO, LineContext.NONE, OptionalInt.empty(), random)).isEmpty();
+        assertThat(LineSelector.pick(voice, EventCatalog.WOLOLO, LineContext.NONE, id -> OptionalInt.empty(), random)).isEmpty();
     }
 }

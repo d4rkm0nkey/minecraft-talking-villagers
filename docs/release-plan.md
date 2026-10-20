@@ -61,6 +61,13 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ## 2.0.0-beta.3: Verhalten im Spiel
 
+**Status:** umgesetzt in `fix/beta-3`. Abweichungen vom Plan:
+- NeoForge: Das Problem ist im Quelltext bestätigt (`RegistryManager`: Einträge, die der Client nicht kennt, führen „garantiert“ zum Disconnect). Das Attachment ist nicht mehr synchronisiert. Stattdessen gibt es `VoiceIdentityPayload` beim Setzen und bei `PlayerEvent.StartTracking`. Getestet mit einem NeoForge-Client ohne Mod (eine vorübergehende Run-Konfiguration mit `loadedMods = []`): Auf `master` wird er getrennt („The server sent registries with unknown keys: neoforge:synced_attachment_types / talkingvillagers:voice“), mit beta.3 kann er joinen. Ein Client mit Mod bekommt die Stimmen beim Tracking-Start und nach `/tv voice set`.
+- Umwandlung: Von Hand gesetzte Stimmen (`manual`) bleiben auch dann, wenn sie nicht zur neuen Entity-Art passen, weil `/tv voice set … force` das absichtlich erlaubt. Getestet per RCON auf Fabric und NeoForge (Blitz → Hexe, Zombie → Heilung über `ConversionTime`).
+- CURED: wird nach 20 Ticks gesagt, sobald der Dorfbewohner eine Stimme hat (höchstens 35 s Wartezeit für die Dorfsprache). Ohne Spieler nicht testbar, weil Vanilla das Event nur mit einem heilenden Spieler auslöst.
+- `/tv voice get` bleibt unverändert: Die ausgelöste Zuweisung passiert ohnehin, sobald ein Spieler in der Nähe ist. Neu ist nur, dass Entities ohne Stimme (Zombie-Dorfbewohner) keine geerbten Stimmdaten mehr zeigen.
+- Neu gefunden (für beta.4): `/tv voice set` übernimmt nicht das Geschlecht der Stimme, die Anzeige lautet dann z. B. „Man – female“.
+
 - **CURED wird nicht gehört** (`VillagerMixin.java:70`): Das Event kommt, bevor der Dorfbewohner in der Welt ist. Vormerken und beim ersten Tick bzw. einige Ticks später sprechen.
 - **Stimme geht bei der Zombie-Umwandlung verloren**: `copyOnDeath()` auf Fabric und NeoForge setzen. Die Stimme neu zuweisen, wenn sie die neue Entity-Art nicht abdeckt (Hexe), Geschlecht und Sprache bleiben. `ClientVoices.isVoiced` und der Server ignorieren Stimmdaten auf Entities ohne Stimme (Zombie-Dorfbewohner).
 - **NeoForge: Mod auf dem Client Pflicht?** Erst mit einem NeoForge-Client ohne Mod testen. Falls bestätigt: das Attachment nicht per `.sync` synchronisieren, die Felder stattdessen über ein eigenes optionales Payload senden.

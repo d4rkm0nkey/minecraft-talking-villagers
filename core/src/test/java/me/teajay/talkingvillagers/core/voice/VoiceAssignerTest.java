@@ -72,7 +72,7 @@ class VoiceAssignerTest {
     void growingUpKeepsGenderAndLanguage() {
         VoiceIdentity girl = new VoiceIdentity(Gender.FEMALE, Optional.of(GIRL.ref()), 1.0f, true, Optional.of("de"), false, false);
 
-        assertThat(VoiceAssigner.needsAssignment(Optional.of(girl), false, VoiceAssignerTest::lookup)).isTrue();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(girl), VILLAGER, false, VoiceAssignerTest::lookup)).isTrue();
         VoiceIdentity adult = assign(Optional.of(girl), false, POOL);
 
         assertThat(adult.voice()).contains(WOMAN.ref());
@@ -120,7 +120,7 @@ class VoiceAssignerTest {
     void manualVoiceSurvivesGrowingUp() {
         VoiceIdentity manual = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, true, Optional.empty(), true, false);
 
-        assertThat(VoiceAssigner.needsAssignment(Optional.of(manual), false, VoiceAssignerTest::lookup)).isFalse();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(manual), VILLAGER, false, VoiceAssignerTest::lookup)).isFalse();
     }
 
     @Test
@@ -128,7 +128,7 @@ class VoiceAssignerTest {
         VoiceIdentity muted = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, false, Optional.empty(), false, false).mute();
 
         assertThat(muted.voice()).isEmpty();
-        assertThat(VoiceAssigner.needsAssignment(Optional.of(muted), false, VoiceAssignerTest::lookup)).isFalse();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(muted), VILLAGER, false, VoiceAssignerTest::lookup)).isFalse();
     }
 
     @Test
@@ -136,9 +136,21 @@ class VoiceAssignerTest {
         VoiceIdentity gone = new VoiceIdentity(Gender.MALE, Optional.of(new VoiceRef("removed", "x")), 1.0f, false, Optional.empty(), true, false);
         VoiceIdentity fine = new VoiceIdentity(Gender.MALE, Optional.of(MAN.ref()), 1.0f, false, Optional.empty(), false, false);
 
-        assertThat(VoiceAssigner.needsAssignment(Optional.of(gone), false, VoiceAssignerTest::lookup)).isTrue();
-        assertThat(VoiceAssigner.needsAssignment(Optional.of(fine), false, VoiceAssignerTest::lookup)).isFalse();
-        assertThat(VoiceAssigner.needsAssignment(Optional.empty(), false, VoiceAssignerTest::lookup)).isTrue();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(gone), VILLAGER, false, VoiceAssignerTest::lookup)).isTrue();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(fine), VILLAGER, false, VoiceAssignerTest::lookup)).isFalse();
+        assertThat(VoiceAssigner.needsAssignment(Optional.empty(), VILLAGER, false, VoiceAssignerTest::lookup)).isTrue();
+    }
+
+    @Test
+    void convertedEntitiesGetAVoiceOfTheirNewKind() {
+        // a villager struck by lightning becomes a witch and keeps its voice data
+        VoiceIdentity villager = new VoiceIdentity(Gender.FEMALE, Optional.of(WOMAN.ref()), 1.0f, false, Optional.of("de"), false, false);
+
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(villager), VILLAGER, false, VoiceAssignerTest::lookup)).isFalse();
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(villager), EntityKind.WITCH, false, VoiceAssignerTest::lookup)).isTrue();
+        // a voice set with /tv voice set --force for another kind stays
+        VoiceIdentity forced = new VoiceIdentity(Gender.FEMALE, Optional.of(WOMAN.ref()), 1.0f, false, Optional.of("de"), true, false);
+        assertThat(VoiceAssigner.needsAssignment(Optional.of(forced), EntityKind.WITCH, false, VoiceAssignerTest::lookup)).isFalse();
     }
 
     @Test

@@ -56,10 +56,14 @@ public final class VoiceCommandService {
      * @return empty only for entities that cannot have a voice
      */
     public static Optional<VoiceIdentity> identity(LivingEntity entity) {
+        Optional<EntityKind> kind = EntityVoices.kindOf(entity);
+        if (kind.isEmpty()) {
+            // e.g. a zombie villager, which keeps the voice data of the villager it was
+            return Optional.empty();
+        }
         EntityVoices.voice(entity);
         Optional<VoiceIdentity> identity = Services.ATTACHMENTS.getIdentity(entity);
-        Optional<EntityKind> kind = EntityVoices.kindOf(entity);
-        if (identity.isEmpty() && kind.isPresent()) {
+        if (identity.isEmpty()) {
             Gender gender = VoiceAssigner.rollGender(Configs.server().assignment(), kind.get(), RANDOM);
             identity = Optional.of(VoiceIdentity.withoutVoice(gender, entity.isBaby(), Optional.empty()));
             Services.ATTACHMENTS.setIdentity(entity, identity.get());
