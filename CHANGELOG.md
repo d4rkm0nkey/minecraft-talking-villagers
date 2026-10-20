@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-beta.3 – unreleased
+## 2.0.0-beta.3 – 2026-10-20
 
 ### Fixed
 - NeoForge: players whose client has NeoForge but not this mod can join again. The voice data was a synced attachment, which NeoForge treats as a synced registry entry; it now goes through an optional payload.
