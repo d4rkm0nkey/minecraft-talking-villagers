@@ -1,6 +1,9 @@
 package me.teajay.talkingvillagers;
 
 import me.teajay.talkingvillagers.client.ClientVoices;
+import me.teajay.talkingvillagers.client.PackDownloads;
+import me.teajay.talkingvillagers.client.VoiceAudio;
+import me.teajay.talkingvillagers.client.gui.PackIcons;
 import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import me.teajay.talkingvillagers.platform.Services;
@@ -37,5 +40,8 @@ public final class TalkingVillagers {
     public static void initClient() {
         Configs.loadClient();
         Voicepacks.onReload(ClientVoices::onLocalPacksReloaded);
+        Voicepacks.onReload(VoiceAudio::onPacksReloaded);
+        Voicepacks.onReload(PackIcons::onPacksReloaded);
+        PackDownloads.init();
     }
 }

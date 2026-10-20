@@ -11,8 +11,10 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static me.teajay.talkingvillagers.core.TestPacks.BASIC_FILES;
@@ -128,12 +130,76 @@ class PackRepositoryTest {
         Files.createDirectories(repository.cacheDirectory());
         Path old = Files.write(repository.cacheDirectory().resolve("old.voicepack"), new byte[1000]);
         Path young = Files.write(repository.cacheDirectory().resolve("young.voicepack"), new byte[1000]);
-        Files.setLastModifiedTime(old, java.nio.file.attribute.FileTime.fromMillis(1000));
+        Files.setLastModifiedTime(old, FileTime.fromMillis(1000));
 
-        repository.pruneCache(1500);
+        repository.pruneCache(1500, Set.of());
 
         assertThat(Files.exists(old)).isFalse();
         assertThat(Files.exists(young)).isTrue();
+    }
+
+    @Test
+    void pruneCacheKeepsPacksInUseAndUnfinishedDownloads() throws Exception {
+        PackRepository repository = new PackRepository(dir);
+        Files.createDirectories(repository.cacheDirectory());
+        String current = "a".repeat(64);
+        Path inUse = Files.write(repository.cacheDirectory().resolve(current + ".voicepack"), new byte[1000]);
+        Path part = Files.write(repository.cacheDirectory().resolve("b".repeat(64) + ".part"), new byte[1000]);
+        Path other = Files.write(repository.cacheDirectory().resolve("c".repeat(64) + ".voicepack"), new byte[1000]);
+        Files.setLastModifiedTime(inUse, FileTime.fromMillis(1000));
+        Files.setLastModifiedTime(part, FileTime.fromMillis(1000));
+
+        repository.pruneCache(500, Set.of(current));
+
+        assertThat(inUse).exists();
+        assertThat(part).exists();
+        assertThat(other).doesNotExist();
+    }
+
+    @Test
+    void markingCachedPacksAsUsedProtectsThemFromPruning() throws Exception {
+        PackRepository repository = new PackRepository(dir);
+        Files.createDirectories(repository.cacheDirectory());
+        String used = "a".repeat(64);
+        Path usedFile = Files.write(repository.cacheDirectory().resolve(used + ".voicepack"), new byte[1000]);
+        Path other = Files.write(repository.cacheDirectory().resolve("c".repeat(64) + ".voicepack"), new byte[1000]);
+        Files.setLastModifiedTime(usedFile, FileTime.fromMillis(1000));
+        Files.setLastModifiedTime(other, FileTime.fromMillis(2000));
+
+        repository.markCachedUsed(Set.of(used, "../escape"));
+        repository.pruneCache(1500, Set.of());
+
+        assertThat(usedFile).exists();
+        assertThat(other).doesNotExist();
+    }
+
+    @Test
+    void deletesUnfinishedDownloads() throws Exception {
+        PackRepository repository = new PackRepository(dir);
+        Files.createDirectories(repository.cacheDirectory());
+        Path part = Files.write(repository.cacheDirectory().resolve("a".repeat(64) + ".part"), new byte[10]);
+        Path pack = Files.write(repository.cacheDirectory().resolve("b".repeat(64) + ".voicepack"), new byte[10]);
+
+        repository.deletePartFiles();
+
+        assertThat(part).doesNotExist();
+        assertThat(pack).exists();
+    }
+
+    @Test
+    void installingACachedPackKeepsOtherFilesWithTheSameName() throws Exception {
+        Path cache = dir.resolve(PackRepository.CACHE_DIRECTORY);
+        Files.createDirectories(cache);
+        pack("one", "1.0.0").write(cache, "a".repeat(64) + ".voicepack");
+        Path foreign = Files.writeString(dir.resolve("one-1.0.0.voicepack"), "not a pack");
+        PackRepository repository = new PackRepository(dir);
+        LoadedPack cached = repository.reload().cached().getFirst();
+
+        Path installed = repository.installCached(cached);
+
+        assertThat(installed.getFileName()).hasToString("one-1.0.0-2.voicepack");
+        assertThat(foreign).hasContent("not a pack");
+        assertThat(repository.reload().active()).containsKey("one");
     }
 
     @Test
@@ -145,5 +211,6 @@ class PackRepositoryTest {
         assertThat(repository.readFile(hash, BASIC_FILES[0])).isEqualTo(TestPacks.audio("mono.ogg"));
         assertThatThrownBy(() -> repository.readFile(hash, "sounds/missing.ogg")).hasMessageContaining("No file");
         assertThatThrownBy(() -> repository.readFile("0".repeat(64), BASIC_FILES[0])).hasMessageContaining("No voicepack");
+        assertThatThrownBy(() -> repository.readFile(hash, BASIC_FILES[0], 10)).hasMessageContaining("larger than");
     }
 }

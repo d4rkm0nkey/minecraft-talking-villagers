@@ -4,15 +4,17 @@ import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.io.PackReader;
 import me.teajay.talkingvillagers.core.io.ZipPackContents;
 import me.teajay.talkingvillagers.core.model.VoicePack;
+import me.teajay.talkingvillagers.core.util.SafeFiles;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -23,6 +25,10 @@ import java.util.stream.Stream;
 public final class PackRepository {
     /** Packs downloaded from servers live here, named by their SHA-256. */
     public static final String CACHE_DIRECTORY = ".server-cache";
+    /** Unfinished downloads in the cache. */
+    public static final String PART_EXTENSION = ".part";
+    /** Largest file {@link #readFile} reads from a pack; lines are at most 60 seconds long. */
+    public static final int MAX_FILE_BYTES = 16 * 1024 * 1024;
     private final Path directory;
     private volatile Predicate<String> enabled = id -> true;
     private volatile PackIndex index = PackIndex.EMPTY;
@@ -73,6 +79,7 @@ public final class PackRepository {
 
     /**
      * Copies a pack downloaded from a server into the voicepacks folder, so it is also used in other worlds.
+     * Another file with the same name is kept, the copy then gets a number.
      *
      * @return the installed file
      */
@@ -84,48 +91,102 @@ public final class PackRepository {
         if (!folder.equals(target.getParent())) {
             throw new IOException("Invalid file name for pack " + pack.id() + " " + pack.version());
         }
-        Files.copy(cached.source(), target, StandardCopyOption.REPLACE_EXISTING);
+        target = SafeFiles.freeName(target);
+        SafeFiles.copyAtomically(cached.source(), target);
         return target;
     }
 
     /**
-     * Deletes the oldest downloaded packs until the cache is at most {@code maxBytes} large.
+     * Marks downloaded packs as used now, so {@link #pruneCache} deletes them last.
      */
-    public void pruneCache(long maxBytes) throws IOException {
+    public void markCachedUsed(Set<String> sha256s) {
+        FileTime now = FileTime.fromMillis(System.currentTimeMillis());
+        for (String sha256 : sha256s) {
+            if (!LoadedPack.isSha256(sha256)) {
+                continue;
+            }
+            Path file = cacheDirectory().resolve(sha256 + VoicePack.FILE_EXTENSION);
+            try {
+                if (Files.isRegularFile(file)) {
+                    Files.setLastModifiedTime(file, now);
+                }
+            } catch (IOException ignored) {
+                // only affects the order of pruning
+            }
+        }
+    }
+
+    /**
+     * Deletes the least recently used downloaded packs until the cache is at most {@code maxBytes} large.
+     * Unfinished downloads and the packs in {@code keep} (by SHA-256, e.g. those of the current server) stay.
+     */
+    public void pruneCache(long maxBytes, Set<String> keep) throws IOException {
         if (!Files.isDirectory(cacheDirectory())) {
             return;
         }
-        List<Path> files;
-        try (Stream<Path> stream = Files.list(cacheDirectory())) {
-            files = new ArrayList<>(stream.filter(Files::isRegularFile).toList());
+        record CachedFile(Path path, long size, long modified) {
         }
-        files.sort(Comparator.comparing(file -> {
-            try {
-                return Files.getLastModifiedTime(file).toMillis();
-            } catch (IOException e) {
-                return 0L;
-            }
-        }));
+        List<CachedFile> files = new ArrayList<>();
         long total = 0;
-        for (Path file : files) {
-            total += Files.size(file);
+        try (Stream<Path> stream = Files.list(cacheDirectory())) {
+            for (Path file : stream.toList()) {
+                String name = file.getFileName().toString();
+                if (!name.endsWith(VoicePack.FILE_EXTENSION) || !Files.isRegularFile(file)) {
+                    continue;
+                }
+                try {
+                    CachedFile cached = new CachedFile(file, Files.size(file), Files.getLastModifiedTime(file).toMillis());
+                    total += cached.size();
+                    if (!keep.contains(name.substring(0, name.length() - VoicePack.FILE_EXTENSION.length()))) {
+                        files.add(cached);
+                    }
+                } catch (IOException ignored) {
+                    // deleted in the meantime
+                }
+            }
         }
-        for (Path file : files) {
+        files.sort(Comparator.comparingLong(CachedFile::modified));
+        for (CachedFile file : files) {
             if (total <= maxBytes) {
                 break;
             }
-            total -= Files.size(file);
-            Files.deleteIfExists(file);
+            try {
+                Files.deleteIfExists(file.path());
+                total -= file.size();
+            } catch (IOException ignored) {
+                // e.g. locked on Windows while a sound is read; try again next time
+            }
         }
+    }
+
+    /**
+     * Deletes unfinished downloads, e.g. after the game was closed during a download.
+     */
+    public void deletePartFiles() throws IOException {
+        if (!Files.isDirectory(cacheDirectory())) {
+            return;
+        }
+        try (Stream<Path> stream = Files.list(cacheDirectory())) {
+            for (Path file : stream.filter(file -> file.getFileName().toString().endsWith(PART_EXTENSION)).toList()) {
+                Files.deleteIfExists(file);
+            }
+        }
+    }
+
+    /**
+     * Reads a file of at most {@value #MAX_FILE_BYTES} bytes from a pack.
+     */
+    public byte[] readFile(String sha256, String path) throws IOException {
+        return readFile(sha256, path, MAX_FILE_BYTES);
     }
 
     /**
      * Reads a file from a pack. The archive is opened for each read so pack files are never kept locked.
      */
-    public byte[] readFile(String sha256, String path) throws IOException {
+    public byte[] readFile(String sha256, String path, int maxBytes) throws IOException {
         LoadedPack pack = index.byHash(sha256).orElseThrow(() -> new IOException("No voicepack with hash " + sha256));
         try (ZipPackContents contents = new ZipPackContents(pack.source()); InputStream in = contents.open(path)) {
-            return in.readAllBytes();
+            return SafeFiles.readAtMost(in, maxBytes, path);
         }
     }
 }

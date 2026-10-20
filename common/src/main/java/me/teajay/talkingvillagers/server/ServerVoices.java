@@ -44,7 +44,10 @@ public final class ServerVoices {
     public static void onPacksReloaded() {
         MinecraftServer current = server;
         if (current != null) {
-            current.execute(() -> current.getPlayerList().getPlayers().forEach(ServerVoices::sendPackList));
+            current.execute(() -> {
+                PackTransfers.onPacksReloaded(current);
+                current.getPlayerList().getPlayers().forEach(ServerVoices::sendPackList);
+            });
         }
     }
 

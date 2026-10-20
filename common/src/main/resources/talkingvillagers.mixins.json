@@ -20,7 +20,9 @@
   ],
   "client": [
     "client.LivingEntityClientMixin",
-    "client.SoundBufferLibraryMixin"
+    "client.SoundBufferLibraryMixin",
+    "client.SoundEngineAccessor",
+    "client.SoundManagerAccessor"
   ],
   "server": [],
   "injectors": {

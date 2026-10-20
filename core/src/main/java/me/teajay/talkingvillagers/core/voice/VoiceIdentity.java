@@ -31,6 +31,14 @@ public record VoiceIdentity(Gender gender, Optional<VoiceRef> voice, float pitch
         return withoutVoice(gender, child, language);
     }
 
+    /**
+     * Takes over the gender of a voice set by command, so the entity's gender matches what it sounds like.
+     * Neutral voices leave the gender as it is.
+     */
+    public VoiceIdentity adoptingGenderOf(Gender voiceGender) {
+        return voiceGender == Gender.NEUTRAL ? this : new VoiceIdentity(voiceGender, voice, pitch, child, language, manual, muted);
+    }
+
     public VoiceIdentity withGender(Gender newGender) {
         return withoutVoice(newGender, child, language);
     }

@@ -18,8 +18,10 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -29,6 +31,12 @@ import java.util.UUID;
 public final class PackTransfers {
     private static final Map<UUID, Deque<Transfer>> QUEUES = new HashMap<>();
     private static final Map<UUID, Double> CREDIT = new HashMap<>();
+    /** How often a player may ask for the same pack while online, e.g. after a download stalled. */
+    private static final int MAX_REQUESTS_PER_PACK = 3;
+    /** Requests per player and pack since joining. */
+    private static final Map<UUID, Map<String, Integer>> REQUESTS = new HashMap<>();
+    /** Players whose invalid requests were already logged, so a client can't fill the log. */
+    private static final Set<UUID> WARNED = new HashSet<>();
 
     private PackTransfers() {
     }
@@ -49,11 +57,16 @@ public final class PackTransfers {
     /** Server thread. */
     public static void onRequest(ServerPlayer player, String sha256) {
         if (!isDownloadable(sha256)) {
-            TalkingVillagers.LOG.warn("{} asked for voicepack {} that cannot be downloaded", player.getName().getString(), sha256);
+            refuse(player, sha256, "voicepack " + sha256 + " cannot be downloaded");
             return;
         }
         Deque<Transfer> queue = QUEUES.computeIfAbsent(player.getUUID(), id -> new ArrayDeque<>());
         if (queue.stream().anyMatch(transfer -> transfer.sha256.equals(sha256))) {
+            return;
+        }
+        int requests = REQUESTS.computeIfAbsent(player.getUUID(), id -> new HashMap<>()).merge(sha256, 1, Integer::sum);
+        if (requests > MAX_REQUESTS_PER_PACK) {
+            refuse(player, sha256, "voicepack " + sha256 + " more than " + MAX_REQUESTS_PER_PACK + " times");
             return;
         }
         LoadedPack pack = activePack(sha256).orElseThrow();
@@ -61,7 +74,16 @@ public final class PackTransfers {
             queue.add(new Transfer(sha256, FileChannel.open(pack.source(), StandardOpenOption.READ), Files.size(pack.source())));
         } catch (IOException e) {
             TalkingVillagers.LOG.error("Cannot send {}", pack.source(), e);
+            Services.NETWORK.sendToPlayer(player, PackChunkPayload.refused(sha256));
         }
+    }
+
+    /** Tells the client that it won't get the pack; logs only the first such request of each player. */
+    private static void refuse(ServerPlayer player, String sha256, String what) {
+        if (WARNED.add(player.getUUID())) {
+            TalkingVillagers.LOG.warn("{} asked for {}; further refused requests of this player are not logged", player.getName().getString(), what);
+        }
+        Services.NETWORK.sendToPlayer(player, PackChunkPayload.refused(sha256));
     }
 
     /** Whether the server offers this pack for download. */
@@ -136,11 +158,30 @@ public final class PackTransfers {
         }
     }
 
+    /**
+     * Server thread, after the packs were reloaded: stops sending packs that are no longer offered.
+     */
+    public static void onPacksReloaded(MinecraftServer server) {
+        QUEUES.forEach((id, queue) -> queue.removeIf(transfer -> {
+            if (isDownloadable(transfer.sha256)) {
+                return false;
+            }
+            close(transfer);
+            ServerPlayer player = server.getPlayerList().getPlayer(id);
+            if (player != null) {
+                Services.NETWORK.sendToPlayer(player, PackChunkPayload.refused(transfer.sha256));
+            }
+            return true;
+        }));
+    }
+
     public static void onPlayerLeave(ServerPlayer player) {
         Deque<Transfer> queue = QUEUES.remove(player.getUUID());
         if (queue != null) {
             queue.forEach(PackTransfers::close);
         }
         CREDIT.remove(player.getUUID());
+        REQUESTS.remove(player.getUUID());
+        WARNED.remove(player.getUUID());
     }
 }

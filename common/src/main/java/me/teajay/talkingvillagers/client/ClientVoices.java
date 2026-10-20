@@ -46,7 +46,16 @@ public final class ClientVoices {
     public static void onServerPacks(ServerPacksPayload payload) {
         serverPacks = payload;
         answerServer();
+        PackDownloads.markUsed(serverPackHashes());
         PackDownloads.onServerPacks(missingPacks());
+    }
+
+    /** SHA-256 of all packs the current server uses; empty when not connected. */
+    public static Set<String> serverPackHashes() {
+        if (serverPacks == null) {
+            return Set.of();
+        }
+        return serverPacks.packs().stream().map(ServerPacksPayload.PackInfo::sha256).collect(Collectors.toUnmodifiableSet());
     }
 
     /** Client tick. */

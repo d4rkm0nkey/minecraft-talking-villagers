@@ -2,6 +2,7 @@ package me.teajay.talkingvillagers.mixin.client;
 
 import com.mojang.blaze3d.audio.SoundBuffer;
 import me.teajay.talkingvillagers.client.VoiceAudio;
+import me.teajay.talkingvillagers.client.VoiceBufferCache;
 import net.minecraft.client.sounds.FiniteAudioStream;
 import net.minecraft.client.sounds.JOrbisAudioStream;
 import net.minecraft.client.sounds.SoundBufferLibrary;
@@ -20,13 +21,14 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Predicate;
 
 /**
  * Loads voice lines straight from the {@code .voicepack} files, so installing a pack needs no resource reload.
- * Buffers go into the vanilla cache and are released with it.
+ * Buffers go into the vanilla cache and are released with it, or when their pack is gone.
  */
 @Mixin(SoundBufferLibrary.class)
-public abstract class SoundBufferLibraryMixin {
+public abstract class SoundBufferLibraryMixin implements VoiceBufferCache {
     @Shadow
     @Final
     private Map<Identifier, CompletableFuture<SoundBuffer>> cache;
@@ -36,13 +38,30 @@ public abstract class SoundBufferLibraryMixin {
         if (!VoiceAudio.isVoice(location)) {
             return;
         }
-        cir.setReturnValue(cache.computeIfAbsent(location, l -> CompletableFuture.supplyAsync(() -> {
-            try (InputStream in = VoiceAudio.open(l).orElseThrow(); FiniteAudioStream stream = new JOrbisAudioStream(in)) {
-                ByteBuffer data = stream.readAll();
-                return new SoundBuffer(data, stream.getFormat());
-            } catch (IOException e) {
-                throw new CompletionException(e);
+        CompletableFuture<SoundBuffer> cached = cache.get(location);
+        if (cached == null || cached.isCompletedExceptionally()) {
+            // a failed read is tried again next time, e.g. after the pack was downloaded
+            cached = CompletableFuture.supplyAsync(() -> {
+                try (InputStream in = VoiceAudio.open(location).orElseThrow(); FiniteAudioStream stream = new JOrbisAudioStream(in)) {
+                    ByteBuffer data = stream.readAll();
+                    return new SoundBuffer(data, stream.getFormat());
+                } catch (IOException e) {
+                    throw new CompletionException(e);
+                }
+            }, Util.nonCriticalIoPool());
+            cache.put(location, cached);
+        }
+        cir.setReturnValue(cached);
+    }
+
+    @Override
+    public void talkingvillagers$dropVoices(Predicate<String> keep) {
+        cache.entrySet().removeIf(entry -> {
+            boolean drop = VoiceAudio.packHash(entry.getKey()).filter(hash -> !keep.test(hash)).isPresent();
+            if (drop) {
+                entry.getValue().thenAccept(SoundBuffer::discardAlBuffer);
             }
-        }, Util.nonCriticalIoPool())));
+            return drop;
+        });
     }
 }

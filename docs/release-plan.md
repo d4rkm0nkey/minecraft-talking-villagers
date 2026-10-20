@@ -83,6 +83,15 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ## 2.0.0-beta.4: Robustheit bei Downloads und Packs
 
+**Status:** umgesetzt in `fix/beta-4`. Abweichungen vom Plan:
+- Priorisiert nach dem, was Spieler merken. Die Punkte unter **Core** sind nach 2.0.0 verschoben (siehe dort). Aus beta.5 vorgezogen: `NeoForgePlatformNetworking` ohne Client-Import (Setter wie bei Fabric). Neu: `/tv voice set` übernimmt das Geschlecht der Stimme (bei beta.3 gefunden).
+- Ablehnung durch den Server: kein neues Payload, sondern ein leerer `PackChunkPayload` mit `total = -1`. Clients von beta.3 sehen eine falsche Größe und brechen ebenfalls ab, das Protokoll bleibt kompatibel.
+- Stillstand: 30 s ohne Daten. Über die Spielverbindung zählt jeder Chunk für alle wartenden Downloads, weil der Server die Packs nacheinander schickt. Danach fragt der Download-Dialog erneut, auch bei vertrauten Servern, damit ein kaputter Server keine Endlosschleife auslöst. Der Server beantwortet höchstens 3 Anfragen pro Pack und Spieler.
+- HTTP: ein gemeinsamer `HttpClient`, die Antwort wird auf eigenen Threads gelesen und gezählt. Abbruch per Interrupt. HTTP-Downloads zeigen jetzt auch Prozent.
+- Icons: Fehlschläge bleiben bis zum nächsten Reload gecacht, sonst würde das Icon jeden Frame neu gelesen und geloggt. Beim Reload werden Fehlschläge vergessen und Texturen entfernter Packs freigegeben.
+- Sound-Cache: Fehlgeschlagene Einträge werden beim nächsten Abspielen ersetzt statt per Callback entfernt (der Cache ist eine `HashMap` des Client-Threads).
+- Fremde Dateien gleichen Namens bekommen nicht den Vorrang: die neue Datei erhält eine Nummer (`SafeFiles.freeName`).
+
 **Client-Downloads** (`PackDownloads`):
 - URL in `canDownload` validieren, `startHttp` mit try/catch absichern, im Fehlerfall `fail()`.
 - Timeout bei fehlendem Fortschritt (z. B. 30 s ohne Chunk) statt endlosem „Downloading 0 %“. Danach erneut anbieten.
@@ -128,7 +137,7 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 - **Übersetzungen**: Download-Fehler und die Einheiten MB/KB übersetzbar machen.
 - **`EntityVoices.crowded()`**: lokal mit `getEntitiesOfClass` suchen statt alle `SpeakerState`s zu durchlaufen.
 - **Chunk-Schreiben** in `onChunk` auf den Worker-Thread verlegen.
-- **`NeoForgePlatformNetworking`**: keinen Import der Client-Klasse in Code, den der Server lädt (Setter wie bei Fabric).
+- ~~**`NeoForgePlatformNetworking`**: keinen Import der Client-Klasse in Code, den der Server lädt.~~ Erledigt in beta.4.
 
 ---
 
@@ -156,6 +165,7 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ## 2.0.0: Testlücken und Release
 
+- Aus beta.4 verschoben (Core): `Versions.compare` transitiv, Überlauf in `ManifestCodec.integer()`, Reihenfolge in `PackIndex`, `MANIFEST_TOO_LARGE`, Namenskollisionen und fehlerhafte `en_us.json` im `Version1Converter`, Page-Header in `OggInfo`.
 - Neue Tests für `PackIndex`, `PackValidator`, `WeightedRandom`, `LineContext`, `ZipPackContents`, `EventPolicies` und `Selection.samplePitch`.
 - Der Fabric-Client-Gametest deckt Download, GUI und Sprechen nach allen Fixes ab.
 - In der Doku festhalten, dass unbekannte Events und Felder in der Mod nur Warnungen sind, während das Schema sie ablehnt.

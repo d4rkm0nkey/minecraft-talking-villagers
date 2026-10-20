@@ -4,6 +4,7 @@ import me.teajay.talkingvillagers.TalkingVillagers;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.io.PackReader;
 import me.teajay.talkingvillagers.core.model.VoicePack;
+import me.teajay.talkingvillagers.core.util.SafeFiles;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -94,13 +95,18 @@ final class PackInstaller {
         int installed = 0;
         for (Candidate candidate : candidates) {
             Path target = directory.resolve(candidate.file().getFileName());
+            Optional<LoadedPack> old = candidate.replaces();
             try {
                 Files.createDirectories(directory);
                 if (!candidate.file().toAbsolutePath().equals(target.toAbsolutePath())) {
-                    Files.copy(candidate.file(), target, StandardCopyOption.REPLACE_EXISTING);
+                    // only the older version of the same pack is replaced, any other file with this name stays
+                    boolean replacesOld = old.isPresent() && old.get().source().toAbsolutePath().equals(target.toAbsolutePath());
+                    if (!replacesOld) {
+                        target = SafeFiles.freeName(target);
+                    }
+                    SafeFiles.copyAtomically(candidate.file(), target);
                 }
                 // an update replaces the older file of the same pack
-                Optional<LoadedPack> old = candidate.replaces();
                 if (old.isPresent() && !old.get().source().toAbsolutePath().equals(target.toAbsolutePath())) {
                     moveToTrash(old.get().source());
                 }
