@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.0.0-beta.4 – 2026-10-20
+
+### Fixed
+- Downloads of server packs no longer hang at "Downloading 0 %". A download without new data for 30 seconds is stopped and offered again.
+- The server tells the client when it can't send a pack, e.g. after `/tv reload` removed it, instead of not answering.
+- Invalid download addresses (`packDownload.url`) no longer break the download; the pack then comes through the game connection if the server allows it.
+- HTTP downloads stop as soon as they get more data than the server announced.
+- Cleaning up the download cache no longer deletes the packs of the server you are playing on or unfinished downloads. Packs you use are kept longest. Unfinished downloads are removed when the game starts.
+- A voice line that could not be loaded once is loaded again next time instead of staying silent until the game restarts. Removed packs no longer stay in memory.
+- Installing, converting and keeping a downloaded pack write the file completely before it appears, so an interrupted copy can't leave a broken pack. Another file with the same name is kept; the new file gets a number (`pack-2.voicepack`).
+- `/tv voice set` takes over the gender of the voice, so `/tv voice get` no longer shows e.g. "Man – female".
+- NeoForge: the dedicated server no longer references client classes for sending packets.
+
+### Security
+- Pack files, icons and old version 1 packs are read with size limits (16 MiB per sound, 1 MiB and 1024×1024 pixels per icon, 200 MiB per converted pack), so a broken or hostile pack can't use up the memory.
+- The server answers at most three requests per player for the same pack and logs refused requests only once per player.
+
 ## 2.0.0-beta.3 – 2026-10-20
 
 ### Fixed

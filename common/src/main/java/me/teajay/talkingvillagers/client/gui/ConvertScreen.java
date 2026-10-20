@@ -6,6 +6,7 @@ import me.teajay.talkingvillagers.core.io.ZipPackContents;
 import me.teajay.talkingvillagers.core.model.Gender;
 import me.teajay.talkingvillagers.core.model.Languages;
 import me.teajay.talkingvillagers.core.model.VoicePack;
+import me.teajay.talkingvillagers.core.util.SafeFiles;
 import me.teajay.talkingvillagers.pack.Voicepacks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
@@ -99,7 +100,8 @@ class ConvertScreen extends Screen {
         if (id.isEmpty()) {
             id = "converted";
         }
-        Path target = Voicepacks.repository().directory().resolve(id + VoicePack.FILE_EXTENSION);
+        // never overwrite another pack that happens to have the same name
+        Path target = SafeFiles.freeName(Voicepacks.repository().directory().resolve(id + VoicePack.FILE_EXTENSION));
         try (ZipPackContents contents = new ZipPackContents(file)) {
             Version1Converter.Result result = Version1Converter.convertResourcePack(contents,
                     new Version1Converter.Settings(id, name.trim(), "2.0.0", Languages.normalize(language), gender, List.of()));

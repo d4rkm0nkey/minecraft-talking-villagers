@@ -5,6 +5,7 @@ import me.teajay.talkingvillagers.client.gui.DownloadPromptScreen;
 import me.teajay.talkingvillagers.config.Configs;
 import me.teajay.talkingvillagers.core.io.LoadedPack;
 import me.teajay.talkingvillagers.core.io.PackReader;
+import me.teajay.talkingvillagers.core.util.SafeFiles;
 import me.teajay.talkingvillagers.network.PackChunkPayload;
 import me.teajay.talkingvillagers.network.RequestPackPayload;
 import me.teajay.talkingvillagers.network.ServerPacksPayload.PackInfo;
@@ -14,10 +15,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -25,13 +30,17 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,12 +52,23 @@ public final class PackDownloads {
     /** Larger packs are never downloaded, whatever the server says. */
     public static final long MAX_PACK_BYTES = 200L * 1024 * 1024;
     private static final long CACHE_LIMIT = 500L * 1024 * 1024;
+    /** A download without new data for this long is given up and offered again. */
+    private static final long STALL_TIMEOUT_MS = 30_000;
     private static final SystemToast.SystemToastId TOAST = new SystemToast.SystemToastId(4000L);
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "Talking Villagers downloads");
         thread.setDaemon(true);
         return thread;
     });
+    private static final ExecutorService HTTP_WORKERS = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable, "Talking Villagers HTTP download");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(15))
+            .build();
 
     /** Running downloads by SHA-256. Client thread. */
     private static final Map<String, Download> ACTIVE = new HashMap<>();
@@ -63,23 +83,49 @@ public final class PackDownloads {
     public static final class Download {
         final PackInfo info;
         final Path part;
+        /** Set for downloads over HTTP(S), otherwise the pack comes through the game connection. */
+        final @Nullable URI uri;
         @Nullable FileChannel channel;
         @Nullable CompletableFuture<?> http;
-        long received;
+        /** Written by the HTTP worker while it reads the response. */
+        volatile @Nullable Thread httpThread;
+        volatile boolean cancelled;
+        volatile long received;
+        /** {@link Util#getMillis()} of the last data. */
+        volatile long lastProgress = Util.getMillis();
+        /** Set once all data is there and the file is checked; such downloads cannot stall any more. */
+        boolean verifying;
 
-        Download(PackInfo info, Path part) {
+        Download(PackInfo info, Path part, @Nullable URI uri) {
             this.info = info;
             this.part = part;
+            this.uri = uri;
         }
 
         public PackInfo info() {
             return info;
         }
 
-        /** 0..1, or -1 for HTTP downloads without progress. */
+        /** 0..1, or -1 if the size is unknown. */
         public float progress() {
-            return http != null ? -1 : info.size() == 0 ? 0 : (float) received / info.size();
+            return info.size() <= 0 ? -1 : Math.min(1, (float) received / info.size());
         }
+
+        /** The most bytes we accept for this pack. */
+        long limit() {
+            return info.size() > 0 ? Math.min(info.size(), MAX_PACK_BYTES) : MAX_PACK_BYTES;
+        }
+    }
+
+    /** Client setup: removes downloads that were interrupted when the game closed. */
+    public static void init() {
+        WORKER.execute(() -> {
+            try {
+                Voicepacks.repository().deletePartFiles();
+            } catch (IOException e) {
+                TalkingVillagers.LOG.warn("Cannot delete unfinished downloads", e);
+            }
+        });
     }
 
     /**
@@ -102,15 +148,50 @@ public final class PackDownloads {
 
     public static boolean canDownload(PackInfo pack) {
         // the hash names the file in the cache, anything else could point outside of it
-        return LoadedPack.isSha256(pack.sha256()) && (pack.downloadable() || isHttp(pack.url())) && pack.size() <= MAX_PACK_BYTES;
+        return LoadedPack.isSha256(pack.sha256()) && (pack.downloadable() || httpUri(pack.url()).isPresent()) && pack.size() <= MAX_PACK_BYTES;
     }
 
-    private static boolean isHttp(String url) {
-        return url.startsWith("https://") || url.startsWith("http://");
+    /** The address to download from, if the server named a valid HTTP(S) address. */
+    static Optional<URI> httpUri(String url) {
+        if (!url.startsWith("https://") && !url.startsWith("http://")) {
+            return Optional.empty();
+        }
+        try {
+            URI uri = new URI(url);
+            return uri.getHost() == null ? Optional.empty() : Optional.of(uri);
+        } catch (URISyntaxException e) {
+            return Optional.empty();
+        }
     }
 
-    /** Client tick: shows the question once the player is in the world and no other screen is open. */
+    /**
+     * Downloaded packs of the current server are used again, so they are pruned last.
+     */
+    static void markUsed(Set<String> sha256s) {
+        WORKER.execute(() -> Voicepacks.repository().markCachedUsed(sha256s));
+    }
+
+    /**
+     * Client tick: gives up downloads without progress and shows the question once the player is in the world and no
+     * other screen is open.
+     */
     public static void tick(Minecraft minecraft) {
+        long now = Util.getMillis();
+        List<Download> stalled = ACTIVE.values().stream()
+                .filter(download -> !download.verifying && now - download.lastProgress > STALL_TIMEOUT_MS)
+                .toList();
+        if (!stalled.isEmpty()) {
+            List<PackInfo> again = new ArrayList<>(offered);
+            for (Download download : stalled) {
+                fail(download, "no data for " + STALL_TIMEOUT_MS / 1000 + " s");
+                if (!again.contains(download.info)) {
+                    again.add(download.info);
+                }
+            }
+            // ask again instead of retrying on our own, even for trusted servers, so a broken server can't loop
+            offered = List.copyOf(again);
+            promptPending = true;
+        }
         if (promptPending && minecraft.player != null && minecraft.gui.screen() == null) {
             promptPending = false;
             if (!offered.isEmpty()) {
@@ -154,11 +235,13 @@ public final class PackDownloads {
                 TalkingVillagers.LOG.warn("Not downloading {}, invalid checksum from the server", pack.name());
                 continue;
             }
-            Download download = new Download(pack, part);
+            Download download = new Download(pack, part, httpUri(pack.url()).orElse(null));
             ACTIVE.put(pack.sha256(), download);
-            if (isHttp(pack.url())) {
+            if (download.uri != null) {
                 startHttp(download);
             } else {
+                // the server sends the packs one after another, so the waiting ones count from now as well
+                ACTIVE.values().stream().filter(other -> other.uri == null).forEach(other -> other.lastProgress = Util.getMillis());
                 Services.NETWORK.sendToServer(new RequestPackPayload(pack.sha256()));
             }
         }
@@ -167,28 +250,75 @@ public final class PackDownloads {
 
     private static void startHttp(Download download) {
         int current = session;
-        HttpClient client = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(15))
-                .build();
-        HttpRequest request = HttpRequest.newBuilder(URI.create(download.info.url())).timeout(Duration.ofMinutes(10)).build();
-        download.http = client.sendAsync(request, HttpResponse.BodyHandlers.ofFile(download.part))
-                .whenComplete((response, error) -> Minecraft.getInstance().execute(() -> {
-                    if (current != session) {
-                        return;
+        try {
+            download.http = CompletableFuture.runAsync(() -> downloadHttp(download), HTTP_WORKERS)
+                    .whenComplete((ignored, error) -> Minecraft.getInstance().execute(() -> {
+                        if (current != session || ACTIVE.get(download.info.sha256()) != download) {
+                            return;
+                        }
+                        if (error != null) {
+                            Throwable cause = error.getCause() != null ? error.getCause() : error;
+                            fail(download, String.valueOf(cause.getMessage()));
+                        } else {
+                            finish(download);
+                        }
+                    }));
+        } catch (RuntimeException e) {
+            fail(download, String.valueOf(e.getMessage()));
+        }
+    }
+
+    /** HTTP worker: reads the response into the {@code .part} file, at most as many bytes as the server announced. */
+    private static void downloadHttp(Download download) {
+        // a pool thread may still carry the interrupt meant for an earlier download
+        Thread.interrupted();
+        download.httpThread = Thread.currentThread();
+        try {
+            if (download.cancelled) {
+                throw new IOException("cancelled");
+            }
+            HttpRequest request = HttpRequest.newBuilder(download.uri).timeout(Duration.ofSeconds(30)).build();
+            HttpResponse<InputStream> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            try (InputStream body = response.body()) {
+                if (response.statusCode() != 200) {
+                    throw new IOException("HTTP " + response.statusCode());
+                }
+                OptionalLong length = response.headers().firstValueAsLong("Content-Length");
+                if (length.isPresent() && length.getAsLong() > download.limit()) {
+                    throw new IOException("the file is larger than the server said");
+                }
+                try (OutputStream out = Files.newOutputStream(download.part)) {
+                    byte[] buffer = new byte[64 * 1024];
+                    int read;
+                    while ((read = body.read(buffer)) >= 0) {
+                        if (download.cancelled) {
+                            throw new IOException("cancelled");
+                        }
+                        if (download.received + read > download.limit()) {
+                            throw new IOException("the file is larger than the server said");
+                        }
+                        out.write(buffer, 0, read);
+                        download.received += read;
+                        download.lastProgress = Util.getMillis();
                     }
-                    if (error != null || response.statusCode() != 200) {
-                        fail(download, error != null ? String.valueOf(error.getMessage()) : "HTTP " + response.statusCode());
-                    } else {
-                        finish(download);
-                    }
-                }));
+                }
+            }
+        } catch (IOException | InterruptedException | RuntimeException e) {
+            deletePart(download);
+            throw new CompletionException(download.cancelled ? new IOException("cancelled") : e);
+        } finally {
+            download.httpThread = null;
+        }
     }
 
     /** Client thread. */
     public static void onChunk(PackChunkPayload chunk) {
         Download download = ACTIVE.get(chunk.sha256());
-        if (download == null || download.http != null) {
+        if (download == null || download.uri != null) {
+            return;
+        }
+        if (chunk.total() == PackChunkPayload.REFUSED) {
+            fail(download, "the server cannot send this pack");
             return;
         }
         if (chunk.total() != download.info.size() || chunk.offset() != download.received
@@ -205,6 +335,7 @@ public final class PackDownloads {
                 download.channel.write(buffer);
             }
             download.received += chunk.data().length;
+            ACTIVE.values().stream().filter(other -> other.uri == null).forEach(other -> other.lastProgress = Util.getMillis());
             if (download.received == chunk.total()) {
                 download.channel.close();
                 download.channel = null;
@@ -218,6 +349,8 @@ public final class PackDownloads {
     /** Checks the file on a worker thread, moves it into the cache and reloads the packs. */
     private static void finish(Download download) {
         int current = session;
+        download.verifying = true;
+        Set<String> keep = ClientVoices.serverPackHashes();
         WORKER.execute(() -> {
             String error = null;
             try {
@@ -228,16 +361,19 @@ public final class PackDownloads {
                     error = pack.errors().getFirst().message();
                 } else {
                     Path target = download.part.resolveSibling(download.info.sha256() + ".voicepack");
-                    Files.move(download.part, target, StandardCopyOption.REPLACE_EXISTING);
-                    Voicepacks.repository().pruneCache(CACHE_LIMIT);
+                    SafeFiles.move(download.part, target);
+                    Voicepacks.repository().pruneCache(CACHE_LIMIT, keep);
                     Voicepacks.reload();
                 }
             } catch (IOException e) {
                 error = e.getMessage();
             }
+            if (error != null) {
+                deletePart(download);
+            }
             String result = error;
             Minecraft.getInstance().execute(() -> {
-                if (current != session) {
+                if (current != session || ACTIVE.get(download.info.sha256()) != download) {
                     return;
                 }
                 if (result != null) {
@@ -258,15 +394,28 @@ public final class PackDownloads {
     }
 
     private static void close(Download download) {
+        download.cancelled = true;
         try {
             if (download.channel != null) {
                 download.channel.close();
+                download.channel = null;
             }
-            if (download.http != null) {
-                download.http.cancel(true);
-            }
-            Files.deleteIfExists(download.part);
         } catch (IOException ignored) {
+        }
+        Thread httpThread = download.httpThread;
+        if (httpThread != null) {
+            // unblocks the read; the worker deletes its file itself
+            httpThread.interrupt();
+        } else if (!download.verifying) {
+            deletePart(download);
+        }
+    }
+
+    private static void deletePart(Download download) {
+        try {
+            Files.deleteIfExists(download.part);
+        } catch (IOException e) {
+            TalkingVillagers.LOG.warn("Cannot delete {}", download.part, e);
         }
     }
 

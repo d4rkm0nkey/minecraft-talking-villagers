@@ -86,7 +86,8 @@ public final class VoiceCommandService {
             return SetResult.WRONG_AGE;
         }
         VoiceIdentity current = identity(entity).orElseThrow();
-        Services.ATTACHMENTS.setIdentity(entity, current.withVoice(voice.ref(), voice.voice().pitch().sample(RANDOM), entity.isBaby(), true));
+        Services.ATTACHMENTS.setIdentity(entity, current.withVoice(voice.ref(), voice.voice().pitch().sample(RANDOM), entity.isBaby(), true)
+                .adoptingGenderOf(voice.voice().gender()));
         return SetResult.OK;
     }
 

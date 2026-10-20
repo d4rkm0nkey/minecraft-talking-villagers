@@ -13,6 +13,8 @@ import me.teajay.talkingvillagers.core.model.PitchRange;
 import me.teajay.talkingvillagers.core.model.Voice;
 import me.teajay.talkingvillagers.core.model.VoiceLine;
 import me.teajay.talkingvillagers.core.model.VoicePack;
+import me.teajay.talkingvillagers.core.pack.PackRepository;
+import me.teajay.talkingvillagers.core.util.SafeFiles;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +46,9 @@ public final class Version1Converter {
     private static final Map<String, String> EVENTS = Map.of("herodrop", "hero_gift", "level", "level_up", "nope", "no", "tradesuccess", "trade_success");
     private static final Map<String, String> PROFESSIONS = Map.of("cartograph", "cartographer");
     private static final String ALL_PROFESSIONS = "all";
+    private static final int MAX_LANG_BYTES = 1024 * 1024;
+    /** The converted pack is held in memory, so old packs larger than this are refused. */
+    public static final long MAX_TOTAL_BYTES = 200L * 1024 * 1024;
 
     private Version1Converter() {
     }
@@ -78,6 +83,7 @@ public final class Version1Converter {
         Map<String, Map<String, List<VoiceLine>>> linesByVoice = new TreeMap<>();
         Map<String, byte[]> files = new LinkedHashMap<>();
         List<String> skipped = new ArrayList<>();
+        long total = 0;
 
         for (String path : contents.files()) {
             if (!path.startsWith(voicesRoot) || !path.toLowerCase(Locale.ROOT).endsWith(".ogg")) {
@@ -99,9 +105,15 @@ public final class Version1Converter {
             String sound = parts[3].substring(0, parts[3].length() - 4);
             String prefix = profession.equals(ALL_PROFESSIONS) ? "" : sanitize(profession) + "-";
             String target = "sounds/" + voiceId + "/" + event + "/" + prefix + sanitize(sound) + ".ogg";
+            byte[] data;
             try (InputStream in = contents.open(path)) {
-                files.put(target, in.readAllBytes());
+                data = SafeFiles.readAtMost(in, PackRepository.MAX_FILE_BYTES, path);
             }
+            total += data.length;
+            if (total > MAX_TOTAL_BYTES) {
+                throw new IOException("The pack is larger than " + MAX_TOTAL_BYTES / 1024 / 1024 + " MiB");
+            }
+            files.put(target, data);
             // version 1 numbered variants of the same line (hello1, hello2) and shared one subtitle
             String subtitleKey = "subtitles.talkingvillagers." + voiceFolder + "_" + sound.replaceAll("\\d+$", "");
             Optional<String> text = lang.has(subtitleKey) && !lang.get(subtitleKey).getAsString().isBlank()
@@ -128,10 +140,14 @@ public final class Version1Converter {
     }
 
     /**
-     * Writes the converted pack as a {@code .voicepack} file.
+     * Writes the converted pack as a {@code .voicepack} file. The file only appears once it is complete.
      */
     public static void write(Result result, Map<String, byte[]> extraFiles, Path target) throws IOException {
         Files.createDirectories(target.toAbsolutePath().getParent());
+        SafeFiles.writeAtomically(target, temp -> writeZip(result, extraFiles, temp));
+    }
+
+    private static void writeZip(Result result, Map<String, byte[]> extraFiles, Path target) throws IOException {
         try (OutputStream out = Files.newOutputStream(target); ZipOutputStream zip = new ZipOutputStream(out)) {
             zip.putNextEntry(new ZipEntry(VoicePack.MANIFEST));
             zip.write(ManifestCodec.write(result.pack()).getBytes(StandardCharsets.UTF_8));
@@ -148,7 +164,7 @@ public final class Version1Converter {
 
     private static JsonObject readJson(PackContents contents, String path) throws IOException {
         try (InputStream in = contents.open(path)) {
-            return JsonParser.parseString(new String(in.readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
+            return JsonParser.parseString(new String(SafeFiles.readAtMost(in, MAX_LANG_BYTES, path), StandardCharsets.UTF_8)).getAsJsonObject();
         }
     }
 
