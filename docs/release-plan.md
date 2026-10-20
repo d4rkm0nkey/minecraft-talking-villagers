@@ -91,6 +91,7 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 - Icons: Fehlschläge bleiben bis zum nächsten Reload gecacht, sonst würde das Icon jeden Frame neu gelesen und geloggt. Beim Reload werden Fehlschläge vergessen und Texturen entfernter Packs freigegeben.
 - Sound-Cache: Fehlgeschlagene Einträge werden beim nächsten Abspielen ersetzt statt per Callback entfernt (der Cache ist eine `HashMap` des Client-Threads).
 - Fremde Dateien gleichen Namens bekommen nicht den Vorrang: die neue Datei erhält eine Nummer (`SafeFiles.freeName`).
+- Getestet: `/tv voice set` per RCON auf NeoForge (Geschlecht wird übernommen), Dedicated Server auf NeoForge startet. `DownloadClientGameTest` gegen den Fabric-Dev-Server: abgebrochener Download hinterlässt nichts, vollständiger Download landet im Cache, Accessoren und Sound-Cache-Mixin laden. Stillstand-Timeout und HTTP-Download nicht im Spiel getestet.
 
 **Client-Downloads** (`PackDownloads`):
 - URL in `canDownload` validieren, `startHttp` mit try/catch absichern, im Fehlerfall `fail()`.

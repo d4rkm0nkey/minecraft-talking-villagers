@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-beta.4 – unreleased
+## 2.0.0-beta.4 – 2026-10-20
 
 ### Fixed
 - Downloads of server packs no longer hang at "Downloading 0 %". A download without new data for 30 seconds is stopped and offered again.
