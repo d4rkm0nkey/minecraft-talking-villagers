@@ -196,36 +196,35 @@ export function compress(pcm: Float32Array, sampleRate: number, thresholdDb = -2
   return out;
 }
 
-/** Changes the sample rate; when lowering it, a simple low-pass avoids aliasing. */
+/** Zero crossings of the sinc on each side; more gives a steeper filter. */
+const SINC_ZEROS = 16;
+
+/**
+ * Changes the sample rate with a windowed-sinc filter (Blackman window). When lowering the rate, the filter also cuts
+ * everything above the new Nyquist frequency, so nothing folds back as aliasing.
+ */
 export function resample(pcm: Float32Array, from: number, to: number): Float32Array {
   if (from === to) return pcm.slice();
-  let source = pcm;
-  if (to < from) {
-    const taps = Math.max(1, Math.round(from / to));
-    source = new Float32Array(pcm.length);
-    for (let i = 0; i < pcm.length; i++) {
-      let sum = 0;
-      let count = 0;
-      for (let k = -taps; k <= taps; k++) {
-        const j = i + k;
-        if (j >= 0 && j < pcm.length) {
-          sum += pcm[j];
-          count++;
-        }
-      }
-      source[i] = sum / count;
-    }
-  }
-  const length = Math.round((source.length * to) / from);
+  const ratio = to / from;
+  const length = Math.round(pcm.length * ratio);
   const out = new Float32Array(length);
-  const step = from / to;
+  // cutoff relative to the source Nyquist frequency, a little below the new one when downsampling
+  const cutoff = ratio < 1 ? ratio * 0.95 : 1;
+  const half = Math.ceil(SINC_ZEROS / cutoff);
   for (let i = 0; i < length; i++) {
-    const position = i * step;
-    const index = Math.floor(position);
-    const fraction = position - index;
-    const a = source[index] ?? 0;
-    const b = source[Math.min(index + 1, source.length - 1)] ?? 0;
-    out[i] = a + (b - a) * fraction;
+    const position = i / ratio;
+    const center = Math.floor(position);
+    let sum = 0;
+    for (let j = center - half + 1; j <= center + half; j++) {
+      if (j < 0 || j >= pcm.length) continue;
+      const x = position - j;
+      if (Math.abs(x) >= half) continue;
+      const arg = Math.PI * cutoff * x;
+      const sinc = arg === 0 ? 1 : Math.sin(arg) / arg;
+      const w = 0.42 + 0.5 * Math.cos((Math.PI * x) / half) + 0.08 * Math.cos((2 * Math.PI * x) / half);
+      sum += pcm[j] * cutoff * sinc * w;
+    }
+    out[i] = sum;
   }
   return out;
 }

@@ -2,7 +2,6 @@
   import type { Line, Project, Voice } from "../lib/model/types";
   import type { Audio } from "../lib/audio/process";
   import { processLine } from "../lib/audio/process";
-  import { noiseProfile } from "../lib/audio/spectralGate";
   import { loadAudio } from "../lib/store/audio";
   import { touch } from "../lib/store/projects.svelte";
   import { denoise, play, stop } from "../lib/audio/browser";
@@ -50,7 +49,7 @@
     if (!(await ensureLoaded()) || !raw) return;
     playing = "processed";
     const noise = project.noiseProfileAudioId ? await loadAudio(project.noiseProfileAudioId) : undefined;
-    const processed = await processLine(raw, line, $state.snapshot(project.processing), noise ? noiseProfile(noise.data) : undefined, denoise);
+    const processed = await processLine(raw, line, $state.snapshot(project.processing), noise, denoise);
     const pitch = (voice.pitchMin + voice.pitchMax) / 2;
     play(processed, pitch, () => (playing = undefined));
   }

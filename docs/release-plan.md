@@ -203,6 +203,15 @@ Heute liest `Voicepacks.reload()` jede Datei komplett und berechnet SHA-256, auf
 - **Export-Worker**: `onerror` behandeln, beim Verlassen beenden.
 
 ### Editor-Update B: Audioqualität und Stabilität
+
+**Status:** umgesetzt in `fix/editor-audio` (auf `fix/editor-data`). Abweichungen vom Plan:
+- Resampler: Windowed-Sinc mit Blackman-Fenster (16 Nulldurchgänge) für jede Umrechnung; beim Herabsetzen liegt die Grenzfrequenz bei 95 % der neuen Nyquist-Frequenz. Ein eigener Weg ohne Filter bei Verhältnis ≈ 1 war nicht nötig, gleiche Raten werden weiter nur kopiert.
+- Rauschprofil: `noiseProfileFor(room, sampleRate)` rechnet die Raumton-Aufnahme auf die Rate der Line um und merkt sich das Profil pro Rate. `processLine` bekommt dafür die Raumton-Aufnahme statt eines fertigen Profils.
+- Vorbis: ein Encoder für alle Lines, die Kodierungen laufen nacheinander (der Encoder wird wiederverwendet).
+- Audio-Cache: höchstens 40 dekodierte Aufnahmen, zuletzt benutzte zuletzt verdrängt.
+- Pegel: höchstens alle 50 ms an die Oberfläche, Übersteuerung wird trotzdem pro Block erkannt.
+- Eingangskanäle: das Worklet mischt alle Kanäle zu Mono oder nimmt einen Kanal. Die Auswahl erscheint im Studio nur bei Mikrofonen mit mehr als einem Kanal und wird gemerkt. `channelCount: 1` wird nicht mehr verlangt.
+- Getestet: Unit-Tests für Resampler (Ton bleibt, Alias wird entfernt) und Rauschprofil, Typecheck, `WebEditorExportTest`, headless Firefox mit Fake-Mikrofon (Pegel, abgebrochener Countdown, Aufnahme gespeichert, Export einer Demo mit 5 Lines). Ein echtes Mehrkanal-Mikrofon und das Verlassen während der Mikrofon-Abfrage nicht im Browser getestet.
 - **Resampler**: Windowed-Sinc statt Box-Filter, bei Verhältnis ≈ 1 ohne Filter.
 - **Rauschprofil** auf die Abtastrate der Line umrechnen.
 - **Long Take**: laufender Sample-Zähler statt alle 100 ms den ganzen Puffer zu kopieren.

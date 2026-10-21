@@ -270,4 +270,7 @@ export const en: Record<string, string> = {
   "import.no_v1_voices": "No voices found. A version 1 pack has its sounds in assets/talkingvillagers/sounds/voices/",
   "voice.file_failed": "{file} could not be added: {message}",
   "pack.export_worker_failed": "the export stopped unexpectedly",
+  "studio.channel": "Input channel",
+  "studio.channel.mix": "All channels mixed",
+  "studio.channel.n": "Channel {n} only",
 };
