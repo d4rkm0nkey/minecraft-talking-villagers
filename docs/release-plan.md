@@ -129,16 +129,58 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ---
 
-## 2.0.0-beta.5: Performance und Bedienung
+## 2.0.0-beta.5: Performance, Bedienung und Feedback-Link
 
-- **Reloads und Hashing nicht im Spiel-Thread**: in der GUI (`VoicepacksScreen`, `PackInstaller`, `ConvertScreen`) und bei `/tv reload` auf einem Worker laden, das Ergebnis per `execute` übernehmen. Hashes nach Pfad, Größe und mtime cachen.
-- **Voicepack-Liste springt nach oben**: Scroll-Position bei `refresh()` behalten oder nur den Fortschrittstext aktualisieren.
-- **Lautstärke über 100 %**: auf 0–1 begrenzen oder in der UI als Hörweite bezeichnen.
-- **Vertraute Server** in den Einstellungen anzeigen und entfernen.
-- **Übersetzungen**: Download-Fehler und die Einheiten MB/KB übersetzbar machen.
-- **`EntityVoices.crowded()`**: lokal mit `getEntitiesOfClass` suchen statt alle `SpeakerState`s zu durchlaufen.
-- **Chunk-Schreiben** in `onChunk` auf den Worker-Thread verlegen.
-- ~~**`NeoForgePlatformNetworking`**: keinen Import der Client-Klasse in Code, den der Server lädt.~~ Erledigt in beta.4.
+**Status:** umgesetzt in `fix/beta-5`. Abweichungen vom Plan:
+- `reloadAsync()` teilt sich nur einen Reload, der noch nicht gestartet ist. Läuft schon einer, folgt ein neuer, damit Änderungen kurz vor dem Aufruf sicher drin sind.
+- `/tv reload` antwortet sofort mit „Reloading voicepacks…“ und schickt das Ergebnis, wenn der Reload fertig ist. Über RCON kommt nur die erste Meldung an, weil RCON die Antwort beim Ausführen einsammelt.
+- Ein Pack-Wechsel per Schalter (`Configs.setServer`) lädt weiter synchron. Mit dem Cache werden dabei keine Dateien neu gelesen, nur der Index neu gebaut.
+- Der Download-Worker schreibt Chunks, prüft danach und löscht beim Abbruch (`close`) die Datei nach den schon eingereihten Schreibvorgängen.
+- Zahlen in Größenangaben haben immer einen Punkt (`1.5 MB`), nur die Einheit ist übersetzbar.
+- `crowded()`: keine Messung im Spiel, weil Raids und Small Talk einen Spieler in der Nähe brauchen. Der Aufwand hängt jetzt von den Entities im Umkreis ab statt von allen Sprechern der Welt.
+- Getestet: `./gradlew build`, `/tv reload` per RCON auf NeoForge und Fabric (Reload läuft auf „Talking Villagers reload“), Fabric-Client-Gametests mit `DownloadClientGameTest` gegen den Dev-Server, Screenshots von Voicepack-Screen (Feedback-Zeile) und Einstellungen (Lautstärke 100 %, vertraute Server).
+
+Ziel: Die Mod ruckelt nicht mehr bei Reloads und beim Installieren, die Einstellungen sind verständlich, und Spieler finden die Umfrage. Mit beta.5 startet die Spielerumfrage (`docs/player-survey.md` auf `docs/player-survey`): 3 Wochen ab Release, danach Auswertung vor 2.0.0.
+
+### 1. Feedback-Link (Umfrage)
+
+Adresse: `https://tally.so/r/zExyRM`. Nur ein Link, der nach Bestätigung den Browser öffnet; die Mod sendet nichts.
+
+- **Voicepack-Screen:** Die Fußleiste ist mit 5 Buttons voll (5 × 76 px). Stattdessen eine Zeile ganz oben in der Liste: „Talking Villagers 2 is a beta – tell us what you think!“ mit Button *Feedback* (`ConfirmLinkScreen.confirmLink`, wie beim Web-Editor). Nur solange die Mod-Version `-beta` enthält, damit der Link mit 2.0.0 von selbst verschwindet.
+- **Einstellungen:** dieselbe Zeile unten im `SettingsScreen` (für Leute, die über Mod Menu direkt dort landen).
+- Konstante `FEEDBACK_URL` neben `WEB_EDITOR`. Übersetzungen `talkingvillagers.gui.packs.feedback*` in `en_us.json` und `de_de.json`.
+- **Außerhalb der Mod:** Changelog von beta.5 (erste Zeile), README unter „Download“, Wiki `pages/docs/beta.md` (neuer Abschnitt „Feedback“ neben „Reporting bugs“). Modrinth- und CurseForge-Beschreibung und die GitHub Discussion macht der Autor von Hand.
+- Test: Screenshot im `GuiClientGameTest` (Zeile sichtbar, Button öffnet den Bestätigungsdialog, nicht den Browser).
+
+### 2. Reloads und Installieren ohne Ruckler
+
+Heute liest `Voicepacks.reload()` jede Datei komplett und berechnet SHA-256, auf dem Thread, der es aufruft (Render-Thread in der GUI, Server-Thread bei `/tv reload`). Bei großen Packs friert das Spiel ein.
+
+- **Cache in `PackRepository`:** `LoadedPack` nach Pfad, Größe und mtime merken. Unveränderte Dateien werden nicht neu gelesen und gehasht. Neue Tests: unveränderte Datei → dasselbe Objekt, geänderte mtime oder Größe → neu gelesen, gelöschte Datei fällt aus dem Cache.
+- **`Voicepacks.reloadAsync()`:** lädt auf einem eigenen Worker und gibt ein `CompletableFuture<PackIndex>` zurück. Gleichzeitige Aufrufe teilen sich einen laufenden Reload. Die Reload-Listener springen schon heute selbst in den richtigen Thread (`execute`), das bleibt so.
+- **GUI:** *Reload*, Löschen, *Install permanently*, Installieren und Konvertieren nutzen `reloadAsync()`. Während des Ladens zeigt der Screen „Loading voicepacks…“ in der Kopfzeile und sperrt die Buttons, die Packs ändern. `PackInstaller.install` prüft die abgelegten Dateien (`PackReader.read`) ebenfalls auf dem Worker und öffnet den Bestätigungsdialog danach.
+- **`/tv reload`:** lädt asynchron, die Meldung kommt per `server.execute`, wenn der Reload fertig ist.
+- **Download:** `onChunk` schreibt über den Download-Worker statt auf dem Render-Thread. Der Worker ist ein einzelner Thread, deshalb bleibt die Reihenfolge der Chunks erhalten und `finish` läuft automatisch nach dem letzten Chunk.
+
+### 3. Bedienung
+
+- **Liste springt nicht mehr nach oben:** `VoicepacksScreen.refresh()` merkt sich die Scroll-Position wie `ListScreen.refresh()`. Während Downloads laufen, nur die Fortschrittszeilen aktualisieren statt alle Zeilen neu zu bauen.
+- **Lautstärke:** Der Regler geht heute bis 200 %. Minecraft spielt nie lauter als 100 %, höhere Werte vergrößern nur die Hörweite, das versteht niemand. Regler auf 0–100 % begrenzen, `volume` im Codec auf 0–1, ältere Werte über 1 werden beim Laden auf 1 gesetzt (statt die Datei als ungültig zu verwerfen). Wiki `configuration.md` anpassen.
+- **Vertraute Server in den Einstellungen:** Abschnitt „Trusted servers“ im `SettingsScreen` mit einer Zeile pro Server und Button *Remove*. Leer: Hinweis, wie ein Server dazukommt („Always download from this server“).
+- **Übersetzungen:** Die Gründe für Download-Fehler (`fail(…)` in `PackDownloads`, heute englischer Text) werden Übersetzungsschlüssel mit Parametern. Größenangaben über eine kleine Hilfsfunktion mit übersetzbaren Einheiten (`talkingvillagers.unit.kib/mib`). Deutsche Texte in `de_de.json`.
+
+### 4. Server-Performance
+
+- **`EntityVoices.crowded()`:** Heute laufen alle `SpeakerState`s der Welt durch, bei jedem Satz. Stattdessen `level.getEntitiesOfClass(LivingEntity.class, box um CROWD_RADIUS, …)` und nur deren Zustand prüfen. Vorher und nachher mit JFR und `/tick query` in einem Dorf mit Raid vergleichen (siehe Notizen zur Performance, kein spark).
+
+### Reihenfolge und Tests
+
+1. Feedback-Link (klein, damit er sicher drin ist).
+2. Cache und `reloadAsync()` in Core und `Voicepacks`, mit Unit-Tests.
+3. GUI, `/tv reload` und `onChunk` auf den neuen Reload umstellen.
+4. Bedienung (Scroll, Lautstärke, vertraute Server, Übersetzungen).
+5. `crowded()` mit Messung.
+6. Test: `./gradlew build`, RCON (`/tv reload` mit Meldung, Sprechen im Raid), Fabric-Client-Gametests inklusive `DownloadClientGameTest`, Screenshots der Screens prüfen. NeoForge-Server starten.
 
 ---
 

@@ -20,6 +20,13 @@ village, commands and pack downloads on servers. The
 [changelog](https://github.com/d4rkm0nkey/minecraft-talking-villagers/blob/master/CHANGELOG.md)
 lists it all.
 
+## Feedback
+
+What do you like, what do you miss, what should come next: more situations, more lines,
+more voices, more mobs or fewer bugs? Tell us in the
+[5-minute survey](https://tally.so/r/zExyRM). The *Feedback* button in the voicepack screen
+opens it as well.
+
 ## Reporting bugs
 
 Open an [issue](https://github.com/d4rkm0nkey/minecraft-talking-villagers/issues) with

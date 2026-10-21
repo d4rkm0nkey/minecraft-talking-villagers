@@ -90,11 +90,14 @@ public final class PackDownloads {
         /** Written by the HTTP worker while it reads the response. */
         volatile @Nullable Thread httpThread;
         volatile boolean cancelled;
+        /** Bytes written to {@link #part}. */
         volatile long received;
+        /** Bytes accepted from the server and queued for writing. Client thread. */
+        long accepted;
         /** {@link Util#getMillis()} of the last data. */
         volatile long lastProgress = Util.getMillis();
         /** Set once all data is there and the file is checked; such downloads cannot stall any more. */
-        boolean verifying;
+        volatile boolean verifying;
 
         Download(PackInfo info, Path part, @Nullable URI uri) {
             this.info = info;
@@ -114,6 +117,25 @@ public final class PackDownloads {
         /** The most bytes we accept for this pack. */
         long limit() {
             return info.size() > 0 ? Math.min(info.size(), MAX_PACK_BYTES) : MAX_PACK_BYTES;
+        }
+    }
+
+    /** Why a download failed, as translatable text. */
+    private static final class DownloadError extends IOException {
+        final Component reason;
+
+        DownloadError(String key, Object... args) {
+            this(Component.translatable("talkingvillagers.download.error." + key, args));
+        }
+
+        DownloadError(Component reason) {
+            super(reason.getString());
+            this.reason = reason;
+        }
+
+        static Component reason(Throwable error) {
+            return error instanceof DownloadError download ? download.reason
+                    : Component.translatable("talkingvillagers.download.error.io", String.valueOf(error.getMessage()));
         }
     }
 
@@ -183,7 +205,7 @@ public final class PackDownloads {
         if (!stalled.isEmpty()) {
             List<PackInfo> again = new ArrayList<>(offered);
             for (Download download : stalled) {
-                fail(download, "no data for " + STALL_TIMEOUT_MS / 1000 + " s");
+                fail(download, new DownloadError("stalled", STALL_TIMEOUT_MS / 1000));
                 if (!again.contains(download.info)) {
                     again.add(download.info);
                 }
@@ -257,14 +279,13 @@ public final class PackDownloads {
                             return;
                         }
                         if (error != null) {
-                            Throwable cause = error.getCause() != null ? error.getCause() : error;
-                            fail(download, String.valueOf(cause.getMessage()));
+                            fail(download, error.getCause() != null ? error.getCause() : error);
                         } else {
-                            finish(download);
+                            verifyLater(download);
                         }
                     }));
         } catch (RuntimeException e) {
-            fail(download, String.valueOf(e.getMessage()));
+            fail(download, e);
         }
     }
 
@@ -275,27 +296,27 @@ public final class PackDownloads {
         download.httpThread = Thread.currentThread();
         try {
             if (download.cancelled) {
-                throw new IOException("cancelled");
+                throw new DownloadError("cancelled");
             }
             HttpRequest request = HttpRequest.newBuilder(download.uri).timeout(Duration.ofSeconds(30)).build();
             HttpResponse<InputStream> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
             try (InputStream body = response.body()) {
                 if (response.statusCode() != 200) {
-                    throw new IOException("HTTP " + response.statusCode());
+                    throw new DownloadError("http", response.statusCode());
                 }
                 OptionalLong length = response.headers().firstValueAsLong("Content-Length");
                 if (length.isPresent() && length.getAsLong() > download.limit()) {
-                    throw new IOException("the file is larger than the server said");
+                    throw new DownloadError("too_large");
                 }
                 try (OutputStream out = Files.newOutputStream(download.part)) {
                     byte[] buffer = new byte[64 * 1024];
                     int read;
                     while ((read = body.read(buffer)) >= 0) {
                         if (download.cancelled) {
-                            throw new IOException("cancelled");
+                            throw new DownloadError("cancelled");
                         }
                         if (download.received + read > download.limit()) {
-                            throw new IOException("the file is larger than the server said");
+                            throw new DownloadError("too_large");
                         }
                         out.write(buffer, 0, read);
                         download.received += read;
@@ -305,109 +326,144 @@ public final class PackDownloads {
             }
         } catch (IOException | InterruptedException | RuntimeException e) {
             deletePart(download);
-            throw new CompletionException(download.cancelled ? new IOException("cancelled") : e);
+            throw new CompletionException(download.cancelled ? new DownloadError("cancelled") : e);
         } finally {
             download.httpThread = null;
         }
     }
 
-    /** Client thread. */
+    /** Client thread. Checks the chunk here and writes it on the worker, so the game doesn't wait for the disk. */
     public static void onChunk(PackChunkPayload chunk) {
         Download download = ACTIVE.get(chunk.sha256());
         if (download == null || download.uri != null) {
             return;
         }
         if (chunk.total() == PackChunkPayload.REFUSED) {
-            fail(download, "the server cannot send this pack");
+            fail(download, new DownloadError("refused"));
             return;
         }
-        if (chunk.total() != download.info.size() || chunk.offset() != download.received
+        if (chunk.total() != download.info.size() || chunk.offset() != download.accepted
                 || chunk.offset() + chunk.data().length > chunk.total()) {
-            fail(download, "unexpected data from the server");
+            fail(download, new DownloadError("unexpected"));
             return;
         }
-        try {
-            if (download.channel == null) {
-                download.channel = FileChannel.open(download.part, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-            }
-            ByteBuffer buffer = ByteBuffer.wrap(chunk.data());
-            while (buffer.hasRemaining()) {
-                download.channel.write(buffer);
-            }
-            download.received += chunk.data().length;
-            ACTIVE.values().stream().filter(other -> other.uri == null).forEach(other -> other.lastProgress = Util.getMillis());
-            if (download.received == chunk.total()) {
-                download.channel.close();
-                download.channel = null;
-                finish(download);
-            }
-        } catch (IOException e) {
-            fail(download, e.getMessage());
+        download.accepted += chunk.data().length;
+        ACTIVE.values().stream().filter(other -> other.uri == null).forEach(other -> other.lastProgress = Util.getMillis());
+        boolean last = download.accepted == chunk.total();
+        if (last) {
+            download.verifying = true;
         }
-    }
-
-    /** Checks the file on a worker thread, moves it into the cache and reloads the packs. */
-    private static void finish(Download download) {
         int current = session;
-        download.verifying = true;
-        Set<String> keep = ClientVoices.serverPackHashes();
+        Set<String> keep = last ? ClientVoices.serverPackHashes() : Set.of();
         WORKER.execute(() -> {
-            String error = null;
+            if (download.cancelled) {
+                return;
+            }
             try {
-                LoadedPack pack = PackReader.read(download.part);
-                if (!pack.sha256().equals(download.info.sha256())) {
-                    error = "checksum does not match";
-                } else if (!pack.isUsable()) {
-                    error = pack.errors().getFirst().message();
-                } else {
-                    Path target = download.part.resolveSibling(download.info.sha256() + ".voicepack");
-                    SafeFiles.move(download.part, target);
-                    Voicepacks.repository().pruneCache(CACHE_LIMIT, keep);
-                    Voicepacks.reload();
+                if (download.channel == null) {
+                    download.channel = FileChannel.open(download.part, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                }
+                ByteBuffer buffer = ByteBuffer.wrap(chunk.data());
+                while (buffer.hasRemaining()) {
+                    download.channel.write(buffer);
+                }
+                download.received += chunk.data().length;
+                if (last) {
+                    download.channel.close();
+                    download.channel = null;
+                    verify(download, current, keep);
                 }
             } catch (IOException e) {
-                error = e.getMessage();
-            }
-            if (error != null) {
+                closeChannel(download);
                 deletePart(download);
+                Minecraft.getInstance().execute(() -> {
+                    if (current == session && ACTIVE.get(download.info.sha256()) == download) {
+                        fail(download, e);
+                    }
+                });
             }
-            String result = error;
-            Minecraft.getInstance().execute(() -> {
-                if (current != session || ACTIVE.get(download.info.sha256()) != download) {
-                    return;
-                }
-                if (result != null) {
-                    fail(download, result);
-                    return;
-                }
-                ACTIVE.remove(download.info.sha256());
-                toast(Component.translatable("talkingvillagers.download.done"), Component.literal(download.info.name()));
-            });
         });
     }
 
-    private static void fail(Download download, @Nullable String reason) {
-        TalkingVillagers.LOG.warn("Download of voicepack {} failed: {}", download.info.name(), reason);
+    /** Client thread: all data of an HTTP download is there. */
+    private static void verifyLater(Download download) {
+        download.verifying = true;
+        int current = session;
+        Set<String> keep = ClientVoices.serverPackHashes();
+        WORKER.execute(() -> verify(download, current, keep));
+    }
+
+    /**
+     * Worker: checks the file, moves it into the cache and reloads the packs.
+     *
+     * @param keep packs of the current server, which pruning the cache must not delete
+     */
+    private static void verify(Download download, int current, Set<String> keep) {
+        DownloadError error = null;
+        try {
+            LoadedPack pack = PackReader.read(download.part);
+            if (!pack.sha256().equals(download.info.sha256())) {
+                error = new DownloadError("checksum");
+            } else if (!pack.isUsable()) {
+                error = new DownloadError("invalid", pack.errors().getFirst().message());
+            } else {
+                Path target = download.part.resolveSibling(download.info.sha256() + ".voicepack");
+                SafeFiles.move(download.part, target);
+                Voicepacks.repository().pruneCache(CACHE_LIMIT, keep);
+                Voicepacks.reload();
+            }
+        } catch (IOException e) {
+            error = new DownloadError(DownloadError.reason(e));
+        }
+        if (error != null) {
+            deletePart(download);
+        }
+        DownloadError result = error;
+        Minecraft.getInstance().execute(() -> {
+            if (current != session || ACTIVE.get(download.info.sha256()) != download) {
+                return;
+            }
+            if (result != null) {
+                fail(download, result);
+                return;
+            }
+            ACTIVE.remove(download.info.sha256());
+            toast(Component.translatable("talkingvillagers.download.done"), Component.literal(download.info.name()));
+        });
+    }
+
+    private static void fail(Download download, Throwable error) {
+        Component reason = DownloadError.reason(error);
+        TalkingVillagers.LOG.warn("Download of voicepack {} failed: {}", download.info.name(), error.getMessage());
         ACTIVE.remove(download.info.sha256());
         close(download);
-        toast(Component.translatable("talkingvillagers.download.failed"), Component.literal(download.info.name() + ": " + reason));
+        toast(Component.translatable("talkingvillagers.download.failed"), Component.literal(download.info.name() + ": ").append(reason));
     }
 
     private static void close(Download download) {
         download.cancelled = true;
+        Thread httpThread = download.httpThread;
+        if (httpThread != null) {
+            // unblocks the read; the HTTP worker deletes its file itself
+            httpThread.interrupt();
+        }
+        // after the writes already queued; a file that was checked meanwhile has been moved and stays
+        WORKER.execute(() -> {
+            closeChannel(download);
+            if (download.httpThread == null) {
+                deletePart(download);
+            }
+        });
+    }
+
+    /** Worker. */
+    private static void closeChannel(Download download) {
         try {
             if (download.channel != null) {
                 download.channel.close();
                 download.channel = null;
             }
         } catch (IOException ignored) {
-        }
-        Thread httpThread = download.httpThread;
-        if (httpThread != null) {
-            // unblocks the read; the worker deletes its file itself
-            httpThread.interrupt();
-        } else if (!download.verifying) {
-            deletePart(download);
         }
     }
 

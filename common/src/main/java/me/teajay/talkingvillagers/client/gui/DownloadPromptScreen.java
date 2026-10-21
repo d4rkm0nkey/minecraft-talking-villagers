@@ -34,7 +34,7 @@ public class DownloadPromptScreen extends Screen {
         content.addChild(new MultiLineTextWidget(GuiTexts.key("download.message"), font).setMaxWidth(Math.min(width - 40, 360)).setCentered(true));
         long total = 0;
         for (PackInfo pack : packs.subList(0, Math.min(packs.size(), 6))) {
-            content.addChild(new StringWidget(Component.literal(pack.name() + " " + pack.version() + " (" + GuiTexts.size(pack.size()) + ")").withStyle(ChatFormatting.GRAY), font));
+            content.addChild(new StringWidget(Component.literal(pack.name() + " " + pack.version() + " (").append(GuiTexts.size(pack.size())).append(")").withStyle(ChatFormatting.GRAY), font));
         }
         for (PackInfo pack : packs) {
             total += pack.size();

@@ -10,8 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipFile;
 
 /**
@@ -37,22 +39,39 @@ final class PackInstaller {
     private record Candidate(Path file, LoadedPack pack, Optional<LoadedPack> replaces) {
     }
 
+    private record Check(List<Candidate> candidates, List<String> rejected, boolean convert) {
+    }
+
     /**
-     * Checks the files, asks for confirmation and copies the valid packs into the voicepacks folder.
+     * Checks the files in the background, asks for confirmation and copies the valid packs into the voicepacks folder.
      */
-    static void install(Screen screen, List<Path> files, Runnable afterInstall) {
+    static void install(VoicepacksScreen screen, List<Path> files) {
         Minecraft minecraft = Minecraft.getInstance();
+        minecraft.gui.setScreen(new GenericMessageScreen(GuiTexts.key("install.checking")));
+        CompletableFuture.supplyAsync(() -> check(files), Util.ioPool())
+                .whenCompleteAsync((check, error) -> {
+                    if (error != null) {
+                        TalkingVillagers.LOG.error("Cannot check {}", files, error);
+                        minecraft.gui.setScreen(screen);
+                    } else {
+                        confirm(screen, files, check);
+                    }
+                }, minecraft);
+    }
+
+    /** Background thread: reads and validates the dropped files. */
+    private static Check check(List<Path> files) {
         List<Candidate> candidates = new ArrayList<>();
         List<String> rejected = new ArrayList<>();
         for (Path file : files) {
             String name = file.getFileName().toString();
             if (!name.endsWith(VoicePack.FILE_EXTENSION)) {
-                if (files.size() == 1 && isVersion1Pack(file)) {
+                boolean version1 = isVersion1Pack(file);
+                if (files.size() == 1 && version1) {
                     // an old resource pack: offer to convert it
-                    minecraft.gui.setScreen(new ConvertScreen(screen, file, afterInstall));
-                    return;
+                    return new Check(List.of(), List.of(), true);
                 }
-                rejected.add(Component.translatable(isVersion1Pack(file) ? "talkingvillagers.gui.install.v1" : "talkingvillagers.gui.install.not_voicepack", name).getString());
+                rejected.add(Component.translatable(version1 ? "talkingvillagers.gui.install.v1" : "talkingvillagers.gui.install.not_voicepack", name).getString());
                 continue;
             }
             LoadedPack pack = PackReader.read(file);
@@ -63,13 +82,22 @@ final class PackInstaller {
             String id = pack.pack().orElseThrow().id();
             candidates.add(new Candidate(file, pack, Optional.ofNullable(Voicepacks.index().active().get(id))));
         }
+        return new Check(candidates, rejected, false);
+    }
 
-        if (candidates.isEmpty()) {
+    private static void confirm(VoicepacksScreen screen, List<Path> files, Check check) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (check.convert()) {
+            minecraft.gui.setScreen(new ConvertScreen(screen, files.getFirst()));
+            return;
+        }
+        List<String> rejected = check.rejected();
+        if (check.candidates().isEmpty()) {
             minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(screen), GuiTexts.key("install.rejected"), Component.literal(String.join("\n", rejected))));
             return;
         }
         List<String> lines = new ArrayList<>();
-        for (Candidate candidate : candidates) {
+        for (Candidate candidate : check.candidates()) {
             VoicePack pack = candidate.pack().pack().orElseThrow();
             String line = Component.translatable("talkingvillagers.gui.install.entry", pack.name(), pack.version(), pack.voices().size(), pack.language()).getString();
             if (candidate.replaces().isPresent()) {
@@ -78,19 +106,21 @@ final class PackInstaller {
             lines.add(line);
         }
         minecraft.gui.setScreen(new ConfirmScreen(confirmed -> {
-            if (confirmed) {
-                copy(candidates);
-                afterInstall.run();
-            }
             if (confirmed && !rejected.isEmpty()) {
                 minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(screen), GuiTexts.key("install.rejected"), Component.literal(String.join("\n", rejected))));
             } else {
                 minecraft.gui.setScreen(screen);
             }
+            if (confirmed) {
+                int[] installed = new int[1];
+                screen.changePacks(() -> installed[0] = copy(check.candidates()), () -> SystemToast.add(minecraft.gui.toastManager(),
+                        SystemToast.SystemToastId.PACK_LOAD_FAILURE, GuiTexts.key("install.done", installed[0]), null));
+            }
         }, GuiTexts.key("install.confirm"), Component.literal(String.join("\n", lines))));
     }
 
-    private static void copy(List<Candidate> candidates) {
+    /** Background thread. @return how many packs were installed */
+    private static int copy(List<Candidate> candidates) {
         Path directory = Voicepacks.repository().directory();
         int installed = 0;
         for (Candidate candidate : candidates) {
@@ -115,23 +145,15 @@ final class PackInstaller {
                 TalkingVillagers.LOG.error("Cannot install {}", candidate.file(), e);
             }
         }
-        Voicepacks.reload();
-        SystemToast.add(Minecraft.getInstance().gui.toastManager(), SystemToast.SystemToastId.PACK_LOAD_FAILURE,
-                GuiTexts.key("install.done", installed), null);
+        return installed;
     }
 
     /**
      * Moves a pack file into {@code voicepacks/.trash}, so it can be restored by hand.
      */
-    static boolean delete(LoadedPack pack) {
-        try {
-            moveToTrash(pack.source());
-            Voicepacks.reload();
-            return true;
-        } catch (IOException e) {
-            TalkingVillagers.LOG.error("Cannot delete {}", pack.source(), e);
-            return false;
-        }
+    static void delete(VoicepacksScreen screen, LoadedPack pack) {
+        screen.changePacks(() -> moveToTrash(pack.source()), () -> {
+        });
     }
 
     private static void moveToTrash(Path file) throws IOException {

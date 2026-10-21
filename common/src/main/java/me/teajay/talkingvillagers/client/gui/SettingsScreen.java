@@ -10,6 +10,7 @@ import me.teajay.talkingvillagers.core.model.Languages;
 import me.teajay.talkingvillagers.core.select.VoiceCriteria;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -44,11 +45,25 @@ public class SettingsScreen extends ListScreen {
         List<RowList.Row> rows = new ArrayList<>();
 
         section(rows, "settings.client");
-        row(rows, "settings.volume", slider(0, 2, client.volume(), value -> GuiTexts.key("settings.percent", Math.round(value * 100)),
+        row(rows, "settings.volume", slider(0, 1, client.volume(), value -> GuiTexts.key("settings.percent", Math.round(value * 100)),
                 value -> client = client.withVolume((float) value)));
         row(rows, "settings.subtitles", CycleButton.<ClientConfig.Subtitles>builder(mode -> GuiTexts.key("settings.subtitles." + mode.id()), client.subtitles())
                 .withValues(ClientConfig.Subtitles.values()).displayOnlyValue()
                 .create(0, 0, WIDGET_WIDTH, 20, Component.empty(), (button, value) -> client = client.withSubtitles(value)));
+
+        section(rows, "settings.trusted_servers");
+        if (client.trustedServers().isEmpty()) {
+            rows.add(new RowList.RowBuilder(font).secondary(GuiTexts.key("settings.trusted_servers.empty")).build());
+        }
+        for (String trusted : client.trustedServers()) {
+            rows.add(new RowList.RowBuilder(font)
+                    .line(Component.literal(trusted))
+                    .widget(Button.builder(GuiTexts.key("settings.trusted_servers.remove"), button -> {
+                        client = client.distrusting(trusted);
+                        refresh();
+                    }).width(80).build())
+                    .build());
+        }
 
         section(rows, "settings.voices");
         if (!editable) {
@@ -92,6 +107,8 @@ public class SettingsScreen extends ListScreen {
                         value -> GuiTexts.key("settings.raid_language." + value.id()), server.raidLanguage())
                 .withValues(LanguageSettings.RaidLanguage.values()).displayOnlyValue()
                 .create(0, 0, WIDGET_WIDTH, 20, Component.empty(), (button, value) -> server = server.withRaidLanguage(value)), editable));
+
+        Feedback.addRow(rows, this, font);
         return rows;
     }
 

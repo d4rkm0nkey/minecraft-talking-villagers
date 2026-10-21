@@ -8,6 +8,8 @@ Voices come in **voicepacks**: single `.voicepack` files you drop into the game.
 
 **Player wiki:** <https://d4rkm0nkey.github.io/minecraft-talking-villagers/>
 
+**Feedback:** Version 2 is a beta. Tell us what you like, what you miss and what should come next in a [5-minute survey](https://tally.so/r/zExyRM).
+
 **Minecraft 26.3 · Fabric and NeoForge · Java 25**
 
 ## Features
@@ -53,7 +55,7 @@ In game: *Voicepacks → Settings*. Files:
 
 | Key | Default | |
 |---|---|---|
-| `volume` | `1.0` | Volume of all voices. |
+| `volume` | `1.0` | Volume of all voices, 0 to 1. |
 | `subtitles` | `transcript` | `transcript` (the spoken text), `generic` (“Villager speaks”) or `off`. |
 | `trustedServers` | `[]` | Servers whose packs are downloaded without asking. |
 

@@ -17,6 +17,8 @@ public record ClientConfig(float volume, Subtitles subtitles, List<String> trust
     public static final ClientConfig DEFAULT = new ClientConfig(1.0f, Subtitles.TRANSCRIPT, List.of());
 
     public ClientConfig {
+        // Minecraft never plays louder than 100 %; more only made voices carry further. Older configs allowed up to 2.
+        volume = Math.clamp(volume, 0.0f, 1.0f);
         trustedServers = List.copyOf(trustedServers);
     }
 
@@ -42,7 +44,7 @@ public record ClientConfig(float volume, Subtitles subtitles, List<String> trust
     }, Subtitles::id);
 
     public static final Codec<ClientConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.floatRange(0, 2).optionalFieldOf("volume", DEFAULT.volume).forGetter(ClientConfig::volume),
+            Codec.FLOAT.optionalFieldOf("volume", DEFAULT.volume).forGetter(ClientConfig::volume),
             SUBTITLES.optionalFieldOf("subtitles", DEFAULT.subtitles).forGetter(ClientConfig::subtitles),
             Codec.STRING.listOf().optionalFieldOf("trustedServers", DEFAULT.trustedServers).forGetter(ClientConfig::trustedServers)
     ).apply(instance, ClientConfig::new));
@@ -61,6 +63,12 @@ public record ClientConfig(float volume, Subtitles subtitles, List<String> trust
         if (!servers.contains(server)) {
             servers.add(server);
         }
+        return new ClientConfig(volume, subtitles, servers);
+    }
+
+    public ClientConfig distrusting(String server) {
+        List<String> servers = new ArrayList<>(trustedServers);
+        servers.remove(server);
         return new ClientConfig(volume, subtitles, servers);
     }
 }

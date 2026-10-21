@@ -263,15 +263,15 @@ public final class EntityVoices {
     private static boolean crowded(LivingEntity entity) {
         long now = entity.level().getGameTime();
         double radiusSqr = EventPolicies.CROWD_RADIUS * EventPolicies.CROWD_RADIUS;
-        int speaking = 0;
-        for (Map.Entry<Entity, SpeakerState> entry : STATES.entrySet()) {
-            Entity other = entry.getKey();
-            if (other != entity && other.level() == entity.level() && entry.getValue().isSpeaking(now)
-                    && other.distanceToSqr(entity) <= radiusSqr && ++speaking >= Configs.server().maxConcurrentSpeakers()) {
-                return true;
+        // only the entities around, instead of every speaker the server knows
+        int speaking = entity.level().getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(EventPolicies.CROWD_RADIUS), other -> {
+            if (other == entity || other.distanceToSqr(entity) > radiusSqr) {
+                return false;
             }
-        }
-        return false;
+            SpeakerState state = STATES.get(other);
+            return state != null && state.isSpeaking(now);
+        }).size();
+        return speaking >= Configs.server().maxConcurrentSpeakers();
     }
 
     /**

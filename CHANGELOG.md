@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.0-beta.5 – 2026-10-21
+
+**Tell us what you think:** a [5-minute survey](https://tally.so/r/zExyRM) about what you like, what you miss and what should come next. The voicepack screen has a *Feedback* button for it while the mod is a beta.
+
+### Added
+- *Feedback* row in the voicepack screen and the settings, linking to the survey. The mod only opens the link in your browser after asking; it sends nothing.
+- Settings: list of trusted servers, each with *Remove*.
+
+### Changed
+- Reloading, installing, converting and deleting packs run in the background. The voicepack screen shows "Loading voicepacks…" meanwhile; `/tv reload` answers when it's done. Unchanged pack files are no longer read and hashed again on every reload.
+- Downloaded chunks are written to disk in the background instead of on the game thread.
+- The volume slider goes up to 100 %. Minecraft never plays sounds louder; higher values only made voices carry further. Saved values above 100 % count as 100 %.
+- Download errors and the file size units are translated (English, German).
+- Servers: checking how many entities nearby are already talking only looks at the entities around instead of all speakers in the world.
+
+### Fixed
+- The voicepack list no longer jumps to the top while downloads update it.
+
 ## 2.0.0-beta.4 – 2026-10-20
 
 ### Fixed

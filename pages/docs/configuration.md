@@ -14,7 +14,7 @@ Settings for your own game only.
 
 | Key | Default | |
 | --- | --- | --- |
-| `volume` | `1.0` | Volume of all voices, 0 to 2. |
+| `volume` | `1.0` | Volume of all voices, 0 to 1. Older values above 1 count as 1. |
 | `subtitles` | `transcript` | `transcript` (the spoken text), `generic` (“Villager speaks”) or `off`. |
 | `trustedServers` | `[]` | Servers whose packs are downloaded without asking. |
 

@@ -14,6 +14,9 @@ public interface PlatformHelper {
      */
     Path getGameDir();
 
+    /** The version of this mod, e.g. {@code 2.0.0-beta.5+mc26.3}. */
+    String getModVersion();
+
     default String getEnvironmentName() {
         return isDevelopmentEnvironment() ? "development" : "production";
     }

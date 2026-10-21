@@ -6,10 +6,14 @@ import me.teajay.talkingvillagers.core.io.Problem;
 import me.teajay.talkingvillagers.core.pack.PackIndex;
 import me.teajay.talkingvillagers.core.pack.PackRepository;
 import me.teajay.talkingvillagers.platform.Services;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * The voicepacks in {@code <game dir>/voicepacks}. Client and integrated server share this instance.
@@ -18,6 +22,13 @@ public final class Voicepacks {
     public static final String DIRECTORY = "voicepacks";
     private static final PackRepository REPOSITORY = new PackRepository(Services.PLATFORM.getGameDir().resolve(DIRECTORY));
     private static final List<Runnable> RELOAD_LISTENERS = new ArrayList<>();
+    private static final ExecutorService RELOADER = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "Talking Villagers reload");
+        thread.setDaemon(true);
+        return thread;
+    });
+    /** A reload that was asked for but has not started yet; later requests join it. Guarded by the class. */
+    private static @Nullable CompletableFuture<PackIndex> queued;
 
     private Voicepacks() {
     }
@@ -37,6 +48,33 @@ public final class Voicepacks {
         RELOAD_LISTENERS.add(listener);
     }
 
+    /**
+     * Reloads the packs on a background thread, so neither the game nor the server waits for reading and hashing.
+     * Requests while a reload is waiting to start share it; a reload that already runs is followed by a new one, so
+     * the result always includes changes made before the call.
+     */
+    public static synchronized CompletableFuture<PackIndex> reloadAsync() {
+        if (queued != null) {
+            return queued;
+        }
+        CompletableFuture<PackIndex> future = new CompletableFuture<>();
+        queued = future;
+        RELOADER.execute(() -> {
+            synchronized (Voicepacks.class) {
+                queued = null;
+            }
+            try {
+                future.complete(reload());
+            } catch (RuntimeException e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Reloads the packs on the calling thread. Unchanged files are not read again.
+     */
     public static PackIndex reload() {
         PackIndex index;
         try {
