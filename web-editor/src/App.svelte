@@ -4,9 +4,9 @@
   import PackEditor from "./components/PackEditor.svelte";
   import VoiceEditor from "./components/VoiceEditor.svelte";
   import Studio from "./components/Studio.svelte";
-  import { findProject, loadProjects } from "./lib/store/projects.svelte";
+  import { findProject, loadProjects, openProject, tabs } from "./lib/store/projects.svelte";
   import { locale, setLanguage, t } from "./lib/i18n/index.svelte";
-  import { storage } from "./lib/store/status.svelte";
+  import { importNotes, storage } from "./lib/store/status.svelte";
 
   type View =
     | { name: "start" }
@@ -18,6 +18,12 @@
   const project = $derived(view.name === "start" ? undefined : findProject(view.projectId));
   const voiceId = $derived(view.name === "voice" || view.name === "studio" ? view.voiceId : undefined);
   const voice = $derived(voiceId ? project?.voices.find((v) => v.id === voiceId) : undefined);
+  // lets other tabs with the same project open know about this one
+  $effect(() => openProject(project?.id));
+
+  function importWarning(warning: (typeof importNotes.warnings)[number]): string {
+    return warning.code === "invalid_value" ? t("problem.invalid_value", { path: warning.path ?? "/", ...warning.params }) : t(`import.${warning.code}`, warning.params);
+  }
 
   onMount(async () => {
     await loadProjects();
@@ -60,6 +66,24 @@
       <button onclick={() => (storage.error = "")}>{t("common.close")}</button>
     </div>
   {/if}
+  {#if tabs.conflict && project}
+    <div class="panel notice" role="alert">
+      <strong class="error">⚠ {t(`tabs.${tabs.conflict}`)}</strong>
+      <button onclick={() => location.reload()}>{t("tabs.reload")}</button>
+    </div>
+  {/if}
+  {#if importNotes.warnings.length && project}
+    <div class="panel notice" role="status">
+      <div>
+        <strong>{t("import.warnings", { count: importNotes.warnings.length })}</strong>
+        <ul>
+          {#each importNotes.warnings.slice(0, 20) as warning}<li>{importWarning(warning)}</li>{/each}
+          {#if importNotes.warnings.length > 20}<li>…</li>{/if}
+        </ul>
+      </div>
+      <button onclick={() => (importNotes.warnings = [])}>{t("common.close")}</button>
+    </div>
+  {/if}
   {#if view.name === "start" || !project}
     <Start onopen={(id) => (view = { name: "pack", projectId: id })} />
   {:else if view.name === "pack"}
@@ -86,4 +110,7 @@
 <style>
   .storage-error { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-color: var(--danger); }
   .storage-error button { margin-left: auto; }
+  .notice { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+  .notice > button { margin-left: auto; }
+  .notice ul { margin: 6px 0 0; padding-left: 20px; }
 </style>

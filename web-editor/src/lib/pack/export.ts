@@ -3,7 +3,6 @@ import type { Line, Processing, Project } from "../model/types";
 import { buildManifest, linePath, MAX_LINE_SECONDS } from "./manifest";
 import { processLine, type Audio, type Denoiser } from "../audio/process";
 import { encodeVorbis } from "../audio/encode";
-import { noiseProfile } from "../audio/spectralGate";
 import type { Original } from "../store/audio";
 
 /** A line is longer than the mod allows; also checked here for lines whose length was not known before. */
@@ -30,11 +29,7 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
   const total = project.voices.reduce((sum, voice) => sum + voice.lines.length, 0);
   let done = 0;
 
-  let profile: Float32Array | undefined;
-  if (project.noiseProfileAudioId) {
-    const noise = await options.loadAudio(project.noiseProfileAudioId);
-    if (noise) profile = noiseProfile(noise.data);
-  }
+  const noise = project.noiseProfileAudioId ? await options.loadAudio(project.noiseProfileAudioId) : undefined;
 
   for (const voice of project.voices) {
     const perEvent = new Map<string, number>();
@@ -57,7 +52,7 @@ export async function exportPack(project: Project, options: ExportOptions): Prom
         options.onProgress?.(++done, total);
         continue;
       }
-      const processed = await processLine(raw, line, project.processing, profile, options.denoise);
+      const processed = await processLine(raw, line, project.processing, noise, options.denoise);
       durations.set(line.id, processed.data.length / processed.sampleRate);
       files[linePath(voice, line, index)] = await encodeVorbis(processed.data, processed.sampleRate, project.processing.quality);
       options.onProgress?.(++done, total);

@@ -4,8 +4,8 @@
   import { newId } from "../lib/model/types";
   import type { Audio } from "../lib/audio/process";
   import { eventsFor } from "../lib/model/catalog";
-  import { Recorder, microphones } from "../lib/recorder/recorder";
-  import { detectSegments } from "../lib/audio/dsp";
+  import { Recorder, microphones, type InputChannel } from "../lib/recorder/recorder";
+  import { detectSegments, fromDb } from "../lib/audio/dsp";
   import { denoise, play } from "../lib/audio/browser";
   import { saveAudio, deleteAudio, loadAudio } from "../lib/store/audio";
   import { touch } from "../lib/store/projects.svelte";
@@ -13,7 +13,6 @@
   import Waveform from "./Waveform.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
   import { processLine } from "../lib/audio/process";
-  import { noiseProfile } from "../lib/audio/spectralGate";
   import { t } from "../lib/i18n/index.svelte";
   import { item, voiceHead } from "../lib/art";
 
@@ -47,18 +46,26 @@
   let clipping = $state(false);
   let recorded = $state(0);
   let message = $state("");
-  let options = $state({ countdown: true, autoStop: true, autoNext: true, longTake: false, ...stored.options });
+  let options = $state<{ countdown: boolean; autoStop: boolean; autoNext: boolean; longTake: boolean; channel: InputChannel }>(
+    { countdown: true, autoStop: true, autoNext: true, longTake: false, channel: "mix", ...stored.options });
+  /** Input channels of the microphone; a choice is offered when there is more than one. */
+  let inputChannels = $state(1);
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const current = $derived(queue[index]);
   const next = $derived(queue[index + 1]);
 
+  const CLIP = fromDb(-1);
   recorder.onLevel = (level) => {
     peakDb = level.peakDb;
-    if (phase === "recording" && level.peakDb > -1) clipping = true;
+    inputChannels = recorder.inputChannels;
   };
+  recorder.onPeak = (peak) => {
+    if (phase === "recording" && peak > CLIP && !clipping) clipping = true;
+  };
+  $effect(() => recorder.setChannel(options.channel));
 
-  function readStored(): { microphone?: string; options?: Partial<{ countdown: boolean; autoStop: boolean; autoNext: boolean; longTake: boolean }> } {
+  function readStored(): { microphone?: string; options?: Partial<{ countdown: boolean; autoStop: boolean; autoNext: boolean; longTake: boolean; channel: InputChannel }> } {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
     } catch {
@@ -131,6 +138,11 @@
     countdown = 3;
     clearInterval(timer);
     timer = setInterval(() => {
+      // the phase was changed by hand meanwhile, e.g. to another line
+      if (phase !== "countdown") {
+        clearInterval(timer);
+        return;
+      }
       countdown--;
       if (countdown <= 0) {
         clearInterval(timer);
@@ -144,11 +156,12 @@
     phase = "recording";
     clearInterval(timer);
     timer = setInterval(() => {
-      const audio = recorder.current();
-      const seconds = audio.data.length / audio.sampleRate;
+      // only the length, without copying the recording; a long take may run for minutes
+      const seconds = recorder.seconds();
       if (seconds > (options.longTake ? 600 : MAX_SECONDS)) return stopRecording();
       if (!options.autoStop || options.longTake || seconds < 1) return;
       // stop once speech has ended
+      const audio = recorder.current();
       const segments = detectSegments(audio.data, audio.sampleRate);
       const last = segments[segments.length - 1];
       if (last && (audio.data.length - last.end) / audio.sampleRate > END_SILENCE) stopRecording();
@@ -208,7 +221,7 @@
     if (!take) return;
     const noise = project.noiseProfileAudioId ? await loadAudio(project.noiseProfileAudioId) : undefined;
     const processed = await processLine(take, { trimStart: trim.start, trimEnd: trim.end }, $state.snapshot(project.processing),
-      noise ? noiseProfile(noise.data) : undefined, denoise);
+      noise, denoise);
     play(processed, (voice.pitchMin + voice.pitchMax) / 2);
   }
 
@@ -252,10 +265,12 @@
     } else if (key === "+" && phase === "review") {
       void accept(true);
     } else if (key === "ArrowRight" && phase !== "recording") {
+      clearInterval(timer);
       index = Math.min(queue.length - 1, index + 1);
       take = undefined;
       phase = "idle";
     } else if (key === "ArrowLeft" && phase !== "recording") {
+      clearInterval(timer);
       index = Math.max(0, index - 1);
       take = undefined;
       phase = "idle";
@@ -295,6 +310,14 @@
     <label class="inline"><input type="checkbox" bind:checked={options.autoStop} />{t("studio.auto_stop")}</label>
     <label class="inline"><input type="checkbox" bind:checked={options.autoNext} />{t("studio.auto_next")}</label>
     <label class="inline"><input type="checkbox" bind:checked={options.longTake} />{t("studio.long_take")}</label>
+    {#if inputChannels > 1}
+      <label class="inline">{t("studio.channel")}
+        <select bind:value={options.channel}>
+          <option value="mix">{t("studio.channel.mix")}</option>
+          {#each { length: inputChannels } as _, channel}<option value={channel}>{t("studio.channel.n", { n: channel + 1 })}</option>{/each}
+        </select>
+      </label>
+    {/if}
   </div>
 </section>
 
@@ -361,7 +384,7 @@
       <button disabled={phase !== "review"} onclick={() => accept(true)}>＋ {t("studio.variant")}</button>
       <button disabled={!take} onclick={playRaw}>▶ {t("studio.play_raw")}</button>
       <button disabled={!take} onclick={playProcessed}>✨▶ {t("studio.play_processed")}</button>
-      <button onclick={() => { phase = "setup"; take = undefined; }}>{t("studio.edit_script")}</button>
+      <button onclick={() => { clearInterval(timer); phase = "setup"; take = undefined; }}>{t("studio.edit_script")}</button>
     </div>
     {#if !micReady}<p class="muted small">{t("studio.enable_first")}</p>{/if}
     <p class="muted small">{t("studio.keys")}</p>

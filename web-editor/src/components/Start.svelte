@@ -1,8 +1,9 @@
 <script lang="ts">
   import { addProject, projects, removeProject } from "../lib/store/projects.svelte";
-  import { storage } from "../lib/store/status.svelte";
+  import { cancelExport } from "../lib/pack/exporting.svelte";
+  import { importNotes, storage } from "../lib/store/status.svelte";
   import { newProject, type Gender } from "../lib/model/types";
-  import { importVersion1, importVoicepack } from "../lib/pack/import";
+  import { ImportError, importVersion1, importVoicepack } from "../lib/pack/import";
   import { COMMON_LANGUAGES, LANGUAGE_PATTERN, languageName } from "../lib/model/languages";
   import { locale, t } from "../lib/i18n/index.svelte";
   import { head, item } from "../lib/art";
@@ -30,11 +31,12 @@
     try {
       const data = await file.arrayBuffer();
       const fallbackName = name.trim() || file.name.replace(/\.(zip|voicepack)$/, "");
-      const project = version1 ? await importVersion1(data, fallbackName, language, gender) : await importVoicepack(data);
+      const { project, warnings } = version1 ? await importVersion1(data, fallbackName, language, gender) : await importVoicepack(data);
       await addProject(project);
+      importNotes.warnings = warnings;
       onopen(project.id);
     } catch (e) {
-      error = String(e);
+      error = e instanceof ImportError ? t(`import.${e.code}`, e.params) : String(e);
     } finally {
       busy = false;
     }
@@ -69,7 +71,7 @@
           {/if}
         </span>
       </button>
-      <button class="danger" onclick={() => confirm(t("start.delete_confirm", { name: project.name })) && removeProject(project)}>
+      <button class="danger" onclick={() => confirm(t("start.delete_confirm", { name: project.name })) && (cancelExport(project.id), removeProject(project))}>
         {t("common.delete")}
       </button>
     </div>

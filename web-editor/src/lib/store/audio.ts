@@ -22,8 +22,12 @@ export interface Original {
 
 export type Decoder = (ogg: Uint8Array) => Promise<Audio>;
 
-const key = (id: string) => `audio:${id}`;
+/** Prefix of the IndexedDB keys of recordings. */
+export const AUDIO_PREFIX = "audio:";
+const key = (id: string) => `${AUDIO_PREFIX}${id}`;
+/** Decoded recordings, most recently used last; a long pack would otherwise keep every line in memory. */
 const cache = new Map<string, Promise<Audio | undefined>>();
+const CACHE_SIZE = 40;
 let decoder: Decoder | undefined;
 
 /** Sets how Ogg files are decoded: Web Audio on the page, a request to the page in the export worker. */
@@ -31,8 +35,14 @@ export function setDecoder(value: Decoder): void {
   decoder = value;
 }
 
+function remember(id: string, audio: Promise<Audio | undefined>): void {
+  cache.delete(id);
+  cache.set(id, audio);
+  while (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value!);
+}
+
 export async function saveAudio(id: string, audio: Audio): Promise<void> {
-  cache.set(id, Promise.resolve(audio));
+  remember(id, Promise.resolve(audio));
   await set(key(id), { sampleRate: audio.sampleRate, data: audio.data, ogg: audio.ogg } satisfies Stored).catch(reportError);
 }
 
@@ -45,10 +55,10 @@ export function loadAudio(id: string): Promise<Audio | undefined> {
   let audio = cache.get(id);
   if (!audio) {
     audio = read(id);
-    cache.set(id, audio);
     // a failed decode may work later, e.g. once the page answers the worker
-    audio.catch(() => cache.delete(id));
+    audio.catch(() => cache.get(id) === audio && cache.delete(id));
   }
+  remember(id, audio);
   return audio;
 }
 

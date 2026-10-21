@@ -187,6 +187,13 @@ Heute liest `Voicepacks.reload()` jede Datei komplett und berechnet SHA-256, auf
 ## Web-Editor (parallel zu beta.3–beta.5)
 
 ### Editor-Update A: Datensicherheit
+
+**Status:** umgesetzt in `fix/editor-data`. Abweichungen vom Plan:
+- Mehrere Tabs: Index per `update()` in einer Transaktion. Ein offenes Projekt hält eine Web Lock (`talkingvillagers-project:<id>`); öffnet ein zweiter Tab es, zeigt er „auch in einem anderen Tab geöffnet“. Speichern meldet sich per `BroadcastChannel`, andere Tabs mit demselben Projekt zeigen dann „in einem anderen Tab geändert“ mit *Neu laden*. Bearbeiten bleibt in beiden Tabs möglich (nur Warnung, kein Schreibschutz).
+- Verwaiste Audiodaten werden beim Start nur gelöscht, wenn kein anderer Tab des Editors offen ist (exklusive Lock), weil dort eine neue Aufnahme noch nicht im Projekt gespeichert sein kann.
+- Import: Schemafehler sind Warnungen, solange sich das Pack lesen lässt (die Mod lädt solche Packs auch). Abgelehnt werden nur Dateien ohne ZIP, ohne `voicepack.json`, mit kaputtem JSON oder ohne `voices`. Die Warnungen stehen über dem geöffneten Projekt. Die Meldungen von Ajv selbst bleiben englisch.
+- v1-Import: Dateien mit unbekanntem Event werden weggelassen (wie im Konverter der Mod), mit einer Warnung pro Datei. Eine kaputte `en_us.json` ist nur eine Warnung. Ein ZIP ohne Stimmen wird abgelehnt.
+- Getestet: Unit-Tests für Import (weight/legacyIds, fehlende Dateien, Schemawarnungen, Ablehnung, v1), Typecheck, headless Firefox mit zwei Tabs (beide Warnungen erscheinen).
 - **Mehrere Tabs**: Den Projektindex atomar aktualisieren (`update()`). Andere Tabs per `BroadcastChannel` warnen oder Bearbeitung nur in einem Tab erlauben (`navigator.locks`).
 - **`addFiles`**: nach jeder Datei speichern, Fehler pro Datei anzeigen.
 - **Stimme löschen** löscht auch deren Audio. Beim Start verwaiste `audio:*`-Einträge aufräumen.
@@ -196,6 +203,15 @@ Heute liest `Voicepacks.reload()` jede Datei komplett und berechnet SHA-256, auf
 - **Export-Worker**: `onerror` behandeln, beim Verlassen beenden.
 
 ### Editor-Update B: Audioqualität und Stabilität
+
+**Status:** umgesetzt in `fix/editor-audio` (auf `fix/editor-data`). Abweichungen vom Plan:
+- Resampler: Windowed-Sinc mit Blackman-Fenster (16 Nulldurchgänge) für jede Umrechnung; beim Herabsetzen liegt die Grenzfrequenz bei 95 % der neuen Nyquist-Frequenz. Ein eigener Weg ohne Filter bei Verhältnis ≈ 1 war nicht nötig, gleiche Raten werden weiter nur kopiert.
+- Rauschprofil: `noiseProfileFor(room, sampleRate)` rechnet die Raumton-Aufnahme auf die Rate der Line um und merkt sich das Profil pro Rate. `processLine` bekommt dafür die Raumton-Aufnahme statt eines fertigen Profils.
+- Vorbis: ein Encoder für alle Lines, die Kodierungen laufen nacheinander (der Encoder wird wiederverwendet).
+- Audio-Cache: höchstens 40 dekodierte Aufnahmen, zuletzt benutzte zuletzt verdrängt.
+- Pegel: höchstens alle 50 ms an die Oberfläche, Übersteuerung wird trotzdem pro Block erkannt.
+- Eingangskanäle: das Worklet mischt alle Kanäle zu Mono oder nimmt einen Kanal. Die Auswahl erscheint im Studio nur bei Mikrofonen mit mehr als einem Kanal und wird gemerkt. `channelCount: 1` wird nicht mehr verlangt.
+- Getestet: Unit-Tests für Resampler (Ton bleibt, Alias wird entfernt) und Rauschprofil, Typecheck, `WebEditorExportTest`, headless Firefox mit Fake-Mikrofon (Pegel, abgebrochener Countdown, Aufnahme gespeichert, Export einer Demo mit 5 Lines). Ein echtes Mehrkanal-Mikrofon und das Verlassen während der Mikrofon-Abfrage nicht im Browser getestet.
 - **Resampler**: Windowed-Sinc statt Box-Filter, bei Verhältnis ≈ 1 ohne Filter.
 - **Rauschprofil** auf die Abtastrate der Line umrechnen.
 - **Long Take**: laufender Sample-Zähler statt alle 100 ms den ganzen Puffer zu kopieren.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { compress, detectSegments, fade, highPass, noiseGate, normalize, peak, resample, rms, toDb, toMono, trimSilence } from "../src/lib/audio/dsp";
 import { fft } from "../src/lib/audio/fft";
-import { noiseProfile, spectralGate } from "../src/lib/audio/spectralGate";
+import { noiseProfile, noiseProfileFor, spectralGate } from "../src/lib/audio/spectralGate";
 import { add, concat, noise, sine } from "./helpers";
 
 const SR = 48000;
@@ -75,9 +75,32 @@ describe("level and filters", () => {
     expect(resample(sine(1, 48000), 48000, 22050).length).toBe(22050);
     expect(resample(sine(1, 22050), 22050, 44100).length).toBe(44100);
   });
+
+  it("keeps tones below the new Nyquist frequency", () => {
+    const out = resample(sine(1, 48000, 1000, 0.5), 48000, 44100);
+    // the middle, away from the edges where the filter has no neighbours
+    expect(rms(out, 4410, 39690)).toBeCloseTo(0.5 / Math.SQRT2, 2);
+    const up = resample(sine(1, 22050, 1000, 0.5), 22050, 48000);
+    expect(rms(up, 4800, 43200)).toBeCloseTo(0.5 / Math.SQRT2, 2);
+  });
+
+  it("removes tones above the new Nyquist frequency instead of folding them back", () => {
+    // 15 kHz would appear as a 7 kHz alias at 22.05 kHz
+    const out = resample(sine(1, 44100, 15000, 0.5), 44100, 22050);
+    expect(rms(out, 2205, 19845)).toBeLessThan(0.005);
+  });
 });
 
 describe("spectral noise reduction", () => {
+  it("measures the room tone at the sample rate of the line", () => {
+    const room = { sampleRate: 48000, data: noise(2, 48000, 0.05, 3) };
+    const atLineRate = noiseProfileFor(room, 44100);
+    const direct = noiseProfile(resample(room.data, 48000, 44100));
+    expect(Array.from(atLineRate)).toEqual(Array.from(direct));
+    // computed once per sample rate
+    expect(noiseProfileFor(room, 44100)).toBe(atLineRate);
+  });
+
   it("fft round trip", () => {
     const re = Float32Array.from({ length: 64 }, (_, i) => Math.sin(i));
     const im = new Float32Array(64);

@@ -1,4 +1,6 @@
 import { fft } from "./fft";
+import { resample } from "./dsp";
+import type { Audio } from "./process";
 
 /**
  * Noise reduction with a noise profile: the spectrum of a few seconds of room tone is measured, and frequencies
@@ -26,6 +28,23 @@ export function noiseProfile(noise: Float32Array): Float32Array {
     frames++;
   }
   return frames === 0 ? profile : profile.map((value) => value / frames);
+}
+
+const profiles = new WeakMap<Audio, Map<number, Float32Array>>();
+
+/**
+ * The noise profile of a room tone recording for lines at the given sample rate. The frequency bins depend on the
+ * sample rate, so the room tone is resampled first if it was recorded at another rate.
+ */
+export function noiseProfileFor(noise: Audio, sampleRate: number): Float32Array {
+  let byRate = profiles.get(noise);
+  if (!byRate) profiles.set(noise, (byRate = new Map()));
+  let profile = byRate.get(sampleRate);
+  if (!profile) {
+    profile = noiseProfile(noise.sampleRate === sampleRate ? noise.data : resample(noise.data, noise.sampleRate, sampleRate));
+    byRate.set(sampleRate, profile);
+  }
+  return profile;
 }
 
 /**

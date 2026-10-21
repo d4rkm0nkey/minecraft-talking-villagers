@@ -21,6 +21,8 @@
     project: Project; voice: Voice; onback: () => void; onstudio: (event: string, profession?: string) => void; onrename: (voiceId: string) => void;
   } = $props();
   let showEmpty = $state(true);
+  /** Files that could not be added, with the reason, until the next attempt. */
+  let fileErrors = $state<string[]>([]);
   /** "" shows every line, "general" the lines without a profession, otherwise the lines for that profession. */
   let profession = $state(untrack(() => filters.get(voice.id) ?? ""));
   $effect(() => {
@@ -72,16 +74,23 @@
     touch(project);
   }
 
+  /** Adds each file as a line and saves after each one, so a file that fails doesn't cost the others. */
   async function addFiles(event: string, input: HTMLInputElement) {
-    for (const file of Array.from(input.files ?? [])) {
-      const audioId = newId();
-      const audio = await decodeFile(await file.arrayBuffer());
-      await saveAudio(audioId, audio);
-      voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, length: audio.data.length / audio.sampleRate,
-        conditions: { professions: newProfession ? [newProfession] : [] } });
-    }
+    const files = Array.from(input.files ?? []);
     input.value = "";
-    touch(project);
+    fileErrors = [];
+    for (const file of files) {
+      try {
+        const audioId = newId();
+        const audio = await decodeFile(await file.arrayBuffer());
+        await saveAudio(audioId, audio);
+        voice.lines.push({ id: newId(), event, audioId, text: "", trimStart: 0, trimEnd: 0, length: audio.data.length / audio.sampleRate,
+          conditions: { professions: newProfession ? [newProfession] : [] } });
+        touch(project);
+      } catch (error) {
+        fileErrors.push(t("voice.file_failed", { file: file.name, message: error instanceof Error ? error.message : String(error) }));
+      }
+    }
   }
 
   async function removeLine(id: string) {
@@ -197,6 +206,7 @@
           <label class="file"><input type="file" accept="audio/*" multiple onchange={(e) => addFiles(event.id, e.currentTarget)} /><span class="button">📁 {t("voice.add_files")}</span></label>
           <span class="muted small">{t("voice.recommended", { count: recommended })}</span>
         </div>
+        {#each fileErrors as message}<p class="error small">{message}</p>{/each}
       </details>
     {/each}
   </section>
