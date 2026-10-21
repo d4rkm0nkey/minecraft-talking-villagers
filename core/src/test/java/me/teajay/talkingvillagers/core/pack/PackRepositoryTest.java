@@ -125,6 +125,29 @@ class PackRepositoryTest {
     }
 
     @Test
+    void unchangedFilesAreNotReadAgain() throws Exception {
+        Path file = pack("one", "1.0.0").write(dir, "one.voicepack");
+        Path other = pack("two", "1.0.0").write(dir, "two.voicepack");
+        PackRepository repository = new PackRepository(dir);
+        LoadedPack first = repository.reload().active().get("one");
+        LoadedPack otherFirst = repository.reload().active().get("two");
+
+        Files.setLastModifiedTime(other, FileTime.fromMillis(Files.getLastModifiedTime(other).toMillis() - 10_000));
+        PackIndex index = repository.reload();
+
+        assertThat(index.active().get("one")).isSameAs(first);
+        assertThat(index.active().get("two")).isNotSameAs(otherFirst).isEqualTo(otherFirst);
+
+        Files.delete(file);
+        pack("one", "1.1.0").write(dir, "one.voicepack");
+        Files.setLastModifiedTime(file, FileTime.fromMillis(Files.getLastModifiedTime(file).toMillis() + 10_000));
+        assertThat(repository.reload().active().get("one").pack().orElseThrow().version()).isEqualTo("1.1.0");
+
+        Files.delete(file);
+        assertThat(repository.reload().active()).doesNotContainKey("one");
+    }
+
+    @Test
     void pruneCacheDeletesOldestFilesFirst() throws Exception {
         PackRepository repository = new PackRepository(dir);
         Files.createDirectories(repository.cacheDirectory());

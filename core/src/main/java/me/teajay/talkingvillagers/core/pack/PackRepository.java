@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -32,6 +34,11 @@ public final class PackRepository {
     private final Path directory;
     private volatile Predicate<String> enabled = id -> true;
     private volatile PackIndex index = PackIndex.EMPTY;
+    /** Packs read by earlier reloads, so unchanged files are neither read nor hashed again. Guarded by {@code this}. */
+    private final Map<Path, CachedRead> reads = new HashMap<>();
+
+    private record CachedRead(long size, long modified, LoadedPack pack) {
+    }
 
     public PackRepository(Path directory) {
         this.directory = directory;
@@ -54,27 +61,50 @@ public final class PackRepository {
     }
 
     /**
-     * Reads all packs in the folder, creating the folder if needed.
+     * Reads all packs in the folder, creating the folder if needed. Files with the same size and modification time as
+     * at the last reload are taken from memory.
      */
     public synchronized PackIndex reload() throws IOException {
         Files.createDirectories(directory);
-        List<LoadedPack> packs = readAll(directory);
-        List<LoadedPack> cached = Files.isDirectory(cacheDirectory()) ? readAll(cacheDirectory()) : List.of();
+        Map<Path, CachedRead> seen = new HashMap<>();
+        List<LoadedPack> packs = readAll(directory, seen);
+        List<LoadedPack> cached = Files.isDirectory(cacheDirectory()) ? readAll(cacheDirectory(), seen) : List.of();
+        reads.clear();
+        reads.putAll(seen);
         PackIndex newIndex = PackIndex.build(packs, cached, enabled);
         this.index = newIndex;
         return newIndex;
     }
 
-    private static List<LoadedPack> readAll(Path folder) throws IOException {
+    private List<LoadedPack> readAll(Path folder, Map<Path, CachedRead> seen) throws IOException {
         List<LoadedPack> packs = new ArrayList<>();
         try (Stream<Path> files = Files.list(folder)) {
             for (Path file : files.sorted().toList()) {
                 if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(VoicePack.FILE_EXTENSION)) {
-                    packs.add(PackReader.read(file));
+                    CachedRead read = read(file);
+                    seen.put(file, read);
+                    packs.add(read.pack());
                 }
             }
         }
         return packs;
+    }
+
+    private CachedRead read(Path file) {
+        long size;
+        long modified;
+        try {
+            size = Files.size(file);
+            modified = Files.getLastModifiedTime(file).toMillis();
+        } catch (IOException e) {
+            // deleted in the meantime; the reader reports it as broken
+            return new CachedRead(-1, -1, PackReader.read(file));
+        }
+        CachedRead earlier = reads.get(file);
+        if (earlier != null && earlier.size() == size && earlier.modified() == modified) {
+            return earlier;
+        }
+        return new CachedRead(size, modified, PackReader.read(file));
     }
 
     /**

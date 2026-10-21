@@ -11,6 +11,7 @@ import net.minecraft.network.chat.MutableComponent;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -90,7 +91,10 @@ final class GuiTexts {
         return minecraft.level == null || minecraft.hasSingleplayerServer();
     }
 
-    static String size(long bytes) {
-        return bytes >= 1024 * 1024 ? String.format("%.1f MB", bytes / 1024.0 / 1024.0) : (bytes / 1024) + " KB";
+    /** A file size with a translated unit, e.g. "1.5 MB". */
+    static Component size(long bytes) {
+        return bytes >= 1024 * 1024
+                ? Component.translatable("talkingvillagers.unit.mb", String.format(Locale.ROOT, "%.1f", bytes / 1024.0 / 1024.0))
+                : Component.translatable("talkingvillagers.unit.kb", bytes / 1024);
     }
 }

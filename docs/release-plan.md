@@ -131,6 +131,15 @@ Der Web-Editor wird über GitHub Pages ausgeliefert und hängt nicht an der Mod-
 
 ## 2.0.0-beta.5: Performance, Bedienung und Feedback-Link
 
+**Status:** umgesetzt in `fix/beta-5`. Abweichungen vom Plan:
+- `reloadAsync()` teilt sich nur einen Reload, der noch nicht gestartet ist. Läuft schon einer, folgt ein neuer, damit Änderungen kurz vor dem Aufruf sicher drin sind.
+- `/tv reload` antwortet sofort mit „Reloading voicepacks…“ und schickt das Ergebnis, wenn der Reload fertig ist. Über RCON kommt nur die erste Meldung an, weil RCON die Antwort beim Ausführen einsammelt.
+- Ein Pack-Wechsel per Schalter (`Configs.setServer`) lädt weiter synchron. Mit dem Cache werden dabei keine Dateien neu gelesen, nur der Index neu gebaut.
+- Der Download-Worker schreibt Chunks, prüft danach und löscht beim Abbruch (`close`) die Datei nach den schon eingereihten Schreibvorgängen.
+- Zahlen in Größenangaben haben immer einen Punkt (`1.5 MB`), nur die Einheit ist übersetzbar.
+- `crowded()`: keine Messung im Spiel, weil Raids und Small Talk einen Spieler in der Nähe brauchen. Der Aufwand hängt jetzt von den Entities im Umkreis ab statt von allen Sprechern der Welt.
+- Getestet: `./gradlew build`, `/tv reload` per RCON auf NeoForge und Fabric (Reload läuft auf „Talking Villagers reload“), Fabric-Client-Gametests mit `DownloadClientGameTest` gegen den Dev-Server, Screenshots von Voicepack-Screen (Feedback-Zeile) und Einstellungen (Lautstärke 100 %, vertraute Server).
+
 Ziel: Die Mod ruckelt nicht mehr bei Reloads und beim Installieren, die Einstellungen sind verständlich, und Spieler finden die Umfrage. Mit beta.5 startet die Spielerumfrage (`docs/player-survey.md` auf `docs/player-survey`): 3 Wochen ab Release, danach Auswertung vor 2.0.0.
 
 ### 1. Feedback-Link (Umfrage)

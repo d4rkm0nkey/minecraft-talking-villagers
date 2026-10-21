@@ -154,11 +154,15 @@ public final class TalkingVillagersCommand {
     }
 
     private static int reloadPacks(CommandContext<CommandSourceStack> context) {
-        PackIndex index = Voicepacks.reload();
-        long broken = index.all().stream().filter(pack -> !pack.isUsable()).count();
-        context.getSource().sendSuccess(() -> Component.translatable("commands.talkingvillagers.packs.reloaded",
-                index.active().size(), index.voices().size(), broken), true);
-        return index.active().size();
+        CommandSourceStack source = context.getSource();
+        source.sendSuccess(() -> Component.translatable("commands.talkingvillagers.packs.reloading"), false);
+        // reading large packs takes a while; the server keeps ticking and the answer comes when the reload is done
+        Voicepacks.reloadAsync().thenAcceptAsync(index -> {
+            long broken = index.all().stream().filter(pack -> !pack.isUsable()).count();
+            source.sendSuccess(() -> Component.translatable("commands.talkingvillagers.packs.reloaded",
+                    index.active().size(), index.voices().size(), broken), true);
+        }, source.getServer());
+        return 1;
     }
 
     // --- voice ---------------------------------------------------------------------------------------------------------

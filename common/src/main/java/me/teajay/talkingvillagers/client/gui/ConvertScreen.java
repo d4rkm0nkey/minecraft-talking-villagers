@@ -16,33 +16,36 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.AlertScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  * Converts a version 1 resource pack. Version 1 did not know languages and genders, so the player sets them here.
  */
 class ConvertScreen extends Screen {
-    private final Screen parent;
+    private final VoicepacksScreen parent;
     private final Path file;
-    private final Runnable afterConvert;
     private HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     private String name;
     private String language;
     private Gender gender = Gender.NEUTRAL;
     private Button convert;
 
-    ConvertScreen(Screen parent, Path file, Runnable afterConvert) {
+    ConvertScreen(VoicepacksScreen parent, Path file) {
         super(GuiTexts.key("convert.title"));
         this.parent = parent;
         this.file = file;
-        this.afterConvert = afterConvert;
         this.name = file.getFileName().toString().replaceAll("\\.zip$", "");
         this.language = Locale.getDefault().getLanguage().isEmpty() ? "en" : Locale.getDefault().getLanguage();
     }
@@ -96,24 +99,35 @@ class ConvertScreen extends Screen {
     }
 
     private void convert() {
-        String id = name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]+", "-").replaceAll("^-+|-+$", "");
-        if (id.isEmpty()) {
-            id = "converted";
-        }
-        // never overwrite another pack that happens to have the same name
-        Path target = SafeFiles.freeName(Voicepacks.repository().directory().resolve(id + VoicePack.FILE_EXTENSION));
-        try (ZipPackContents contents = new ZipPackContents(file)) {
-            Version1Converter.Result result = Version1Converter.convertResourcePack(contents,
-                    new Version1Converter.Settings(id, name.trim(), "2.0.0", Languages.normalize(language), gender, List.of()));
-            Version1Converter.write(result, Map.of(), target);
-            Voicepacks.reload();
-            afterConvert.run();
-            minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(parent), GuiTexts.key("convert.done"),
-                    GuiTexts.key("convert.done.message", result.pack().voices().size(), result.files().size(), result.skipped().size())));
-        } catch (Exception e) {
-            TalkingVillagers.LOG.error("Cannot convert {}", file, e);
-            minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(parent), GuiTexts.key("convert.failed"),
-                    Component.literal(String.valueOf(e.getMessage()))));
-        }
+        String trimmed = name.trim();
+        String id = trimmed.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]+", "-").replaceAll("^-+|-+$", "");
+        String packId = id.isEmpty() ? "converted" : id;
+        Version1Converter.Settings settings = new Version1Converter.Settings(packId, trimmed, "2.0.0", Languages.normalize(language), gender, List.of());
+        minecraft.gui.setScreen(new GenericMessageScreen(GuiTexts.key("convert.converting")));
+        // reading and writing a large pack takes a while, the game keeps running meanwhile
+        CompletableFuture.supplyAsync(() -> {
+                    // never overwrite another pack that happens to have the same name
+                    Path target = SafeFiles.freeName(Voicepacks.repository().directory().resolve(packId + VoicePack.FILE_EXTENSION));
+                    try (ZipPackContents contents = new ZipPackContents(file)) {
+                        Version1Converter.Result result = Version1Converter.convertResourcePack(contents, settings);
+                        Version1Converter.write(result, Map.of(), target);
+                        return result;
+                    } catch (IOException e) {
+                        throw new CompletionException(e);
+                    }
+                }, Util.ioPool())
+                .thenCompose(result -> Voicepacks.reloadAsync().thenApply(index -> result))
+                .whenCompleteAsync((result, error) -> {
+                    parent.refresh();
+                    if (error != null) {
+                        Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
+                        TalkingVillagers.LOG.error("Cannot convert {}", file, cause);
+                        minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(parent), GuiTexts.key("convert.failed"),
+                                Component.literal(String.valueOf(cause.getMessage()))));
+                    } else {
+                        minecraft.gui.setScreen(new AlertScreen(() -> minecraft.gui.setScreen(parent), GuiTexts.key("convert.done"),
+                                GuiTexts.key("convert.done.message", result.pack().voices().size(), result.files().size(), result.skipped().size())));
+                    }
+                }, minecraft);
     }
 }

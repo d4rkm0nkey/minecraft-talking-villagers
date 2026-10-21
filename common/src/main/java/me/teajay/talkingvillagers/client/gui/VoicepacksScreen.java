@@ -24,6 +24,7 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  * The voicepack manager: lists installed packs, installs dropped files, enables, disables and deletes packs.
@@ -47,6 +50,9 @@ public class VoicepacksScreen extends Screen {
     private @Nullable RowList list;
     private @Nullable EditBox search;
     private boolean downloadsShown;
+    /** A reload or file operation runs in the background. */
+    private boolean loading;
+    private @Nullable Button reloadButton;
     private int ticks;
 
     public VoicepacksScreen(@Nullable Screen parent) {
@@ -70,10 +76,9 @@ public class VoicepacksScreen extends Screen {
         LinearLayout footer = layout.addToFooter(LinearLayout.horizontal().spacing(6));
         footer.addChild(Button.builder(GuiTexts.key("packs.open_folder"), button -> Blaze3D.openPath(Voicepacks.repository().directory()))
                 .width(76).tooltip(Tooltip.create(GuiTexts.key("packs.open_folder.tooltip"))).build());
-        footer.addChild(Button.builder(GuiTexts.key("packs.reload"), button -> {
-            Voicepacks.reload();
-            refresh();
-        }).width(76).build());
+        reloadButton = footer.addChild(Button.builder(GuiTexts.key("packs.reload"), button -> changePacks(() -> {
+        }, () -> {
+        })).width(76).build());
         footer.addChild(Button.builder(GuiTexts.key("packs.web_editor"), ConfirmLinkScreen.confirmLink(this, WEB_EDITOR))
                 .width(76).tooltip(Tooltip.create(GuiTexts.key("packs.web_editor.tooltip"))).build());
         footer.addChild(Button.builder(GuiTexts.key("packs.settings"), button -> minecraft.gui.setScreen(new SettingsScreen(this))).width(76).build());
@@ -100,7 +105,41 @@ public class VoicepacksScreen extends Screen {
 
     @Override
     public void onFilesDrop(List<Path> files) {
-        PackInstaller.install(this, files, this::refresh);
+        if (!loading) {
+            PackInstaller.install(this, files);
+        }
+    }
+
+    /** A file operation that changes the packs, run before the reload. */
+    @FunctionalInterface
+    interface PackChange {
+        void run() throws IOException;
+    }
+
+    /**
+     * Runs {@code change} and the reload in the background; meanwhile the screen says so and nothing else can change
+     * the packs. {@code afterReload} runs on the client thread at the end.
+     */
+    void changePacks(PackChange change, Runnable afterReload) {
+        loading = true;
+        refresh();
+        CompletableFuture.runAsync(() -> {
+                    try {
+                        change.run();
+                    } catch (IOException e) {
+                        throw new CompletionException(e);
+                    }
+                }, Util.ioPool())
+                .exceptionally(error -> {
+                    TalkingVillagers.LOG.error("Cannot change voicepacks", error);
+                    return null;
+                })
+                .thenCompose(ignored -> Voicepacks.reloadAsync())
+                .whenCompleteAsync((index, error) -> {
+                    loading = false;
+                    afterReload.run();
+                    refresh();
+                }, minecraft);
     }
 
     void refresh() {
@@ -111,6 +150,14 @@ public class VoicepacksScreen extends Screen {
         String filter = search == null ? "" : search.getValue().toLowerCase(Locale.ROOT).trim();
         boolean editable = GuiTexts.canEditServerSettings();
         List<RowList.Row> rows = new ArrayList<>();
+        if (reloadButton != null) {
+            reloadButton.active = !loading;
+        }
+        if (loading) {
+            rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.loading").copy().withStyle(ChatFormatting.YELLOW)).centered().build());
+            editable = false;
+        }
+        Feedback.addRow(rows, this, font);
 
         if (index.all().isEmpty()) {
             rows.add(new RowList.RowBuilder(font).line(GuiTexts.key("packs.empty")).centered().build());
@@ -169,7 +216,10 @@ public class VoicepacksScreen extends Screen {
                 }
             }
         }
+        double scroll = list.scrollAmount();
         list.setRows(rows);
+        // keep the place in the list, e.g. while download progress updates every half second
+        list.setScrollAmount(scroll);
         downloadsShown = !PackDownloads.active().isEmpty();
     }
 
@@ -184,16 +234,10 @@ public class VoicepacksScreen extends Screen {
     private RowList.Row cachedRow(LoadedPack loaded, PackIndex index) {
         VoicePack pack = loaded.pack().orElseThrow();
         boolean installed = index.all().stream().anyMatch(other -> other.sha256().equals(loaded.sha256()));
-        Button install = Button.builder(GuiTexts.key("packs.install_cached"), button -> {
-            try {
-                Voicepacks.repository().installCached(loaded);
-            } catch (IOException e) {
-                TalkingVillagers.LOG.error("Cannot install {}", loaded.source(), e);
-            }
-            Voicepacks.reload();
-            refresh();
-        }).width(110).tooltip(Tooltip.create(GuiTexts.key("packs.install_cached.tooltip"))).build();
-        install.active = !installed;
+        Button install = Button.builder(GuiTexts.key("packs.install_cached"),
+                button -> changePacks(() -> Voicepacks.repository().installCached(loaded), () -> {
+                })).width(110).tooltip(Tooltip.create(GuiTexts.key("packs.install_cached.tooltip"))).build();
+        install.active = !installed && !loading;
         return new RowList.RowBuilder(font)
                 .icon(PackIcons.get(loaded))
                 .line(Component.literal(pack.name() + " ").append(Component.literal(pack.version()).withStyle(ChatFormatting.GRAY)), 0xFFA0A0A0)
@@ -236,6 +280,7 @@ public class VoicepacksScreen extends Screen {
         }
         Button delete = Button.builder(Component.literal("🗑"), button -> confirmDelete(loaded, pack.name()))
                 .width(20).tooltip(Tooltip.create(GuiTexts.key("packs.delete"))).build();
+        delete.active = !loading;
 
         Component status = shadowed ? GuiTexts.key("packs.shadowed") : Component.empty();
         return new RowList.RowBuilder(font)
@@ -256,17 +301,22 @@ public class VoicepacksScreen extends Screen {
                 .line(Component.literal(file), RED)
                 .secondary(GuiTexts.key("packs.broken", loaded.errors().size(), loaded.errors().getFirst().message()))
                 .widget(Button.builder(GuiTexts.key("packs.details"), button -> minecraft.gui.setScreen(new PackDetailsScreen(this, loaded))).width(56).build())
-                .widget(Button.builder(Component.literal("🗑"), button -> confirmDelete(loaded, file)).width(20)
-                        .tooltip(Tooltip.create(GuiTexts.key("packs.delete"))).build())
+                .widget(active(Button.builder(Component.literal("🗑"), button -> confirmDelete(loaded, file)).width(20)
+                        .tooltip(Tooltip.create(GuiTexts.key("packs.delete"))).build(), !loading))
                 .build();
     }
 
     private void confirmDelete(LoadedPack pack, String name) {
         minecraft.gui.setScreen(new ConfirmScreen(confirmed -> {
-            if (confirmed) {
-                PackInstaller.delete(pack);
-            }
             minecraft.gui.setScreen(this);
+            if (confirmed) {
+                PackInstaller.delete(this, pack);
+            }
         }, GuiTexts.key("packs.delete.confirm", name), GuiTexts.key("packs.delete.message")));
+    }
+
+    private static Button active(Button button, boolean active) {
+        button.active = active;
+        return button;
     }
 }

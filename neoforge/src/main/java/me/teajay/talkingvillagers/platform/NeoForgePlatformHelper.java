@@ -1,5 +1,6 @@
 package me.teajay.talkingvillagers.platform;
 
+import me.teajay.talkingvillagers.TalkingVillagers;
 import me.teajay.talkingvillagers.platform.services.PlatformHelper;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
@@ -26,5 +27,11 @@ public class NeoForgePlatformHelper implements PlatformHelper {
     @Override
     public Path getGameDir() {
         return FMLPaths.GAMEDIR.get();
+    }
+
+    @Override
+    public String getModVersion() {
+        return ModList.get().getModContainerById(TalkingVillagers.MOD_ID)
+                .map(mod -> mod.getModInfo().getVersion().toString()).orElse("");
     }
 }
