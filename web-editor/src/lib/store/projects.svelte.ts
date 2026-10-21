@@ -21,6 +21,8 @@ const channel = typeof BroadcastChannel === "undefined" ? undefined : new Broadc
 type TabMessage = { type: "saved"; id: string } | { type: "list" };
 let openId: string | undefined;
 let releaseLock: (() => void) | undefined;
+/** Counts lock requests, so a lock granted after its project was closed or switched is given back at once. */
+let lockRequest = 0;
 
 async function readProject(id: string): Promise<Project | undefined> {
   const project = (await get(key(id))) as Project | undefined;
@@ -71,10 +73,12 @@ export function openProject(id: string | undefined): void {
   releaseLock = undefined;
   openId = id;
   tabs.conflict = "";
+  const request = ++lockRequest;
   if (!id || typeof navigator === "undefined" || !navigator.locks) return;
   navigator.locks.request(`talkingvillagers-project:${id}`, { ifAvailable: true }, (lock) => {
+    if (request !== lockRequest) return;
     if (!lock) {
-      if (openId === id) tabs.conflict = "open_elsewhere";
+      tabs.conflict = "open_elsewhere";
       return;
     }
     // held until the project is closed in this tab
@@ -131,7 +135,12 @@ export function unsaved(): boolean {
   return pending.size > 0 || writing > 0;
 }
 
-async function save(project: Project): Promise<void> {
+/** Writes the project now instead of after the delay; false if that failed. */
+export function saveNow(project: Project): Promise<boolean> {
+  return save(project);
+}
+
+async function save(project: Project): Promise<boolean> {
   const entry = pending.get(project.id);
   if (entry) clearTimeout(entry.timer);
   pending.delete(project.id);
@@ -139,8 +148,10 @@ async function save(project: Project): Promise<void> {
   try {
     await set(key(project.id), $state.snapshot(project)).catch(reportError);
     channel?.postMessage({ type: "saved", id: project.id } satisfies TabMessage);
+    return true;
   } catch {
     // shown by reportError
+    return false;
   } finally {
     writing--;
   }

@@ -198,6 +198,22 @@ export function compress(pcm: Float32Array, sampleRate: number, thresholdDb = -2
 
 /** Zero crossings of the sinc on each side; more gives a steeper filter. */
 const SINC_ZEROS = 16;
+/** Steps per source sample in the precomputed filter; values in between are interpolated linearly. */
+const KERNEL_STEPS = 512;
+
+/** The windowed sinc from 0 to `half` source samples, computed once per conversion instead of for every tap. */
+function sincKernel(cutoff: number, half: number): Float32Array {
+  // one zero more at the end, so interpolating at the last step stays in bounds
+  const kernel = new Float32Array(half * KERNEL_STEPS + 2);
+  for (let k = 0; k < half * KERNEL_STEPS; k++) {
+    const x = k / KERNEL_STEPS;
+    const arg = Math.PI * cutoff * x;
+    const sinc = arg === 0 ? 1 : Math.sin(arg) / arg;
+    const w = 0.42 + 0.5 * Math.cos((Math.PI * x) / half) + 0.08 * Math.cos((2 * Math.PI * x) / half);
+    kernel[k] = cutoff * sinc * w;
+  }
+  return kernel;
+}
 
 /**
  * Changes the sample rate with a windowed-sinc filter (Blackman window). When lowering the rate, the filter also cuts
@@ -211,18 +227,17 @@ export function resample(pcm: Float32Array, from: number, to: number): Float32Ar
   // cutoff relative to the source Nyquist frequency, a little below the new one when downsampling
   const cutoff = ratio < 1 ? ratio * 0.95 : 1;
   const half = Math.ceil(SINC_ZEROS / cutoff);
+  const kernel = sincKernel(cutoff, half);
+  const end = half * KERNEL_STEPS;
   for (let i = 0; i < length; i++) {
     const position = i / ratio;
     const center = Math.floor(position);
     let sum = 0;
-    for (let j = center - half + 1; j <= center + half; j++) {
-      if (j < 0 || j >= pcm.length) continue;
-      const x = position - j;
-      if (Math.abs(x) >= half) continue;
-      const arg = Math.PI * cutoff * x;
-      const sinc = arg === 0 ? 1 : Math.sin(arg) / arg;
-      const w = 0.42 + 0.5 * Math.cos((Math.PI * x) / half) + 0.08 * Math.cos((2 * Math.PI * x) / half);
-      sum += pcm[j] * cutoff * sinc * w;
+    for (let j = Math.max(0, center - half + 1); j <= center + half && j < pcm.length; j++) {
+      const step = Math.abs(position - j) * KERNEL_STEPS;
+      const k = Math.floor(step);
+      if (k >= end) continue;
+      sum += pcm[j] * (kernel[k] + (kernel[k + 1] - kernel[k]) * (step - k));
     }
     out[i] = sum;
   }

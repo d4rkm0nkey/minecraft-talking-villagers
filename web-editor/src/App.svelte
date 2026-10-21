@@ -22,7 +22,7 @@
   $effect(() => openProject(project?.id));
 
   function importWarning(warning: (typeof importNotes.warnings)[number]): string {
-    return warning.code === "invalid_value" ? t("problem.invalid_value", warning.params) : t(`import.${warning.code}`, warning.params);
+    return warning.code === "invalid_value" ? t("problem.invalid_value", { path: warning.path ?? "/", ...warning.params }) : t(`import.${warning.code}`, warning.params);
   }
 
   onMount(async () => {

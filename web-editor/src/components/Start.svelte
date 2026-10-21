@@ -1,5 +1,6 @@
 <script lang="ts">
   import { addProject, projects, removeProject } from "../lib/store/projects.svelte";
+  import { cancelExport } from "../lib/pack/exporting.svelte";
   import { importNotes, storage } from "../lib/store/status.svelte";
   import { newProject, type Gender } from "../lib/model/types";
   import { ImportError, importVersion1, importVoicepack } from "../lib/pack/import";
@@ -70,7 +71,7 @@
           {/if}
         </span>
       </button>
-      <button class="danger" onclick={() => confirm(t("start.delete_confirm", { name: project.name })) && removeProject(project)}>
+      <button class="danger" onclick={() => confirm(t("start.delete_confirm", { name: project.name })) && (cancelExport(project.id), removeProject(project))}>
         {t("common.delete")}
       </button>
     </div>

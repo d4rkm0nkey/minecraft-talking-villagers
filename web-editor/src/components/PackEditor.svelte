@@ -2,12 +2,10 @@
   import type { Project } from "../lib/model/types";
   import { newVoice } from "../lib/model/types";
   import { VOICE_TYPES } from "../lib/model/catalog";
-  import { touch } from "../lib/store/projects.svelte";
+  import { saveNow, touch } from "../lib/store/projects.svelte";
   import { deleteAudio } from "../lib/store/audio";
-  import { onDestroy } from "svelte";
   import { check } from "../lib/pack/manifest";
-  import { fileName } from "../lib/pack/export";
-  import { decodeFile, download } from "../lib/audio/browser";
+  import { afterExport, exports, startExport } from "../lib/pack/exporting.svelte";
   import { COMMON_LANGUAGES, languageName } from "../lib/model/languages";
   import Problems from "./Problems.svelte";
   import ProcessingSettings from "./ProcessingSettings.svelte";
@@ -17,11 +15,7 @@
   let { project, onback, onvoice }: { project: Project; onback: () => void; onvoice: (voiceId: string) => void } = $props();
   let voiceName = $state("");
   let voiceType = $state("villager");
-  let exportState = $state<{ done: number; total: number; message?: string; error?: string } | undefined>();
-  let worker: Worker | undefined;
-
-  // an export of a project that is no longer shown is not needed any more
-  onDestroy(() => worker?.terminate());
+  const exportState = $derived(exports[project.id]);
 
   const problems = $derived(check(project));
   const errors = $derived(problems.filter((problem) => problem.severity === "error").length);
@@ -48,8 +42,14 @@
     if (!confirm(`${project.voices[index].name}: ${t("common.delete")}?`)) return;
     const [voice] = project.voices.splice(index, 1);
     touch(project);
-    // the recordings belong to this voice only
-    for (const line of voice.lines) await deleteAudio(line.audioId).catch(() => undefined);
+    // the recordings belong to this voice only; a stored project still listing the voice would point at deleted audio,
+    // and a running export may still read them
+    if (!(await saveNow(project))) return;
+    afterExport(project.id, () => {
+      void (async () => {
+        for (const line of voice.lines) await deleteAudio(line.audioId).catch(() => undefined);
+      })();
+    });
   }
 
   async function chooseIcon(event: Event) {
@@ -65,46 +65,6 @@
     touch(project);
   }
 
-  function startExport() {
-    const total = project.voices.reduce((sum, voice) => sum + voice.lines.length, 0);
-    exportState = { done: 0, total };
-    // the export uses the project as it is now, even if it is edited while the export runs
-    const snapshot = $state.snapshot(project);
-    const name = fileName(snapshot);
-    const modifiedAtStart = project.modified;
-    worker?.terminate();
-    const current = new Worker(new URL("../lib/pack/export.worker.ts", import.meta.url), { type: "module" });
-    worker = current;
-    // e.g. the worker script failed to load or threw outside of the export
-    current.onerror = (event) => {
-      event.preventDefault();
-      exportState = { done: 0, total, error: t("pack.export_failed", { message: event.message || t("pack.export_worker_failed") }) };
-      current.terminate();
-    };
-    current.onmessage = (event) => {
-      const data = event.data;
-      if (data.type === "decode") {
-        decodeFile(data.ogg.slice().buffer).then(
-          (audio) => current.postMessage({ type: "decoded", id: data.id, audio }, { transfer: [audio.data.buffer] }),
-          (error) => current.postMessage({ type: "decoded", id: data.id, error: String(error) }));
-      }
-      if (data.type === "progress") exportState = { done: data.done, total: data.total };
-      if (data.type === "done") {
-        download(data.bytes, name);
-        const changedDuringExport = project.modified > modifiedAtStart;
-        touch(project);
-        project.exported = changedDuringExport ? modifiedAtStart : project.modified;
-        exportState = { done: total, total, message: t("pack.exported") };
-        current.terminate();
-      }
-      if (data.type === "error") {
-        const message = data.key ? t(data.key, data.params) : data.message;
-        exportState = { done: 0, total, error: t("pack.export_failed", { message }) };
-        current.terminate();
-      }
-    };
-    current.postMessage({ type: "export", project: snapshot });
-  }
 </script>
 
 <div class="title-bar">
@@ -187,7 +147,7 @@
   <h2><img src={item("spyglass")} alt="" />{t("pack.check")}</h2>
   <Problems {problems} />
   <div class="row" style="margin-top: 12px">
-    <button class="primary" disabled={errors > 0 || (exportState && !exportState.message && !exportState.error)} onclick={startExport}>
+    <button class="primary" disabled={errors > 0 || (exportState && !exportState.message && !exportState.error)} onclick={() => startExport(project)}>
       ⬇ {t("pack.export")}
     </button>
     {#if exportState && !exportState.message && !exportState.error}
