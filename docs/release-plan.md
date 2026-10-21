@@ -187,6 +187,13 @@ Heute liest `Voicepacks.reload()` jede Datei komplett und berechnet SHA-256, auf
 ## Web-Editor (parallel zu beta.3–beta.5)
 
 ### Editor-Update A: Datensicherheit
+
+**Status:** umgesetzt in `fix/editor-data`. Abweichungen vom Plan:
+- Mehrere Tabs: Index per `update()` in einer Transaktion. Ein offenes Projekt hält eine Web Lock (`talkingvillagers-project:<id>`); öffnet ein zweiter Tab es, zeigt er „auch in einem anderen Tab geöffnet“. Speichern meldet sich per `BroadcastChannel`, andere Tabs mit demselben Projekt zeigen dann „in einem anderen Tab geändert“ mit *Neu laden*. Bearbeiten bleibt in beiden Tabs möglich (nur Warnung, kein Schreibschutz).
+- Verwaiste Audiodaten werden beim Start nur gelöscht, wenn kein anderer Tab des Editors offen ist (exklusive Lock), weil dort eine neue Aufnahme noch nicht im Projekt gespeichert sein kann.
+- Import: Schemafehler sind Warnungen, solange sich das Pack lesen lässt (die Mod lädt solche Packs auch). Abgelehnt werden nur Dateien ohne ZIP, ohne `voicepack.json`, mit kaputtem JSON oder ohne `voices`. Die Warnungen stehen über dem geöffneten Projekt. Die Meldungen von Ajv selbst bleiben englisch.
+- v1-Import: Dateien mit unbekanntem Event werden weggelassen (wie im Konverter der Mod), mit einer Warnung pro Datei. Eine kaputte `en_us.json` ist nur eine Warnung. Ein ZIP ohne Stimmen wird abgelehnt.
+- Getestet: Unit-Tests für Import (weight/legacyIds, fehlende Dateien, Schemawarnungen, Ablehnung, v1), Typecheck, headless Firefox mit zwei Tabs (beide Warnungen erscheinen).
 - **Mehrere Tabs**: Den Projektindex atomar aktualisieren (`update()`). Andere Tabs per `BroadcastChannel` warnen oder Bearbeitung nur in einem Tab erlauben (`navigator.locks`).
 - **`addFiles`**: nach jeder Datei speichern, Fehler pro Datei anzeigen.
 - **Stimme löschen** löscht auch deren Audio. Beim Start verwaiste `audio:*`-Einträge aufräumen.

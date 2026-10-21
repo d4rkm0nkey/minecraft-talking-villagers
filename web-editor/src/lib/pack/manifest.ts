@@ -63,6 +63,8 @@ export function buildManifest(project: Project, durations: Map<string, number> =
         ...(voice.child ? { child: true } : {}),
         ...(voice.language ? { language: voice.language } : {}),
         ...(voice.pitchMin !== 0.95 || voice.pitchMax !== 1.05 ? { pitch: { min: voice.pitchMin, max: voice.pitchMax } } : {}),
+        ...(voice.weight !== undefined && voice.weight !== 1 ? { weight: voice.weight } : {}),
+        ...(voice.legacyIds?.length ? { legacyIds: voice.legacyIds } : {}),
         lines,
       };
     }),
@@ -80,16 +82,19 @@ export interface Problem {
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 const validateSchema = ajv.compile(schema);
 
+/** Schema errors of a voicepack.json, e.g. of a pack that is opened. */
+export function validateManifest(manifest: unknown): Problem[] {
+  if (validateSchema(manifest)) return [];
+  return (validateSchema.errors ?? []).map((error) => ({
+    severity: "error" as const, code: "invalid_value", path: error.instancePath || "/", params: { message: error.message ?? "" },
+  }));
+}
+
 /**
  * Schema errors plus the warnings the mod's PackValidator reports.
  */
 export function check(project: Project): Problem[] {
-  const problems: Problem[] = [];
-  if (!validateSchema(buildManifest(project))) {
-    for (const error of validateSchema.errors ?? []) {
-      problems.push({ severity: "error", code: "invalid_value", path: error.instancePath || "/", params: { message: error.message ?? "" } });
-    }
-  }
+  const problems: Problem[] = validateManifest(buildManifest(project));
   const ids = new Set<string>();
   project.voices.forEach((voice, v) => {
     const path = `voices[${v}]`;

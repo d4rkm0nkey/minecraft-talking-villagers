@@ -3,6 +3,8 @@
   import { newVoice } from "../lib/model/types";
   import { VOICE_TYPES } from "../lib/model/catalog";
   import { touch } from "../lib/store/projects.svelte";
+  import { deleteAudio } from "../lib/store/audio";
+  import { onDestroy } from "svelte";
   import { check } from "../lib/pack/manifest";
   import { fileName } from "../lib/pack/export";
   import { decodeFile, download } from "../lib/audio/browser";
@@ -16,6 +18,10 @@
   let voiceName = $state("");
   let voiceType = $state("villager");
   let exportState = $state<{ done: number; total: number; message?: string; error?: string } | undefined>();
+  let worker: Worker | undefined;
+
+  // an export of a project that is no longer shown is not needed any more
+  onDestroy(() => worker?.terminate());
 
   const problems = $derived(check(project));
   const errors = $derived(problems.filter((problem) => problem.severity === "error").length);
@@ -38,10 +44,12 @@
     onvoice(voice.id);
   }
 
-  function removeVoice(index: number) {
+  async function removeVoice(index: number) {
     if (!confirm(`${project.voices[index].name}: ${t("common.delete")}?`)) return;
-    project.voices.splice(index, 1);
+    const [voice] = project.voices.splice(index, 1);
     touch(project);
+    // the recordings belong to this voice only
+    for (const line of voice.lines) await deleteAudio(line.audioId).catch(() => undefined);
   }
 
   async function chooseIcon(event: Event) {
@@ -64,13 +72,21 @@
     const snapshot = $state.snapshot(project);
     const name = fileName(snapshot);
     const modifiedAtStart = project.modified;
-    const worker = new Worker(new URL("../lib/pack/export.worker.ts", import.meta.url), { type: "module" });
-    worker.onmessage = (event) => {
+    worker?.terminate();
+    const current = new Worker(new URL("../lib/pack/export.worker.ts", import.meta.url), { type: "module" });
+    worker = current;
+    // e.g. the worker script failed to load or threw outside of the export
+    current.onerror = (event) => {
+      event.preventDefault();
+      exportState = { done: 0, total, error: t("pack.export_failed", { message: event.message || t("pack.export_worker_failed") }) };
+      current.terminate();
+    };
+    current.onmessage = (event) => {
       const data = event.data;
       if (data.type === "decode") {
         decodeFile(data.ogg.slice().buffer).then(
-          (audio) => worker.postMessage({ type: "decoded", id: data.id, audio }, { transfer: [audio.data.buffer] }),
-          (error) => worker.postMessage({ type: "decoded", id: data.id, error: String(error) }));
+          (audio) => current.postMessage({ type: "decoded", id: data.id, audio }, { transfer: [audio.data.buffer] }),
+          (error) => current.postMessage({ type: "decoded", id: data.id, error: String(error) }));
       }
       if (data.type === "progress") exportState = { done: data.done, total: data.total };
       if (data.type === "done") {
@@ -79,15 +95,15 @@
         touch(project);
         project.exported = changedDuringExport ? modifiedAtStart : project.modified;
         exportState = { done: total, total, message: t("pack.exported") };
-        worker.terminate();
+        current.terminate();
       }
       if (data.type === "error") {
         const message = data.key ? t(data.key, data.params) : data.message;
         exportState = { done: 0, total, error: t("pack.export_failed", { message }) };
-        worker.terminate();
+        current.terminate();
       }
     };
-    worker.postMessage({ type: "export", project: snapshot });
+    current.postMessage({ type: "export", project: snapshot });
   }
 </script>
 

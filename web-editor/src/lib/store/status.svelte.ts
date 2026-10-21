@@ -3,6 +3,9 @@
  */
 export const storage = $state<{ error: string; persisted: boolean | undefined }>({ error: "", persisted: undefined });
 
+/** What an import could not take over, shown above the opened project until closed. Keys are "import.<code>". */
+export const importNotes = $state<{ warnings: { code: string; params?: Record<string, string | number> }[] }>({ warnings: [] });
+
 /** Shows a failed write on the page and passes the error on. */
 export function reportError(error: unknown): never {
   storage.error = error instanceof DOMException && error.name === "QuotaExceededError" ? "quota" : String(error);

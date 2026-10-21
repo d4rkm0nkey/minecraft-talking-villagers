@@ -22,7 +22,9 @@ export interface Original {
 
 export type Decoder = (ogg: Uint8Array) => Promise<Audio>;
 
-const key = (id: string) => `audio:${id}`;
+/** Prefix of the IndexedDB keys of recordings. */
+export const AUDIO_PREFIX = "audio:";
+const key = (id: string) => `${AUDIO_PREFIX}${id}`;
 const cache = new Map<string, Promise<Audio | undefined>>();
 let decoder: Decoder | undefined;
 

@@ -35,6 +35,10 @@ export interface Voice {
   language?: string;
   pitchMin: number;
   pitchMax: number;
+  /** Relative chance of being picked among matching voices, 1 to 100; missing means 1. */
+  weight?: number;
+  /** Ids the voice had in version 1, so villagers in old worlds keep it. */
+  legacyIds?: string[];
   lines: Line[];
 }
 
