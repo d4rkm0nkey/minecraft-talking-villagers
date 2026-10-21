@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-beta.5 – unreleased
+## 2.0.0-beta.5 – 2026-10-21
 
 **Tell us what you think:** a [5-minute survey](https://tally.so/r/zExyRM) about what you like, what you miss and what should come next. The voicepack screen has a *Feedback* button for it while the mod is a beta.
 
